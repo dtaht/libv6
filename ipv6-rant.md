@@ -73,6 +73,7 @@ OS and daemon.
 
 Say you do this to yourself:
 
+````
 config interface 'usb0'
         option ifname 'usb0'
         option proto 'static'
@@ -80,12 +81,23 @@ config interface 'usb0'
         option netmask '255.255.255.255'
         option ip6assign '64'
         option ip6class 'local'
+````
 
-# Add the above interface to your system.
+# Add the above interface to your system
+
+Plug in the device...
 
 Great. So your former /60 that got delegated to your lan becomes a /61.
 Its interfaces get renumbered, without the renumbering passing onto the
 infinite leases the daemon is handing out.
+
+That's ok. If you reboot that usb device, it vanishes entirely, taking
+its prefix with it. Admittedly, perhaps I'm on the first one crazy enough
+to want to use usb networking on a machine, but with usb3, you can run
+at 10Gbits - without fiber!
+
+Btw: Don't ask me what happens to usbnet on systemd, it's uglier - it
+renamed the device pretty randomly to a nearly senseless string of letters.
 
 # Enter v6lib
 
@@ -114,7 +126,8 @@ example, the power fails globally.
 
 Given all this complexity and how often interfaces and IPs could come
 and go, I gave up and switched to using ipsets universally elsewhere.
-The cerowrt design never had to reload a firewall. Regrettably it never
+The cerowrt fw design was entirely stateless - it never had to reload
+a firewall rule. Regrettably it never
 handled vlans, either. Nobody else uses ipsets comprehensively.
 
 # Permanent identifiers
@@ -124,9 +137,15 @@ of dns integration (and even then), I adopted the concept of a permanent
 device identifier - a dedicated ULA range announced network-wide by the
 babel protocol. The way I do that is:
 
+````
 	ip -6 address add fdXX::YY/128 dev lo proto 44
+````
 
-and tell babel to always export that.
+and tell babel to always export that. Or - I would do that, if there was
+a way in the linux kernel to clearly identify where addresses came from.
+
+You could, theoretically, use a custom scope identifier instead, but the
+ip address tool does not currently let you override the ietf defined scopes.
 
 IPv6 has always had the ability to route over the link layer. There is,
 honestly, generally, no need to actually number all your interfaces in
@@ -187,9 +206,11 @@ While this may be "security by obscurity", it's security by a lot of obscurity.
 The implementation in lede works great for exterior routers, but installs
 a lot of static routes that shouldn't be installed for 
 
-# Default-deny firewalling
+# Default-deny firewalling for ipv6.
 
-pcp is "not ready". IPv6 does have some nice new protocols in it.
+PCP is "not ready". IPv6 does have some nice new protocols in it. It would
+be nice if a few of them actually worked in the modern era. DCCP in particular
+was kind of interesting as was UDP-Lite.
 
 # DNS integration
 
@@ -203,11 +224,11 @@ For the past year lede has been carrying patches for converting multicast
 to unicast.  After being submitted to kernel mainline at least one bug was found
 concerning ipv6 multicast.
 
-I turned it off by default, and slept better.
-
+I turned it off by default in /etd/config/network, and slept better.
+````
         option igmp_snooping '0'
         option multicast_to_unicast '0'
-
+````
 # USB
 
 I have been using a variety of hackerboards to periodically test if the
@@ -219,14 +240,18 @@ up statically.
 
 # DDPD
 
-# Chip
+See start at that in this repo. I'll probably get it wrong, too.
 
-They also *really want to
+# Chip's usb interface
 
-accept_ra does not get announced for a long time
+Wants to be a master dhcp server for it's own interface. That's great,
+unless you have more than one chip plugged in.
 
-#
+# accept_ra does not get announced for a long time
+
 # if the usb0 gets rebooted, it IS reconfigured with the ipv4 address
+
+````
 
 but the local assignment from netifd's pool is NOT re-assigned.
 
@@ -245,3 +270,5 @@ usb0      Link encap:Ethernet  HWaddr 12:FD:2C:C4:59:24
 
 root@archer-atf:/etc/config# ifdown usb0
 root@archer-atf:/etc/config# ifup usb0
+
+````
