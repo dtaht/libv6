@@ -1,0 +1,13 @@
+* TODO make sure everything compiles on arm, mips, x86_64.
+** Confirm that modern ABI's can handle 128 bits in function arguments
+** Establish board farm for commits
+* TODO Supporting docuements
+Do these first for a change. It saves on the arch later
+** test suite
+** TODO Write man page
+* 
+* Develop a go library at the same time
+  Need this for go, too.
+* TODO research libsodium/nacl/etc
+** Leverage wireguard-like techniques for packet transfer
+to hell with TLS over udp
