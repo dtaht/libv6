@@ -1,8 +1,9 @@
 # v6lib - a saner library for dealing with v4/v6 network addresses
 
-This was written because [I was going mad](ipv6-rant). However
+This was written because [I was going mad](ipv6-rant.md). However
 it is not anywhere near started, this repo exists merely because
-I was accumulating rants and not code.
+I was accumulating rants and not code. It all started merely because
+I wanted to [drag ipv6 to the pool](clients/ddpd/README.md)....
 
 ## Objectives
 
@@ -15,6 +16,7 @@ I was accumulating rants and not code.
 ** interface address tables
 ** route tables
 ** ipset
+** iptables
 
 * Manage address and prefix pools
 * Manage RAs in sane ways
