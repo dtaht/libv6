@@ -5,12 +5,15 @@ of our FQ-AQM technologies can vanish into hardware, and instead of doing them
 out of band, do them continually, and in hardware. What does this get us
 in terms of better routing?
 
-Timestamping: Can be done at the head of the packet.
+Timestamping: Can be done in hardware at the head of the packet. It doesn't
+need to be hugely accurate but semi-synced to all ports.
+
 Hashing: We could do a hash of all relevant fields and have that at the end of
 the packet. You don't care about queuing if your destination is already clear,
 so you just waste the hash when not queuing.
 
-The hardware actually could do hashing in *every useful way* and have that at the end of the packet.
+The hardware actually could do hashing in *every useful way* and have all
+that at the end of the packet.
 
 # Question:
 
@@ -18,7 +21,7 @@ Once you've got a useful hash and timestamp *everywhere* of every flow,
 what else can you get?
 
 It's not particularly well understood, I think, that once you have 1024 queues
-you can solve for core, cache-missy things (mac table lookup, route table lookup), in parallel, and more lazily, and just vote as to who to deliver next.
+, you can solve for core, cache-missy things (mac table lookup, route table lookup, nat translation, firewall rules), in parallel, and more lazily, and just vote as to who to deliver next.
 
 (DRR is not inherently serial - just the hashing step is)
 
