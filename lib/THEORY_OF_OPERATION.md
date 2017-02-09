@@ -7,7 +7,7 @@ Link Local Address: fe80::/64
 ULA Address: fc::/7
 Public Address: 2::/something
 
-Optionally they may contain one or more of 
+Optionally they may contain one or more of
 
 DHCP addresses
 Privacy address
@@ -33,10 +33,10 @@ arm neon instructions.
 If we need more addresses, we allocate more space, copy the
 existing address set, and store them in a bigger chunk.
 
-No linked lists here. Just bigger chunks. You need to
-then be careful about slinging pointers to these chunks around elsewhere,
-but using rcu on some things we can get much higher performance that way,
-and retain an "offset" logic to let us sling them around.
+No linked lists here. Just bigger chunks. You need to then be careful
+about slinging pointers to these chunks around elsewhere, but using rcu
+on some things we can get much higher performance that way, and retain
+an "offset" logic to let us sling them around.
 
 We can also hash based on offset and still do rcu on things.
 
@@ -44,4 +44,3 @@ We can also hash based on offset and still do rcu on things.
 
 ## Keep single address lookup as fast as a linked list
 ## Win on 2 or more addresses
-

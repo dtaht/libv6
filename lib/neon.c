@@ -61,11 +61,6 @@
 u128 u128_zero = {0};
 u128 u128_ones = {-1};
 
-size_t pos = 0;
-size_t size = 127;
-size_t begin = 0;
-size_t end = 0;
-
 // vget_lane_u64 
 
 typedef uint64x2_t u128;
@@ -81,42 +76,3 @@ int find_prefix(v6_prefix_table *p, int size, u128 prefix, u8 mask) {
 	      PISZERO(PXOR(PAND(p[i].prefix,m),cmp)); i++) ;
 	return i;
 }
-
-#ifdef TEST
-
-const char *test_prefixes[] = { "fe80::", "2001::", "fd27::", NULL };
-
-void populate_prefixes(v6_prefix_table *p) {
-	in6_addr_t dst;
-	int i = 0;
-	for(i; i < size - 1; i++) {
-	  inet_pton(AF_INET6,test_prefixes[i],(void *)&p[i].prefix);
-	}
-	p[i].prefix = u128_ones;
-}
-
-int conversions() {
-}
-
-void search(int argc, char *argv[]) {
-}
-
-void scan(int argc, char *argv[]) {
-}
-
-void usage(int argc, char *argv[], char *msg) {
-  printf("\n");
-  if(msg != NULL) fprintf(stderr,"%s\n",msg);
-}
-
-void main(int argc, char* argv[]) {
-	v6_prefix_table *assigned = calloc(size,sizeof(v6_prefix_table));
-	char *prog = basename(argv[0]);
-	populate_prefixes(assigned);
-	if(strcmp(prog,"search") == 0) search(argc,argv);
-      	else if(strcmp(prog,"scan") == 0) scan(argc,argv);
-	else usage(argc, argv,"Must be invoked as search or scan\n");
-	free(assigned);
-}
-#endif
-
