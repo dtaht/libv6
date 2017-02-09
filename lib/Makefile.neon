@@ -1,0 +1,10 @@
+LIB=libv6.a
+SRC=neon.c util.c
+INCLUDE=-I../include
+CFLAGS:=-std=c11 -mfpu=neon-vfpv4
+
+libv6.a: $(SRC)
+	$(CC) $(CFLAGS) $(INCLUDE) $(SRC) -DTEST -o libv6.o
+
+clean:
+	rm -f $(PROCS) ddpd

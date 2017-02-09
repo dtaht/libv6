@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <arm_neon.h>
 #include "v6lib.h"
 
 // Do a bunch of sanity checks to identify an address

@@ -1,12 +1,13 @@
 #ifndef _V6LIB
 #define _V6LIB
+#include "arch-neon.h"
 
-typedef unsigned char u8;
-typedef unsigned int u32;
-typedef unsigned long long u64;
-typedef __uint128_t u128;
-u128 v6_ones = {-1};
-u128 v6_zeros = {0};
+// ipv6 was designed long before C11.
+
+typedef struct in6_addr in6_addr_t;
+
+const u128 v6_ones = {-1};
+const u128 v6_zeros = {0};
 
 typedef struct {
         u64 sha;

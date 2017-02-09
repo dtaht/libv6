@@ -13,18 +13,34 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <libgen.h>
+#include <arm_neon.h>
 
-typedef unsigned char u8;
-typedef unsigned long long u64;
-typedef uint64x2_t u128;
+#include "v6lib.h"
+
+// "q" means 128 bit values
 
 #define PAND(a,b) vandq_u64(a,b)
 #define PANDN(a,b) vbicq_u64(a,b)
 #define PXOR(a,b) veorq_u64(a,b)
 #define PXORN(a,b) vornq_u64(a,b)
 #define POR(a,b) vorrq_u64(a,b)
+
+// FIXME: check these are really 128 bit?
+
 #define PSHL(a,b) vqrshlq_u64(a,b)
 #define PSHR(a,b) vqrshrq_u64(a,b)
+
+#define PMASKL(a) PSHL(u128_ones,a) // zero fill right load
+#define PMASKR(a) PSHR(u128_ones,a) // zero fill left load
+
+// https://community.arm.com/processors/b/blog/posts/coding-for-neon---part-4-shifting-left-and-right
+
+#define PMASK(a) PMASKL(a) // FIXME: wrong and endian dependent
+
+// Conditionals
+
+#define PISZERO(a) 0
+#define PISNOTZERO(a) 1
 
 // these are nice because you can shift by a constant int
 // but tricky because they shift one 64 bit value left.
@@ -39,46 +55,68 @@ typedef uint64x2_t u128;
 
 // this is probably saner on neon til I figure out
 // how to zero allocate a register (xor itself?)
+//#define u128_zero vdup_n_u32(0)
+//#define u128_ones vdup_n_u32(-1)
 
-#define u128_zero vdup_n_u32(0)
-#define u128_ones vdup_n_u32(-1)
-
-typedef struct {
-	u64 sha;
-	u64 ihave;
-        u128 prefix;
-	u8 mask;
-} pref_table;
-
-pref_table *assigned;
+u128 u128_zero = {0};
+u128 u128_ones = {-1};
 
 size_t pos = 0;
 size_t size = 127;
 size_t begin = 0;
 size_t end = 0;
 
-extern int find_prefix(pref_table *p, u128* prefix, u8 mask);
+// vget_lane_u64 
 
-int find_prefix(pref_table *p, u128 *prefix, u8 mask) {
+typedef uint64x2_t u128;
+
+// FIXME - how does the ABI handle this order? Should we put the last first?
+
+int find_prefix(v6_prefix_table *p, int size, u128 prefix, u8 mask) {
 	int i;
-	u128 m = (PAND(u128_ones, PMASK(mask),u128_ones));
-      	u128 cmp = PAND(*prefix,m);
+	i128 s = vreinterpretq_int64x2_int8x8(vld1_u8(&mask));
+	u128 m = PMASK(s);
+      	u128 cmp = PAND(prefix,m);
 	for(i = 0; i<size &&
-		    PISZERO(PXOR(PAND(p[i].prefix,m),cmp)); i++);
+	      PISZERO(PXOR(PAND(p[i].prefix,m),cmp)); i++) ;
 	return i;
 }
 
 #ifdef TEST
-void main(int argc, char* argv[]) {
-	char *prog = basename(argv[0]);
-        assigned = calloc(size,sizeof(pref_table));
-	assigned[4].prefix = u128_ones;
-	if(strcmp(prog,"ddpd") == 0) server(argc,argv);
-      	else if(strcmp(prog,"ddpc") == 0) client(argc,argv);
-	else {
-		printf("Must be invoked as either ddpd or ddpc\n");
-		exit(-1);
+
+const char *test_prefixes[] = { "fe80::", "2001::", "fd27::", NULL };
+
+void populate_prefixes(v6_prefix_table *p) {
+	in6_addr_t dst;
+	int i = 0;
+	for(i; i < size - 1; i++) {
+	  inet_pton(AF_INET6,test_prefixes[i],(void *)&p[i].prefix);
 	}
+	p[i].prefix = u128_ones;
+}
+
+int conversions() {
+}
+
+void search(int argc, char *argv[]) {
+}
+
+void scan(int argc, char *argv[]) {
+}
+
+void usage(int argc, char *argv[], char *msg) {
+  printf("\n");
+  if(msg != NULL) fprintf(stderr,"%s\n",msg);
+}
+
+void main(int argc, char* argv[]) {
+	v6_prefix_table *assigned = calloc(size,sizeof(v6_prefix_table));
+	char *prog = basename(argv[0]);
+	populate_prefixes(assigned);
+	if(strcmp(prog,"search") == 0) search(argc,argv);
+      	else if(strcmp(prog,"scan") == 0) scan(argc,argv);
+	else usage(argc, argv,"Must be invoked as search or scan\n");
+	free(assigned);
 }
 #endif
 
