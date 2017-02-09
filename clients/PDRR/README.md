@@ -27,3 +27,9 @@ trie structure...
 
 And the original fq-pie (the one based on sch_fq) had some *wonderful*
 ideas in it....
+
+# In terms of passive routing...
+
+There's this field - hop count. You have a hash. You can forward a packet
+and if you get it back with a reduced hop count, you sent it the wrong
+way, send it elsewhere. 
