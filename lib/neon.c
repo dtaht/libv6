@@ -39,8 +39,8 @@
 
 // Conditionals
 
-#define PISZERO(a) 0
-#define PISNOTZERO(a) 1
+#define PISZERO(a) a
+#define PISNOTZERO(a) !a
 
 // these are nice because you can shift by a constant int
 // but tricky because they shift one 64 bit value left.
@@ -58,8 +58,8 @@
 //#define u128_zero vdup_n_u32(0)
 //#define u128_ones vdup_n_u32(-1)
 
-u128 u128_zero = {0};
-u128 u128_ones = {-1};
+static u128 u128_zero = {0};
+static u128 u128_ones = {-1};
 
 // vget_lane_u64 
 
@@ -69,7 +69,7 @@ typedef uint64x2_t u128;
 
 int find_prefix(v6_prefix_table *p, int size, u128 prefix, u8 mask) {
 	int i;
-	i128 s = vreinterpretq_int64x2_int8x8(vld1_u8(&mask));
+	i128 s = vld1q_u64(mask);
 	u128 m = PMASK(s);
       	u128 cmp = PAND(prefix,m);
 	for(i = 0; i<size &&
