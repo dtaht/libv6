@@ -11,3 +11,63 @@ Do these first for a change. It saves on the arch later
 * TODO research libsodium/nacl/etc
 ** Leverage wireguard-like techniques for packet transfer
 
+* TODO Crufty APIS
+
+The ietf got out of the API business. Does POSIX have a pulse?
+
+struct whatever is nuts compared to typedef whatever
+getifaddrs is simple and useful but doesn't give you enough information.
+getaddrinfo is confusing.
+threaded DNS remains necessary
+various socket info techniques are needed 
+dealing with ECN is hard - dealing with the 70s style packet info APIs 
+harder
+v4mapping has tended to be buggy. We end up writing select on two or
+more file descriptors and rolling an event loop, all the time.
+
+Idea: C11 has generics now. Perhaps we can use those more.
+
+** The Sea of sockopts
+
+Is there some unifying abstraction to describe setting all the sockopts
+sanely?
+
+** Too many addresses not enough retries
+
+A machine can have many IPv6 addresses - and the "rightest" one to get
+from point A to point B is not always obvious. Longest prefix match will
+work most of the time, except when it doesn't. You should probably never
+try a ULA on a public IPv6 address except when that's all you got, and
+expect a near-immediate failure when you do. 
+
+Addresses that are going to expire have to be dealt with by the application,
+eventually. Applications should be aware they can lose their address
+or route at any time. You should probably try to use the longest lived
+address, except when you get one that's forever, it's probably a lie.
+
+Happy eyeballs does not have a library abstraction.
+
+There was some interesting pending work on "named sockets" which abstracted
+much of this away at the kernel layer, but it died.
+
+Mosh-multipath - and the new semi-connectionless protocols like QUIC
+are fantastic. And don't work with TCP unless you use tcp-multipath.
+The future of "nailed up" connections is dim.
+
+You might have a choice between using an address from your slow LTE provider
+or one on your fast internal lan. The latter is likely longer lived than the
+other. You might move from one to the other. Choose.
+
+* TODO Endianness
+
+Network Byte Order is a legacy from the 90s, made all the worse by wanting
+to slam 128 bits around... in that order. Two hard choices - you can keep
+all the endianness of everything at the kernel layer, and convert when
+inspecting packets, or keep everything that needs to be Big endian, big endian,
+or write everything that writes/reads packets to do the conversions inline.
+
+I think I just had an insight here - I've seen a bug where setting the tos
+value from an int might fail on a little endian arch a couple times, and
+maybe it's because it's expecting the int to be big endian... and I can't
+remember if the bug is on ipv4 or ipv6! (fixme, look at iperf3)
+
