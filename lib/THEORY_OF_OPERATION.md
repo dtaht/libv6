@@ -16,7 +16,7 @@ statically assigned addresses
 HNETD addresses
 VPN addresses
 
-as well as potentially hundreds of expiring addresses.
+... as well as potentially hundreds of expiring addresses.
 
 The same goes for routes, only worse.
 

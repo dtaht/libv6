@@ -1,0 +1,72 @@
+d@dancer:~/git/iproute2/ip$ ip monitor address
+1: lo    inet6 fd90::1/128 scope global 
+       valid_lft forever preferred_lft forever
+1: lo    inet6 fd90::1/128 scope global 
+       valid_lft forever preferred_lft 30sec
+1: lo    inet6 fd90::1/128 scope global dynamic 
+       valid_lft 60sec preferred_lft 30sec
+1: lo    inet6 fd90::1/128 scope global deprecated dynamic 
+       valid_lft 30sec preferred_lft 0sec
+Deleted 1: lo    inet6 fd90::1/128 scope global deprecated dynamic 
+       valid_lft 0sec preferred_lft 0sec
+
+d@dancer:~/git/iproute2/ip$ sudo ip -6 address replace fd90::1/128 dev lo valid_lft 60 preferred_lft 30
+
+
+echo monitor | ip -batch -
+
+* Bug
+
+sudo ip -6 route replace fd90::1/128 dev lo proto 50 expires 20
+
+ip monitor doesn't show expires information
+Nor does it get it from the kernel
+
+      valid_lft 0sec preferred_lft 0sec
+Deleted local fd90::1 dev lo table local proto unspec metric 0  pref medium
+unreachable fd90::1 dev lo proto 50 metric 1024  error -101 pref medium
+
+
+# Syntactically the kernel makes no difference between a :1/64 and a /64
+
+sudo ip -6 route replace fd89::1/64 dev eno1 proto 50 expires 20
+
+
+fd89::/64 dev eno1 proto 50 metric 1024  expires 20sec pref medium
+Deleted fd89::/64 dev eno1 proto 50 metric 1024  expires -9sec pref medium
+fd89::/64 dev eno1 proto 50 metric 1024  expires 20sec pref medium
+Deleted fd89::/64 dev eno1 proto 50 metric 1024  expires -12sec pref medium
+
+
+# it treats local /128 as unreachable - AND DOESN'T PUT an expires
+
+ip -6 route replace blackhole fd89::1/128 proto 50 expires 20
+
+
+Deleted fd89::/64 dev eno1 proto 50 metric 1024  expires -12sec pref medium
+blackhole fd89::1 dev lo proto 50 metric 1024  error -22 pref medium
+^C
+
+sudo ip -6 route replace blackhole fd89::1/128 proto 50 expires 20
+
+
+# iw10 is killing us
+is there a way to advertise a smaller one?
+
+              window NUMBER
+                     the maximal window for TCP to advertise to these destina‐
+                     tions, measured in bytes. It limits maximal data bursts
+                     that our TCP peers are allowed to send to us.
+
+similar rtt estimate could be derived
+
+ssthresh cwnd and mtu
+
+A good example of this we could always advertise the correct mtu to a given
+tunneled ipv6 destination
+
+advmss as well
+
+
+
+

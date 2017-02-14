@@ -9,18 +9,74 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <libgen.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <errno.h>
+#include <locale.h>
+#include <assert.h>
+#include <getopt.h>
+#include <iconv.h>
+#include <fcntl.h>
+#include <math.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/timerfd.h>
+
 #include "v6lib.h"
 
 #define PORT 5100
 #define MAXBUF 65536
 #define CONFFILE "/etc/config/ddpc"
 
-size_t pos = 0;
-size_t size = 127;
-size_t begin = 0;
-size_t end = 0;
+// for each prefix provider
+// use fdtimers instead of a timer wheel
+// - adds simplicity to callbacks
 
-static v6_prefix_table *assigned;
+// Commands to find equivalents for in netlink
+// ip route show proto %s proto > %s
+// ip addr show scope global
+// ip -6 addr show scope global
+// ip -6 addr replace %s proto %s lft %s
+// ip -6 route replace %s proto %s expires %s
+// time
+// List the addresses on an interface
+
+// timer check
+// long long fired?
+
+
+//		if(write(tool,cmd,csize)==-1) perror("writing cmd");
+//		if(read(timer,&fired,sizeof(fired))!=8) perror("reading timer");
+//		ctr+=fired;
+
+static int timer_callback_create(int interval, int when) {
+	struct itimerspec new_value = {0};
+	int timer = timerfd_create(CLOCK_REALTIME, 0);
+	new_value.it_interval = a->interval;
+	new_value.it_value = a->interval;
+        return timer;
+}
+
+backoff() {
+
+}
+
+establish_self() {
+
+// Do I have routes?
+// Do I have an IP address?
+// Do I have an IPv6 address?
+// Can I create a temporary ULA and announce it?
+
+}
+
+// After thinking about this for a while, even though
+// this is protocol that needs not more than udp,
+// the crypto requirement makes that harder.
+// Using TCP instead simplifies some things
+// but I need to think about blockage caused
+// by hanging tcp sessions.
+// We can also try tcp fast open on the crypto side
 
 int client(int argc, char* argv[])
 {
@@ -31,7 +87,7 @@ int client(int argc, char* argv[])
    int sin6len;
    char buffer[MAXBUF];
    u128 prefix = v6_gen_random_prefix(96);
-   
+
    sin6len = sizeof(struct sockaddr_in6);
 
    sock = socket(PF_INET6, SOCK_DGRAM,0);
@@ -52,7 +108,7 @@ int client(int argc, char* argv[])
    sainfo.ai_flags = 0;
    sainfo.ai_family = PF_INET6;
    sainfo.ai_socktype = SOCK_DGRAM;
-   sainfo.ai_protocol = IPPROTO_UDP;
+   sainfo.ai_protocol = IPPROTO_TCP;
    status = getaddrinfo("ip6-localhost", "5100", &sainfo, &psinfo);
 
    switch (status)
@@ -68,12 +124,6 @@ int client(int argc, char* argv[])
       case EAI_SERVICE: printf("service\n");
 	break;
      }
-   int s = v6_find_prefix(assigned, size, prefix, 48);
-   s = v6_find_prefix(assigned, size, prefix, 64);
-   s = v6_find_prefix(assigned, size, prefix, 96);
-   s = v6_find_prefix(assigned, size, prefix, 127);
-   s = v6_find_prefix(assigned, size, prefix, 128);
-
    if(s > 0) {
    status = sendto(sock, buffer, strlen(buffer), 0,
 		     (struct sockaddr *)psinfo->ai_addr, sin6len);
@@ -102,7 +152,7 @@ int server(int argc, char *argv[])
 
    memset(&sin6, 0, sin6len);
 
-   /* just use the first address returned in the structure */
+   /* FIXME: DON'T just use the first address returned in the structure */
 
    sin6.sin6_port = htons(PORT);
    sin6.sin6_family = AF_INET6;
@@ -135,8 +185,79 @@ void usage(int argc, char *argv[]) {
 	exit(-1);
 }
 
+struct arg {
+	u16 port;
+	char *conf;
+	char *address;
+	char *keydir;
+	char *proto;
+	char *script;
+	int debug;
+	char *timeout;
+};
+
+typedef struct arg args;
+
+// Capabilities? IF we can do this with netlink sockets
+// The only capabilities we need to keep are the ability
+// to read and write netlink sockets for routing and
+// address changes
+
+// minimal? - force advertising the derived leases
+// and routes at some subset of the actual lease - 5m?
+
+static const struct option long_options[] = {
+	{ "port", required_argument	, NULL , 'p' } ,
+	{ "conf"   , required_argument	, NULL , 'c' } ,
+	{ "address", required_argument	, NULL , 'a' } ,
+	{ "keydir" , required_argument	, NULL , 'K' } ,
+	{ "proto"  , required_argument	, NULL , 'P' } ,
+	{ "script" , required_argument	, NULL , 's' } ,
+	{ "timeout", required_argument, NULL , 't' } ,
+	{ "debug"  , required_argument	, NULL , 'd' } ,
+	{ "retry"  , required_argument	, NULL , 'r' } ,
+	{ "help"     , no_argument		, NULL , 'h' },
+};
+
+#define QSTRING "p:c:a:K:P:s:t:d:r:h"
+
+static int process_options(int argc, char **argv, args *o)
+{
+	int          option_index = 0;
+	int          opt = 0;
+	optind       = 1;
+
+	while(1)
+	{
+		opt = getopt_long(argc, argv,
+				  QSTRING,
+				  long_options, &option_index);
+		if(opt == -1) break;
+
+		switch (opt)
+		{
+		case 'p': o->port = strtoul(optarg,NULL,10);  break;
+		case 'c': o->finterval = strtod(optarg,NULL); break;
+		case 'a': o->command = optarg; break;
+		case 'K': o->interface = optarg; break;
+		case 'P': o->buffer = 1; break;
+		case 't': o->buffer = 1; break;
+		case 'd': o->buffer = 1; break;
+		case 'r': o->buffer = 1; break;
+		case '?':
+		case 'h':
+		default:  usage(NULL);
+		}
+	}
+	return 0;
+}
+
 void main(int argc, char* argv[]) {
 	char *prog = basename(argv[0]);
+	args a;
+	int status = 0;
+	defaults(&a);
+	process_options(&a);
         assigned = calloc(size,sizeof(v6_prefix_table));
 	v6_store_prefix(assigned[4].prefix,v6_ones);
 	v6_sanity(assigned[4].prefix);
