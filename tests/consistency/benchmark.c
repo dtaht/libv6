@@ -145,6 +145,14 @@ int main() {
 
 	// FIXME - fill trailer with random garbage
 
+	int aligned = sizeof(prefix_table) % sizeof(size_t);
+	fprintf(stdout,"sizeof(prefix_table) = %ld and is %s on this test - %s\n",
+		sizeof(prefix_table),
+		aligned ? "unaligned" : "aligned",
+		aligned ? "expect weirdness!" : "good!" );
+
+	fflush(stdout);
+
 	for(int i = 0; i<MAX_PREFIX; i++) {
 		p[i].plen = p2[i].plen = p3[i].plen = p4[i].plen = i % 128; // 129?
 		memcpy(p[i].prefix,random_prefix(),16);
@@ -154,14 +162,6 @@ int main() {
 	}
 
 	// fixme find stack tests
-
-	int aligned = sizeof(prefix_table) % sizeof(size_t);
-	fprintf(stdout,"sizeof(prefix_table) = %ld and is %s on this test - %s\n",
-		sizeof(prefix_table),
-		aligned ? "unaligned" : "aligned",
-		aligned ? "expect weirdness!" : "good!" );
-
-	fflush(stdout);
 
 	// Fixme for unaligned access tests
 
