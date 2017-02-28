@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <assert.h>
 #include <memory.h>
 #include <endian.h>
@@ -125,7 +126,7 @@ int log_errors() {
 }
 
 int consistency() {
-	return 0; 
+	return 0;
 }
 
 int main() {
@@ -135,11 +136,16 @@ int main() {
 
 	int i = 0;
 	int err = 0;
-	prefix_table *p = calloc(MAX_PREFIX,16);
-	prefix_table *p2 = calloc(MAX_PREFIX,16);
+	prefix_table *p  = calloc(MAX_PREFIX,sizeof(prefix_table));
+	prefix_table *p2 = calloc(MAX_PREFIX,sizeof(prefix_table));
+	prefix_table *p3 = calloc(MAX_PREFIX,sizeof(prefix_table));
+	prefix_table *p4 = calloc(MAX_PREFIX,sizeof(prefix_table));
+
 	for(int i = 0; i<MAX_PREFIX; i++) {
 		memcpy(p[i].prefix,random_prefix(),16);
 		my_memcpy(p2[i].prefix,p[i].prefix,16);
+		my_memcpy(p3[i].prefix,p[i].prefix,12);
+		my_memcpy(p4[i].prefix,p[i].prefix,8);
 	}
 
 	// Fixme for unaligned access tests
@@ -147,12 +153,17 @@ int main() {
 	fprintf(stdout,"my_memcpy16 check:");
 	fflush(stdout);
 
-	for(int i = 0; i<MAX_PREFIX; i++) {
-	        assert(memcmp(p2[i].prefix,p[i].prefix,16) != 0);
+	if(memcmp(p,p2,MAX_PREFIX-1) != 0) {
+		fprintf(stdout,"my_memcpy went awry - checking... ");
+		fflush(stdout);
+                for(int i = 0; i<MAX_PREFIX; i++) {
+	                assert(memcmp(p2[i].prefix,p[i].prefix,16) != 0);
+	        }
 	}
 
 	fprintf(stdout,"passed\n");
 	fflush(stdout);
+
 	// Give us two exact hits
 
 	memcpy(p[MAX_PREFIX/2].prefix,llprefix,16);

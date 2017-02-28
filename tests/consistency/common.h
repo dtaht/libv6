@@ -1,8 +1,6 @@
 /**
  * common.h
  *
- * Toke Høiland-Jørgensen
- * 2017-02-27
  */
 
 #ifndef COMMON_H

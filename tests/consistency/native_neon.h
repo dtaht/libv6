@@ -1,12 +1,9 @@
 /**
  * native_neon.h
- *
  */
 
 #ifndef NATIVE_NEON_H
 #define NATIVE_NEON_H
-#ifdef HAVE_NEON
-#include <arm_neon.h>
 
 static inline uint32_t is_not_zero(uint32x4_t v)
 {
@@ -70,8 +67,6 @@ prefix_cmp(const unsigned char *p1, unsigned char plen1,
     else
         return PST_EQUALS;
 }
-
-#endif
 
 #endif
 

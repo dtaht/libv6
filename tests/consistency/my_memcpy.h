@@ -1,4 +1,12 @@
 #ifdef HAVE_NEON
+#include <arm_neon.h>
+
+#define my_memcpy(to,from,qty) qty == 16 ? my_memcpy16(to,from)\
+                         : qty == 12 ? my_memcpy12(to,from) \
+                         : qty == 8  ? my_memcpy8(to,from) \
+                         : memcpy(to,from,qty);
+
+
 //I haven't the faintest idea what the real difference between loading
 // and storing here. Alignment? Endian? Speed?
 
