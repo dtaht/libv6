@@ -13,10 +13,13 @@ enum prefix_status {
     PST_LESS_SPECIFIC
 };
 
+// Fixme, try aligned and unaligned
+// FIXME: I thought this would structure pad!!
+
 typedef struct {
 	unsigned char prefix[16];
 	unsigned char plen;
-} prefix_table; // Fixme, try aligned and unaligned
+} prefix_table __attribute__ ((aligned(16)));
 
 
 static inline int
