@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <time.h>
 #include <assert.h>
 #include <memory.h>
 #include <endian.h>
@@ -140,21 +141,35 @@ int main() {
 	prefix_table *p2 = calloc(MAX_PREFIX,sizeof(prefix_table));
 	prefix_table *p3 = calloc(MAX_PREFIX,sizeof(prefix_table));
 	prefix_table *p4 = calloc(MAX_PREFIX,sizeof(prefix_table));
+	srandom(getpid());
+
+	// FIXME - fill trailer with random garbage
 
 	for(int i = 0; i<MAX_PREFIX; i++) {
+		p[i].plen = p2[i].plen = p3[i].plen = p4[i].plen = i % 128; // 129?
 		memcpy(p[i].prefix,random_prefix(),16);
 		my_memcpy(p2[i].prefix,p[i].prefix,16);
 		my_memcpy(p3[i].prefix,p[i].prefix,12);
 		my_memcpy(p4[i].prefix,p[i].prefix,8);
 	}
 
+	// fixme find stack tests
+
+	int aligned = sizeof(prefix_table) % sizeof(size_t);
+	fprintf(stdout,"sizeof(prefix_table) = %ld and is %s on this test - %s\n",
+		sizeof(prefix_table),
+		aligned ? "unaligned" : "aligned",
+		aligned ? "expect weirdness!" : "good!" );
+
+	fflush(stdout);
+
 	// Fixme for unaligned access tests
 
-	fprintf(stdout,"my_memcpy16 check:");
+	fprintf(stdout,"my_memcpy16 check: ");
 	fflush(stdout);
 
 	if(memcmp(p,p2,MAX_PREFIX-1) != 0) {
-		fprintf(stdout,"my_memcpy went awry - checking... ");
+		fprintf(stdout,"my_memcpy went awry - checking why... ");
 		fflush(stdout);
                 for(int i = 0; i<MAX_PREFIX; i++) {
 	                assert(memcmp(p2[i].prefix,p[i].prefix,16) != 0);
@@ -172,15 +187,47 @@ int main() {
 	// Check to see if we are formatting prefixes correctly.
 	// You can only call format_prefix 4 times without a memcpy
 
-	printf("v4mapped print %s, ll print %s\n",
+	fprintf(stdout,"v4mapped print %s, ll print %s\n",
 		format_prefix(p[MAX_PREFIX/2].prefix,
 			      p[MAX_PREFIX/2].plen),
 		format_prefix(p[MAX_PREFIX/3].prefix,
 			      p[MAX_PREFIX/3].plen));
 	fflush(stdout);
 
+	int r1 = random() % MAX_PREFIX;
+	int r2 = random() % MAX_PREFIX;
+	int r3 = random() % MAX_PREFIX;
+	int r4 = random() % MAX_PREFIX;
+
+	fprintf(stdout,"Random Addresses generated: %s\n"
+		       "                            %s\n"
+		       "                            %s\n"
+		       "                            %s\n",
+		format_prefix(p[r1].prefix,
+			p[r1].plen),
+		format_prefix(p[r2].prefix,
+			p[r2].plen),
+		format_prefix(p[r3].prefix,
+			p[r3].plen),
+		format_prefix(p[r4].prefix,
+			p[r4].plen));
+	fflush(stdout);
+
+	printf("plen corruption check: ");
+	fflush(stdout);
+
+	for(int i = 0; i<MAX_PREFIX; i++) {
+		if(p[i].plen == p2[i].plen && p3[i].plen == p[i].plen && p4[i].plen == p[i].plen)
+			continue;
+		err++;	
+	}
+
+	fprintf(stdout, "%s\n", err == 0 ? "passed" : "failed");
+	fflush(stdout);
+
 	printf("v4mapped check: ");
 	fflush(stdout);
+
 	count = 0;
 	for(i = 0; i<MAX_PREFIX; i++) {
 		if(v4mapped(p[i].prefix)) count++;
