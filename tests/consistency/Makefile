@@ -3,31 +3,34 @@
 PROGS+=bench_Os bench_O1 bench_O2 bench_O3
 PROGS+=bench_Os_neon bench_O3_neon
 NEON=-DHAVE_NEON -mfpu=neon
+INCLUDES+=common.h native.h native_neon.h reset.h my_memcpy.h native_64bit.h
+INCLUDES+=native_sse2.h
+
 
 SRC=benchmark.c benchmark_data.c
 #CFLAGS=-std=c11 -g -Wall c11 doesn't have the !@# endian macros
 CFLAGS=-std=gnu99 -g -Wall -DHAVE_64BIT_ARCH
 #NATIVEARCH=$(())
-#H64=-DHAVE_SSE2
-H64=$(NEON)
+H64=-DHAVE_SSE2
+#H64=$(NEON)
 
 CROSSCC=aarch64-linux-gnu-gcc-5
 
 all: $(PROGS)
 
-bench_Os: $(SRC)
+bench_Os: $(SRC) $(INCLUDES)
 	$(CC) $(CFLAGS) -Os $(H64) $(SRC) -o $@
-bench_O1: $(SRC)
+bench_O1: $(SRC) $(INCLUDES)
 	$(CC) $(CFLAGS) -O1 $(H64) $(SRC) -o $@
-bench_O2: $(SRC)
+bench_O2: $(SRC) $(INCLUDES)
 	$(CC) $(CFLAGS) -O2 $(H64) $(SRC) -o $@
-bench_O3: $(SRC)
+bench_O3: $(SRC) $(INCLUDES)
 	$(CC) $(CFLAGS) -O3 $(H64) $(SRC) -o $@
 
-bench_Os_neon: $(SRC)
+bench_Os_neon: $(SRC) $(INCLUDES)
 	$(CROSSCC) $(CFLAGS) -S -Os $(NEON) benchmark.c -o $@
 
-bench_O3_neon: $(SRC)
+bench_O3_neon: $(SRC) $(INCLUDES)
 	$(CROSSCC) $(CFLAGS) -S -O3 $(NEON) benchmark.c -o $@
 
 
