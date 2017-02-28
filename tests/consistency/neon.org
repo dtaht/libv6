@@ -1,0 +1,311 @@
+* The gcc 4.9.2 compiler never issues neon instructions
+
+Even on the simplest things - like memcpy.
+
+Which babel calls memcpy with constants almost exclusively
+
+memzero also
+
+Using my current "optimized" neon build I call vld 80 times:
+
+on the arm-thumb based chip, binary size is:
+
+|size|-O3|-O3 neon|optimized_memcpy|use64bit
+|size|112824|112836|113028|113022|
+
+But we go from 80 vlds to 230. My take on the size difference above
+is that we fool the register allocator less.
+
+Non-thumb went to 116732 from 116720 so that's good...
+
+With the new code... we ended up with: 233 vlds (??) and 116732
+
+* I find the lvd1.32 d16,d17 vs the q registers really hard to read
+
+I wonder if I can get something that does q
+
+        vld1.32 {d18-d19}, [r2] @ D.40374, MEM[(const __builtin_neon_si[4] *)_19]
+        bne     .L373   @,
+        ldrb    r5, [r2, #33]   @ zero_extendqisi2      @ _26->src_plen, _26->src_plen
+        cmp     r5, r3  @ _26->src_plen, src_plen
+        bne     .L373   @,
+        veor    q8, q8, q10     @ D.40374, D.40374, D.40374
+
+* Shift 128 bits right by a constant or two sets of ??
+
+uint64x2_t vshrq_n_u64(uint64x2_t a, __constrange(1,64) int b); // VSHR.U64 q0,q0,#64
+
+Left
+
+uint64x2_t vshlq_n_u64(uint64x2_t a, __constrange(0,63) int b); // VSHL.I64 q0,q0,#0
+
+Of course one of the cool things about this is you can shift
+by any qty and any subdivisions left or right 
+
+uint8x16_t vshlq_n_u8(uint8x16_t a, __constrange(0,7) int b);   // VSHL.I8 q0,q0,#0 
+
+* Vector narrowing shift right by constant
+
+int8x8_t   vshrn_n_s16(int16x8_t a, __constrange(1,8) int b);   // VSHRN.I16 d0,q0,#8 
+int16x4_t  vshrn_n_s32(int32x4_t a, __constrange(1,16) int b);  // VSHRN.I32 d0,q0,#16
+int32x2_t  vshrn_n_s64(int64x2_t a, __constrange(1,32) int b);  // VSHRN.I64 d0,q0,#32
+uint8x8_t  vshrn_n_u16(uint16x8_t a, __constrange(1,8) int b);  // VSHRN.I16 d0,q0,#8 
+uint16x4_t vshrn_n_u32(uint32x4_t a, __constrange(1,16) int b); // VSHRN.I32 d0,q0,#16
+uint32x2_t vshrn_n_u64(uint64x2_t a, __constrange(1,32) int b); // VSHRN.I64 d0,q0,#32 
+
+* The saturating shifts look interesting.
+
+* Then there are lanes. You can't get there
+
+uint8x16_t  vld1q_lane_u8(__transfersize(1) uint8_t const * ptr, uint8x16_t vec,
+              __constrange(0,15) int lane);                   // VLD1.8 {d0[0]}, [r0]
+
+uint64x2_t  vld1q_lane_u64(__transfersize(1) uint64_t const * ptr, uint64x2_t vec, 
+              __constrange(0,1) int lane);                    // VLD1.64 {d0}, [r0]
+
+* shift
+
+uint64x2_t vshlq_u64(uint64x2_t a, int64x2_t b);  // VSHL.U64 q0,q0,q0
+
+So what I basically want to do is load a plen into the bottommost part of something
+
+create a mask
+
+xor(a,a); zeros
+not(xor(a,a)) ones
+
+
+
+store
+
+* C11 has generics now that might make for less headaches
+
+get_ones() { return vmovq_n_u8 (255) ; } // probabl not(xor(a,a)) faster
+
+uint8x16_t  vmovq_n_u8(uint8_t value);     // VDUP.8 q0,r0 
+
+
+* Another way to load ones
+
+uint8x16_t  vmovq_n_u8(uint8_t value);     // VDUP.8 q0,r0 
+
+* Big to little endian bit conversion
+
+uint32x4_t   vrev64q_u32(uint32x4_t vec);  // VREV64.32 q0,q0
+
+uint8x16_t   vrev64q_u8(uint8x16_t vec);   // VREV64.8 q0,q0 
+
+* Cool - Popcount capability here
+
+
+uint8x8_t  vcnt_u8(uint8x8_t a);    // VCNT.8 d0,d0
+int8x8_t   vcnt_s8(int8x8_t a);     // VCNT.8 d0,d0
+poly8x8_t  vcnt_p8(poly8x8_t a);    // VCNT.8 d0,d0
+uint8x16_t vcntq_u8(uint8x16_t a);  // VCNT.8 q0,q0
+int8x16_t  vcntq_s8(int8x16_t a);   // VCNT.8 q0,q0
+poly8x16_t vcntq_p8(poly8x16_t a);  // VCNT.8 q0,q0
+
+* Bitwise NOT. Grump.
+
+Despite all the strong typechecking here, there is no
+uint64x2 version. and it decodes down to the same instruction.
+
+uint32x4_t vmvnq_u32(uint32x4_t a);  // VMVN q0,q0
+
+* Bit Clear - not sure what it does
+
+* Bitwise OR complement
+
+* Casting shit sucks
+
+Syntax
+vreinterpret{q}_dsttype_srctype
+Where:
+q
+Specifies that the conversion operates on 128-bit vectors. If it is not present, the conversion operates on 64-bit vectors.
+dsttype
+Represents the type to convert to.
+srctype
+Represents the type being converted.
+Examples
+The following intrinsic reinterprets a vector of four signed 16-bit integers as a vector of four unsigned integers:
+uint16x4_t vreinterpret_u16_s16(int16x4_t a);
+The following intrinsic reinterprets a vector of four 32-bit floating point values integers as a vector of four signed integers.
+int8x16_t vreinterpretq_s8_f32(float32x4_t a);
+
+* 
+
+VMRS
+VMSR
+Use the named register variable __asm("fpscr") to access the Floating-Point Status and Control Register (FPSCR). Using the named register variable causes the compiler to emit VMRS/VMSR instructions as required.
+
+Go looking for these being called
+
+VPOP
+VPUSH
+
+* I'm not confident I got this right elsewhere
+
+uint64_t  vgetq_lane_u64(uint64x2_t vec, __constrange(0,1) int lane);
+
+* Set a single lane from a literal
+
+int32x4_t   vsetq_lane_s32(int32_t value, int32x4_t vec,  
+              __constrange(0,3) int lane);                    // VMOV.32 d0[0],r0
+
+so, for example, to construct a v4mapped prefix
+
+load zeros via xor...
+
+(or does the trailing thing need to be ones)
+
+neon_v4prefix = vsetq_lane_s32(hben(0xffff),xor(a,a),1)
+
+neon_v4_mask = (0xffff,0xffff,0xffff,0xffff,0xffff,0xffff,0xffff,0xffff,0,0)
+
+to compare it
+
+xor(and(cprefix,neon_v4mask),neon_v4prefix)
+
+* Let's go back to the original bit
+
+!v6mapped(p1) && !v6mapped(p2);
+
+a = xor(and(p1,neon_v4mask),neon_v4prefix)
+b = xor(and(p2,neon_v4mask),neon_v4prefix)
+t = or(a,b)
+
+> 96
+> 96
+
+* Need to replace memcmp
+
+But most of the time they won't be equal and we
+need to find out how they are not.
+
+Greater than/less than 
+
+xor the two together
+ eq == 0 
+ otherwise, a mess
+ reverse each on 8 bit qtys (before or after?)
+ ffs bit in both or is it fls?
+ and get out all the bits you don't care about in both
+ somehow get it back into 8 bits?
+ 0 = 0 
+ shift right to make it signed (and -2? or -1)
+ get the lane you were dealing with
+ signed bit = shifted 11 - -1? 
+ signed bit = 10 shifted = 1
+ 
+* Are we done yet?
+  No, we can lift most of this horrific bit of bit twiddling out of the inner
+  loop also for the static comparison
+
+
+
+* NEON dual issue
+
+The NEON engine has limited dual issue capabilities. A load/store, permute, MCR, or MRC type instruction can be dual issued with a NEON data-processing instruction. A load/store, permute, MCR, or MRC executes in the NEON load/store permute pipeline. A NEON data-processing instruction executes in the NEON integer ALU, Shift, MAC, floating-point add or multiply pipelines. This is the only dual issue pairing permitted.
+There are also similar restrictions to the ARM integer pipeline in terms of dual issue pairing with multi-cycle instructions. The NEON engine can potentially dual issue on both the first and last cycle of a multi-cycle instruction, but not on any of the intermediate cycles.
+
+** Checkme - are we writing zeros or the v6 prefix
+
+** Checkme - the arm can have up to 8(?) prefetch operations outstanding
+
+	5 is the defuault for aarch64 - 8 allowed.
+	The A7 supports 3 - 3 is the default
+
+** Not clear what builtin_prefech maps to in arm
+
+	The A9 has a single bit for L1 prefetch enable
+	and A single bit for L2 prefetch hint enable
+
+** Fascinating extra options
+
+http://stackoverflow.com/questions/16032202/how-to-use-pld-instruction-in-arm
+This is eanbled on -O3
+
+ __attribute__((optimize("prefetch-loop-arrays")))
+
+The value of addr is the address of the memory to prefetch. There are two optional arguments, rw and locality. The value of rw is a compile-time constant one or zero; one means that the prefetch is preparing for a write to the memory address and zero, the default, means that the prefetch is preparing for a read. The value locality must be a compile-time constant integer between zero and three. A value of zero means that the data has no temporal locality, so it need not be left in the cache after the access. A value of three means that the data has a high degree of temporal locality and should be left in all levels of cache possible. Values of one and two mean, respectively, a low or moderate degree of temporal locality. The default is three.
+
+     for (i = 0; i < n; i++)
+       {
+         a[i] = a[i] + b[i];
+         __builtin_prefetch (&a[i+j], 1, 1);
+         __builtin_prefetch (&b[i+j], 0, 1);
+         /* ... */
+       }
+Data prefetch does not generate faults if addr is invalid, but the address expression itself must be valid. For example, a prefetch of p->next will not fault if p->next is not a valid address, but evaluation will fault if p is not a valid address.
+
+If the target does not support data prefetch, the address expression is evaluated if it includes side effects but no other code is generated and GCC does not issue a warning.
+
+** This had some *GREAT* info on perf and also optimized a binary
+
+http://stackoverflow.com/questions/7327994/prefetching-examples
+
+ $ gcc c-binarysearch.c -DDO_PREFETCH -o with-prefetch -std=c11 -O3
+ $ gcc c-binarysearch.c -o no-prefetch -std=c11 -O3
+
+ $ perf stat -e L1-dcache-load-misses,L1-dcache-loads ./with-prefetch 
+
+  Performance counter stats for './with-prefetch':
+
+    356,675,702      L1-dcache-load-misses     #   41.39% of all L1-dcache hits  
+   861,807,382      L1-dcache-loads                                             
+
+   8.787467487 seconds time elapsed
+
+ $ perf stat -e L1-dcache-load-misses,L1-dcache-loads ./no-prefetch 
+
+ Performance counter stats for './no-prefetch':
+
+   382,423,177      L1-dcache-load-misses     #   97.36% of all L1-dcache hits  
+   392,799,791      L1-dcache-loads                                             
+
+  11.376439030 seconds time elapsed
+
+
+** Finally, ARMs NEON also offers VCLS (Vector Count Leading Sign Bits), which (quoting from the documentation) “counts the number of consecutive bits following the topmost bit, that are the same as the topmost bit”. Well, we can do that on all architectures I mentioned as well, using only ingredients we already have: arm_cls(x) = x86_lzcnt(x ^ (x >> 1)) - 1 (the shift here is an arithmetic shift). The expression y = x ^ (x >> 1) gives a value that has bit n set if and only if bits n and n + 1 of x are the same. By induction, the number of leading zeros in y is thus exactly the number of leading bits in x that match the sign bit. This count includes the topmost (sign) bit, so it’s always at least 1, and the instruction definition I just quoted requires us to return the number of bits following the topmost bit that match it. So we subtract 1 to get the right result. Since we can do a fast leading zero count on all quoted platforms, we’re good.
+
+
+
+For mask
+
+http://stackoverflow.com/questions/23633481/optimizing-mask-function-with-arm-simd-instructions
+	
+I would probably do it like this. I've included 4x loop unrolling. Preloading the cache is always a good idea and can speed things up another 25%. Since there's not much processing going on (it's mostly spending time loading and storing), it's best to load lots of registers, then process them as it gives time for the data to actually load. It assumes the data is an even multiple of 16 elements.
+
+void fmask(unsigned int x, unsigned int y, uint32_t *s, uint32_t *m)
+{                             
+  unsigned int ixy;
+  uint32x4_t srcA,srcB,srcC,srcD;
+  uint32x4_t maskA,maskB,maskC,maskD;
+
+  ixy = xsize * ysize;
+  ixy /= 16; // process 16 at a time
+  while (ixy--)
+  {
+    __builtin_prefetch(&s[64]); // preload the cache
+    __builtin_prefetch(&m[64]);
+    srcA = vld1q_u32(&s[0]);
+    maskA = vld1q_u32(&m[0]);
+    srcB = vld1q_u32(&s[4]);
+    maskB = vld1q_u32(&m[4]);
+    srcC = vld1q_u32(&s[8]);
+    maskC = vld1q_u32(&m[8]);
+    srcD = vld1q_u32(&s[12]);
+    maskD = vld1q_u32(&m[12]);
+    srcA = vandq_u32(srcA, maskA); 
+    srcB = vandq_u32(srcB, maskB); 
+    srcC = vandq_u32(srcC, maskC); 
+    srcD = vandq_u32(srcD, maskD);
+    vst1q_u32(&s[0], srcA);
+    vst1q_u32(&s[4], srcB);
+    vst1q_u32(&s[8], srcC);
+    vst1q_u32(&s[12], srcD);
+    s += 16;
+    m += 16;
+  }
+}
