@@ -35,8 +35,14 @@ bench_O3_neon: $(SRC) $(INCLUDES)
 
 # Compiler sanity check
 
+arm7_compiler: compiler.c
+	$(CC) $(CFLAGS) -g $(RESERVED) $(NEON) -fwhole-program -O2 compiler.c -o $@
+
 aarch64_compiler: compiler.c
 	$(CROSSCC) $(CFLAGS) $(RESERVED) -fwhole-program -O3 compiler.c -o $@
+
+arm7_compiler.s: compiler.c
+	$(CC) $(CFLAGS) $(RESERVED) $(NEON) -S -fwhole-program -fverbose-asm -O3 compiler.c -o $@
 
 aarch64_compiler.s: compiler.c
 	$(CROSSCC) $(CFLAGS) $(RESERVED) -S -fwhole-program -fverbose-asm -O3 compiler.c -o $@
