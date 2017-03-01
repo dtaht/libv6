@@ -12,12 +12,16 @@
 #include "common.h"
 #include "native_neon.h"
 
+// http://stackoverflow.com/questions/38547082/arm-neon-assembly-proper-way-to-test-values?rq=1
+
 typedef uint32x4_t usimd;
 
-usimd ll = { 0xfe80 }; // ?
-usimd v4_mapped = { };
-usimd zeros = { 0 };
-usimd ones = { -1L, -1L }; // ?
+// register int *p2 asm ("r1") = …;
+
+register usimd ll asm ("q0") = { 0xfe80 }; // ?
+register usimd v4_mapped asm ("q2") = { 0 };
+register usimd zeros asm ("q4") = { 0 };
+register usimd ones asm ("q6") = { -1L, -1L }; // ?
 
 static inline int compare(const unsigned char *src) {
         usimd tmp = vld1q_u32((const unsigned int *) src);
