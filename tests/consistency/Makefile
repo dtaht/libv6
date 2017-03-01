@@ -33,6 +33,13 @@ bench_Os_neon: $(SRC) $(INCLUDES)
 bench_O3_neon: $(SRC) $(INCLUDES)
 	$(CROSSCC) $(CFLAGS) -S -O3 $(NEON) benchmark.c -o $@
 
+# Compiler sanity check
+
+aarch64_compiler: compiler.c
+	$(CROSSCC) $(CFLAGS) -fwhole-program -O3 compiler.c -o $@
+
+aarch64_compiler.s: compiler.c
+	$(CROSSCC) $(CFLAGS) -S -fwhole-program -fverbose-asm -O3 compiler.c -o $@
 
 #run: 	$(PROGS)
 #	OUTPUT= $(foreach p,$(PROGS),$(shell ./$(p))) ## well it seemed like a good idea
