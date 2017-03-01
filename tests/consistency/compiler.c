@@ -18,10 +18,10 @@ typedef uint32x4_t usimd;
 
 // register int *p2 asm ("r1") = …;
 
-register usimd ll asm ("q0") = { 0xfe80 }; // ?
-register usimd v4_mapped asm ("q2") = { 0 };
-register usimd zeros asm ("q4") = { 0 };
-register usimd ones asm ("q6") = { -1L, -1L }; // ?
+register usimd ll asm ("q15");
+register usimd v4_mapped asm ("q14");
+register usimd zeros asm ("q13");
+register usimd ones asm ("q12");
 
 static inline int compare(const unsigned char *src) {
         usimd tmp = vld1q_u32((const unsigned int *) src);

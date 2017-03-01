@@ -5,7 +5,7 @@ PROGS+=bench_Os_neon bench_O3_neon
 NEON=-DHAVE_NEON -mfpu=neon
 INCLUDES+=common.h native.h native_neon.h reset.h my_memcpy.h native_64bit.h
 INCLUDES+=native_sse2.h
-
+RESERVED=-ffixed-q0 -ffixed-q1 -ffixed-q2 -ffixed-q4
 
 SRC=benchmark.c benchmark_data.c
 #CFLAGS=-std=c11 -g -Wall c11 doesn't have the !@# endian macros
@@ -36,10 +36,10 @@ bench_O3_neon: $(SRC) $(INCLUDES)
 # Compiler sanity check
 
 aarch64_compiler: compiler.c
-	$(CROSSCC) $(CFLAGS) -fwhole-program -O3 compiler.c -o $@
+	$(CROSSCC) $(CFLAGS) $(RESERVED) -fwhole-program -O3 compiler.c -o $@
 
 aarch64_compiler.s: compiler.c
-	$(CROSSCC) $(CFLAGS) -S -fwhole-program -fverbose-asm -O3 compiler.c -o $@
+	$(CROSSCC) $(CFLAGS) $(RESERVED) -S -fwhole-program -fverbose-asm -O3 compiler.c -o $@
 
 #run: 	$(PROGS)
 #	OUTPUT= $(foreach p,$(PROGS),$(shell ./$(p))) ## well it seemed like a good idea
