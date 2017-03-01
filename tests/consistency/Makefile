@@ -5,7 +5,7 @@ PROGS+=bench_Os_neon bench_O3_neon
 NEON=-DHAVE_NEON -mfpu=neon
 INCLUDES+=common.h native.h native_neon.h reset.h my_memcpy.h native_64bit.h
 INCLUDES+=native_sse2.h
-RESERVED=-ffixed-q0 -ffixed-q1 -ffixed-q2 -ffixed-q4
+RESERVED=-ffixed-q4 -ffixed-q5 -ffixed-q6 -ffixed-q7
 
 SRC=benchmark.c benchmark_data.c
 #CFLAGS=-std=c11 -g -Wall c11 doesn't have the !@# endian macros
