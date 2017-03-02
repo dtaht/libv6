@@ -235,14 +235,19 @@ int main() {
 
 	count = 0;
 	for(i = 0; i<MAX_PREFIX; i++) {
-		if(v4mapped(p[i].prefix)) count++;
+		if(v4mapped(p[i].prefix)) {
+			count++;
+			if(v4mapped_simd(p2[i].prefix) != 
+			   v4mapped(p[i].prefix))
+				err++;
+		}
 	}
 
 	//for(i = 0; i<MAX_PREFIX; i++) {
 	//	V4MAPPED_E(p[i].prefix);
 	//}
-
-	printf("passed\n");
+	if(err == 0) printf("passed\n"); 
+	else printf("failed %d times\n", err);
 
 	printf("v4mapped: %d\n",count);
 	fflush(stdout);
