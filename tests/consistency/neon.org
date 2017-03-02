@@ -1,4 +1,16 @@
+* using 8 bit char types might be easier than 64 bit ones
+
+The types defined in this manner can be used with a subset of normal C operations. Currently, GCC allows using the following operators on these types: +, -, *, /, unary minus, ^, |, &, ~, %.
+
+
+This however is more tricky
+
+Vector comparison is supported with standard comparison operators: ==, !=, <, <=, >, >=. Comparison operands can be vector expressions of integer-type or real-type. Comparison between integer-type vectors and real-type vectors are not supported. The result of the comparison is a vector of the same width and number of elements as the comparison operands with a signed integral element type.
+
+
+
 * http://www.catb.org/esr/structure-packing/
+
 
 git://git.kernel.org/pub/scm/devel/pahole/pahole.git
 
