@@ -6,6 +6,11 @@
 #ifndef NATIVE_H
 #define NATIVE_H
 
+
+static inline int init_simd() {
+	return 0;
+}
+
 // Memcmp returns -1,0,1. 0 for equality
 
 static inline size_t v6_equal (const unsigned char *p1,

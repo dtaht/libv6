@@ -48,6 +48,7 @@
 #define HAVE_64BIT_ARCH
 #endif
 
+#define init_simd init_64bit
 #define v4mapped v4mapped_64bit
 #define prefix_cmp prefix_cmp_64bit
 #define v6_nequal v6_nequal_64bit
@@ -60,7 +61,9 @@
 
 // And the baseline original tests
 
+#define init_simd init_native
 #include "native.h"
+#undef init_simd
 
 // Automate checks
 
@@ -142,6 +145,8 @@ int main() {
 	prefix_table *p3 = calloc(MAX_PREFIX,sizeof(prefix_table));
 	prefix_table *p4 = calloc(MAX_PREFIX,sizeof(prefix_table));
 	srandom(getpid());
+
+	init_simd(); // Initialize register constants early
 
 	// FIXME - fill trailer with random garbage
 

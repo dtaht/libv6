@@ -3,6 +3,7 @@
  *
  */
 
+#undef init_simd
 #undef v4tov6
 #undef v4mapped
 #undef prefix_cmp

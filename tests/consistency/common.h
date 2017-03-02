@@ -14,13 +14,15 @@ enum prefix_status {
 };
 
 // Fixme, try aligned and unaligned
-// FIXME: I thought this would structure pad!!
 
 typedef struct {
 	unsigned char prefix[16];
 	unsigned char plen;
+	unsigned char pad[15];
 } prefix_table __attribute__ ((aligned(16)));
 
+// FIXME: I thought this aligned statement would structure pad!!
+// Several bugs elsewhere due to this
 
 static inline int
 linklocal(const unsigned char *address)

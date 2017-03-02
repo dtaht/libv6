@@ -10,6 +10,7 @@
 #define MIN(a,b) a < b ? b : a
 
 #include "common.h"
+#include "my_memcpy.h"
 #include "native_neon.h"
 
 // http://stackoverflow.com/questions/38547082/arm-neon-assembly-proper-way-to-test-values?rq=1
@@ -34,17 +35,17 @@ Registers v8-v15 must be preserved by a callee across subroutine calls; the rema
 */
 
 
-typedef uint32x4_t usimd;
 
-const unsigned char fe80str[16] = { 0xfe, 0x80 };
-const unsigned char v4prefixstr[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, 0, 0, 0, 0 };
+// Then we have q13-q15 as scratch
 
-register usimd ll asm ("q4");
-register usimd v4_prefix asm ("q5");
-register usimd zeros asm ("q6");
-register usimd ones asm ("q7");
+// Typical pre-amble
+// vld4 cmp q8 // typically preserved
+// vld4 cmp q10 // typically preserved
 
-// This is the naive version
+// vld4 src q0
+// vld1 src+32 q2 // d? and then convert to mask 
+
+// This is the naive version of a test
 
 static inline int compare(const unsigned char *src) {
         usimd tmp = vld1q_u32((const unsigned int *) src);
@@ -66,19 +67,11 @@ return -1;
 
 int main() {
 
-//   Load up our constant registers before we do anything else
-
-     ll = vld1q_u32((const uint32_t *) fe80str);
-     v4_prefix = vld1q_u32((const uint32_t *) v4prefixstr);
-
-//   It is generally cheaper to just generate these on the fly
-     zeros = veorq_u32(ll,ll);
-     ones = vmvnq_u32(zeros);
-
      unsigned char *myzeros = calloc(1,16);
      unsigned char myones[16] = { 1 };
      unsigned char myll[16] = { 0xfe, 0x80 };
      unsigned char myv4mapped[16] = { 0 };
+     init_simd();
 
      printf("Zeros compare %d\n", compare(myzeros));
      printf("Ones compare %d\n", compare(myones));

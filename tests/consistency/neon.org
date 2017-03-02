@@ -1,3 +1,10 @@
+* http://www.catb.org/esr/structure-packing/
+
+git://git.kernel.org/pub/scm/devel/pahole/pahole.git
+
+The clang compiler has a -Wpadded option that causes it to generate messages about alignment holes and padding. Some versions also have an undocumented -fdump-record-layouts option that yields more information.
+
+
 * The gcc 4.9.2 compiler never issues neon instructions
 
 Even on the simplest things - like memcpy.

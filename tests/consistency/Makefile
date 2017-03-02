@@ -2,7 +2,8 @@
 
 PROGS+=bench_Os bench_O1 bench_O2 bench_O3
 PROGS+=bench_Os_neon bench_O3_neon
-NEON=-DHAVE_NEON -mfpu=neon
+#NEON=-DHAVE_NEON -mfpu=neon
+NEON=-DHAVE_NEON
 INCLUDES+=common.h native.h native_neon.h reset.h my_memcpy.h native_64bit.h
 INCLUDES+=native_sse2.h
 RESERVED=-ffixed-q4 -ffixed-q5 -ffixed-q6 -ffixed-q7
