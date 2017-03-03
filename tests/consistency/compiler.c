@@ -65,6 +65,18 @@ static inline int compare(const unsigned char *src) {
 return -1;
 }
 
+// you will always find this snippet of code funny if you
+// understand NEON booleon vector operations.
+
+static inline int crazycompare(const unsigned char *src) {
+        usimd tmp = vld1q_u32((const unsigned int *) src);
+	usimd result = veorq_u32(zeros,tmp);
+	result = vorrq_u32(result,veorq_u32(ones,tmp));
+	result = vorrq_u32(result,veorq_u32(ll,tmp));
+	result = vorrq_u32(result,veorq_u32(v4_prefix,tmp));
+	return is_not_zero(result);
+}
+
 int main() {
 
      unsigned char *myzeros = calloc(1,16);
@@ -76,7 +88,9 @@ int main() {
      printf("Zeros compare %d\n", compare(myzeros));
      printf("Ones compare %d\n", compare(myones));
      printf("Myll compare %d\n", compare(myll));
+     printf("Myll crazycompare %d\n", crazycompare(myll));
      printf("v4mapped compare %d\n", compare(myv4mapped));
+     printf("v4mapped crazycompare %d\n", crazycompare(myv4mapped));
      myzeros = calloc(2,16);
      myones[11] = 2;
      myll[2] = 0xfe80;
