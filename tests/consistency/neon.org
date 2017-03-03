@@ -1,3 +1,43 @@
+* It's coming back to me.
+
+What I'd ended up doing was writing a custom gdb parser that let me 
+consistently see regs in whatever format I was working in.
+
+And a reference program that showed all the types that I could objdump
+to see. 
+
+And the equivalent of printf to dump the regs at any point, in any format.
+
+and a bit of masm-like building blocks to get zeros, ones, etc. I remember
+being unhappy I couldn't specify in the pre-processor a random reg to 
+xor....
+
+As for neon...
+
+I think you can load 256 bytes at a time, and rotate them on the way in,
+but I'm not sure.
+
+I also need aligned and unaligned variants of the loads/stores. And 
+a clean way to get stuff to the main processor answering various questions
+(gt/lt/eq/neq). There also seem to be single instructions for nand nxor,
+etc....
+
+in the end I'd also basically just invented my own subset of the 
+sse related language (sort of how I just did with usimd) for my purposes. 
+
+This time, tho, I'm not doing fp, just boolean operations. I'm a little confused
+on shifts and the ABI. If I want to shift all of a vector right what happens?
+Do I load the shift to all lanes and go? What happens to the highest value.
+
+Do I want to use the 8 bit types? Mildly easier to conceptualize in some ways.
+
+I wish I could tell objdump to talk about loads as if they were 128 bit
+quantities into q registers, in particular.
+
+oh, wow.
+
+http://www.cs.utexas.edu/users/mckinley/papers/js-simd-pact-2015.pdf
+
 * using 8 bit char types might be easier than 64 bit ones
 
 The types defined in this manner can be used with a subset of normal C operations. Currently, GCC allows using the following operators on these types: +, -, *, /, unary minus, ^, |, &, ~, %.
