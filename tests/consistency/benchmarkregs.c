@@ -75,6 +75,15 @@ typedef uint32x4_t usimd;
 
 #include "reset.h"
 
+static inline size_t v6_equal (const usimd p1,
+                                   const usimd p2) {
+	return !is_not_zero(veorq_u32(p1,p2));
+}
+
+static inline size_t v4mapped (const usimd address) {
+	return !v4nmapped(address);
+}
+
 // Automate checks
 
 // nequal can vary unfortunately. Think about it.
@@ -258,7 +267,8 @@ int main() {
 	fflush(stdout);
 
 	count = 0;
-	/*	for(i = 0; i<MAX_PREFIX; i++) {
+        asm("nop; /* Start of v4mapped test */");
+		for(i = 0; i<MAX_PREFIX; i++) {
 		if(v4mapped(p[i].prefix)) {
 			count++;
 			if(v4mapped_simd(p2[i].prefix) != 
@@ -266,7 +276,7 @@ int main() {
 				err++;
 		}
 	}
-	*/
+	
 	//for(i = 0; i<MAX_PREFIX; i++) {
 	//	V4MAPPED_E(p[i].prefix);
 	//}
