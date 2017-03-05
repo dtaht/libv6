@@ -45,7 +45,7 @@ register usimd cmp_src_mask asm ("q10");
 register usimd cmp_prefix_mask asm ("q11");
 register usimd bits96 asm ("q12");
 
-int init_simd() {
+static inline int init_simd() {
 
 /* Ideally this would also do a sanity check (are these regs
    allowed */
@@ -82,7 +82,7 @@ static inline size_t v6_equal (const usimd p1,
 static inline int
 v4nmapped(const usimd address)
 {
-    uint32x4_t up1 = vandq_u32(bits96,address);
+    usimd up1 = vandq_u32(bits96,address);
     return is_not_zero(veorq_u32(up1,v4_prefix));
 }
 
@@ -112,7 +112,7 @@ prefix_cmp(const usimd p1, unsigned char plen1,
 
     // FIXME this is incorrect - need to generate the mask
     
-    if(p2 != p1)
+    if(is_not_zero(p2) != is_not_zero(p1))
         return PST_DISJOINT;
 
     if(plen1 < plen2)

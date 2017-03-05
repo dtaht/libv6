@@ -38,6 +38,9 @@ bench_O3_neon: $(SRC) $(INCLUDES)
 bench_O3_aarch64: $(SRC) $(INCLUDES)
 	$(CROSSCC) $(CFLAGS) -O3 $(RESERVED) benchmark_data.c benchmarkregs.c -o $@
 
+bench_O3_aarch64.s: $(SRC) $(INCLUDES)
+	$(CROSSCC) $(CFLAGS) -O3 $(RESERVED) -S benchmarkregs.c -o $@
+
 # Compiler sanity check
 
 arm7_compiler: compiler.c
