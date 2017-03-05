@@ -2,7 +2,7 @@
 
 PROGS+=bench_Os bench_O1 bench_O2 bench_O3
 PROGS+=bench_Os_neon bench_O3_neon
-NEON=-DHAVE_NEON -mfpu=neon
+#NEON=-DHAVE_NEON -mfpu=neon
 #NEON=-DHAVE_NEON
 INCLUDES+=common.h native.h native_neon.h reset.h my_memcpy.h native_64bit.h
 INCLUDES+=native_sse2.h
@@ -15,7 +15,7 @@ CFLAGS=-std=gnu99 -g -Wall -DHAVE_64BIT_ARCH
 #H64=-DHAVE_SSE2
 H64=$(NEON)
 
-CROSSCC=aarch64-linux-gnu-gcc-5
+CROSSCC=aarch64-linux-gnu-gcc
 
 all: $(PROGS)
 
@@ -32,7 +32,7 @@ bench_Os_neon: $(SRC) $(INCLUDES)
 	$(CROSSCC) $(CFLAGS) -S -Os $(NEON) benchmark.c -o $@
 
 bench_O3_neon: $(SRC) $(INCLUDES)
-	$(CROSSCC) $(CFLAGS) -S -O3 $(NEON) benchmark.c -o $@
+	$(CROSSCC) $(CFLAGS) -S -O3 $(NEON) $(RESERVED) benchmark.c -o $@
 
 # Compiler sanity check
 
