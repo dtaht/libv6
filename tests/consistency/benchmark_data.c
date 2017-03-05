@@ -7,3 +7,6 @@ const unsigned char v4prefix[16] =
 
 const unsigned char llprefix[16] =
     {0xFE, 0x80};
+
+unsigned char testdata[1024];
+
