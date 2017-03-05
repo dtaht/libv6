@@ -5,6 +5,7 @@
 
 #ifndef NATIVE_NEON_H
 #define NATIVE_NEON_H
+#include <arm_neon.h>
 
 typedef uint32x4_t usimd;
 
@@ -81,7 +82,7 @@ static inline size_t v6_equal (const usimd p1,
 static inline int
 v4nmapped(const usimd address)
 {
-    uint32x4_t up1 = vandq_u32(bits96,address));
+    uint32x4_t up1 = vandq_u32(bits96,address);
     return is_not_zero(veorq_u32(up1,v4_prefix));
 }
 

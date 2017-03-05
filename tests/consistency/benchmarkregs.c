@@ -12,7 +12,11 @@
 #include <memory.h>
 #include <endian.h>
 #include <arpa/inet.h>
-#include "common.h"
+#include <arm_neon.h>
+
+typedef uint32x4_t usimd;
+
+#include "common_regs.h"
 #include "my_memcpy.h"
 
 #define MAX_PREFIX 1024
@@ -54,7 +58,7 @@
 #define v6_nequal v6_nequal_64bit
 #define v6_equal  v6_equal_64bit
 #define v4tov6 v4tov6_64bit
-#include "native_64bit.h"
+#include "native_neon_regs.h"
 #undef HAVE_64BIT_ARCH
 
 #include "reset.h"
@@ -62,7 +66,7 @@
 // And the baseline original tests are hard to compare
 
 #define init_simd init_native
-#include "native_regs.h"
+#include "native_neon_regs.h"
 #undef init_simd
 
 // Automate checks
@@ -104,21 +108,32 @@ unsigned char *random_prefix() {
 	return (unsigned char *) a;
 }
 
+typedef union Vec4 {
+    usimd p;
+  //    v4sf v;
+    float e[4];
+    int i[4];
+    unsigned int u[4];
+    unsigned char c[16];
+} Vec4_t;
+
 // I can imagine this also blowing up on people without the __thread
 
 const char *
-format_prefix(const unsigned char *prefix, unsigned char plen)
+format_prefix(const usimd prefix, unsigned char plen)
 {
     static __thread char buf[4][INET6_ADDRSTRLEN + 4] = {0};
     static __thread int i = 0;
     int n;
+    Vec4_t p2.m = prefix;
+    //    p2.m = prefix;
     i = (i + 1) % 4; // WTF in a 64 bit arch? Let you call this 4 times?
     if(plen >= 96 && v4mapped(prefix)) {
-	    inet_ntop(AF_INET, prefix + 12, buf[i], INET6_ADDRSTRLEN); // ??
+	    inet_ntop(AF_INET, &p2.c[12], buf[i], INET6_ADDRSTRLEN); // ??
         n = strlen(buf[i]);
         snprintf(buf[i] + n, INET6_ADDRSTRLEN + 4 - n, "/%d", plen - 96);
     } else {
-        inet_ntop(AF_INET6, prefix, buf[i], INET6_ADDRSTRLEN);
+      inet_ntop(AF_INET6, &p2.c, buf[i], INET6_ADDRSTRLEN);
         n = strlen(buf[i]);
         snprintf(buf[i] + n, INET6_ADDRSTRLEN + 4 - n, "/%d", plen);
     }
