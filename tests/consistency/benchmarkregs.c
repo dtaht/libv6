@@ -26,6 +26,7 @@ typedef uint32x4_t usimd;
 
 #include "reset.h"
 
+#define init_simd init_simd_simd
 #define v4mapped v4mapped_simd
 #define prefix_cmp prefix_cmp_simd
 #define v6_nequal v6_nequal_simd
@@ -71,6 +72,8 @@ typedef uint32x4_t usimd;
 #define init_simd init_native
 #include "native_neon_regs.h"
 #undef init_simd
+
+#include "reset.h"
 
 // Automate checks
 
@@ -166,7 +169,7 @@ int main() {
 	prefix_table *p4 = calloc(MAX_PREFIX,sizeof(prefix_table));
 	srandom(getpid());
 
-	init_simd(); // Initialize register constants early
+	init_simd_simd(); // Initialize register constants early
 
 	// FIXME - fill trailer with random garbage
 
@@ -275,6 +278,7 @@ int main() {
 
 	count2 = count3 = count = 0;
 
+	asm("nop; /* v6_equal start */");
 	for(i = 0; i<MAX_PREFIX; i++) {
 		if(v6_equal(ll,p[i].prefix)) count++;
 	}
