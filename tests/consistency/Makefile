@@ -6,6 +6,7 @@ PROGS+=bench_Os_neon bench_O3_neon
 #NEON=-DHAVE_NEON
 INCLUDES+=common.h native.h native_neon.h reset.h my_memcpy.h native_64bit.h
 INCLUDES+=native_sse2.h
+# FIXME this is different between arm7 and aarch64
 RESERVED=-ffixed-q4 -ffixed-q5 -ffixed-q6 -ffixed-q7
 
 SRC=benchmark.c benchmark_data.c
@@ -29,10 +30,13 @@ bench_O3: $(SRC) $(INCLUDES)
 	$(CC) $(CFLAGS) -O3 $(H64) $(SRC) -o $@
 
 bench_Os_neon: $(SRC) $(INCLUDES)
-	$(CROSSCC) $(CFLAGS) -S -Os $(NEON) benchmark.c -o $@
+	$(CROSSCC) $(CFLAGS) -Os $(NEON) benchmark.c -o $@
 
 bench_O3_neon: $(SRC) $(INCLUDES)
-	$(CROSSCC) $(CFLAGS) -S -O3 $(NEON) $(RESERVED) benchmark.c -o $@
+	$(CROSSCC) $(CFLAGS) -O3 $(NEON) $(RESERVED) benchmark.c -o $@
+
+bench_O3_aarch64: $(SRC) $(INCLUDES)
+	$(CROSSCC) $(CFLAGS) -O3 $(RESERVED) benchmark_data.c benchmarkregs.c -o $@
 
 # Compiler sanity check
 

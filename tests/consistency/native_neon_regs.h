@@ -63,7 +63,7 @@ int init_simd() {
      return 0;
 }
 
-static inline uint32_t is_not_zero(uint32x4_t v)
+static inline uint32_t is_not_zero(usimd v)
 {
     uint32x2_t tmp = vorr_u32(vget_low_u32(v), vget_high_u32(v));
     return vget_lane_u32(vpmax_u32(tmp, tmp), 0);
@@ -90,11 +90,15 @@ static inline size_t v4mapped (const usimd address) {
 	return !v4nmapped(address);
 }
 
+// This could do a simd return instead
 static inline void
-v4tov6(usimd *dst, const usimd *src)
+v4tov6(usimd *dst, const char *src)
 {
-    my_memcpy(dst, v4prefix, 12);
-    my_memcpy(dst + 12, src, 4);
+  usimd d = v4_prefix;
+  // incorrect also:
+  // FIXME my_memcpy(dst + 12, src, 4); // load the lane
+  // FIXME save everything to dst;
+  *dst = d;
 }
 
 static inline enum prefix_status
@@ -106,19 +110,10 @@ prefix_cmp(const usimd p1, unsigned char plen1,
     if(v4mapped(p1) != v4mapped(p2))
         return PST_DISJOINT;
 
-    if(memcmp(p1, p2, plen / 8) != 0)
+    // FIXME this is incorrect - need to generate the mask
+    
+    if(p2 != p1)
         return PST_DISJOINT;
-
-    if(plen % 8 != 0) {
-        int i = plen / 8 + 1;
-	// FIXME - does the shift differ for endianness?
-        unsigned char mask = (0xFF << (plen % 8)) & 0xFF;
-        if((p1[i] & mask) != (p2[i] & mask))
-            return PST_DISJOINT;
-    }
-    // FIXME: I don't see how we ever get here. Ah:
-    // fd99::1:/60
-    // fd99::1:/64
 
     if(plen1 < plen2)
         return PST_LESS_SPECIFIC;

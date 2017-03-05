@@ -126,7 +126,7 @@ format_prefix(const usimd prefix, unsigned char plen)
     static __thread int i = 0;
     int n;
     Vec4_t p2;
-    p2.m = prefix;
+    p2.p = prefix;
     i = (i + 1) % 4; // WTF in a 64 bit arch? Let you call this 4 times?
     if(plen >= 96 && v4mapped(prefix)) {
 	    inet_ntop(AF_INET, &p2.c[12], buf[i], INET6_ADDRSTRLEN); // ??
