@@ -1,3 +1,157 @@
+* Getting ones or zeros is it's own instruction now
+
+MOVI Vn.2D, #uimm64
+Move immediate (vector) : replicates a “byte mask immediate” consisting of 8 bytes, each byte having only
+the value 0x00 or 0xff, into each 64-bit element. 
+
+* RBIT exists in this arch
+
+* aarch 64 is different than I realized
+
+http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.den0024a/CEGDJGGC.html
+
+Writes of 64 bits or less to a vector register result in the higher bits being zeroed.
+
+A new set of vector reduction operations provide across-lane sum, minimum and maximum.
+
+Floating-point FCSEL and Select and Compare instructions, equivalent to the integer CSEL and CCMP have been added.
+
+Zero register"
+
+
+xzr wzr
+
+* NEON aarch64 sets the core conditional flags now
+
+art of the main instruction set / no longer optional
+■ Set the core condition flags (NZCV) rather than their own
+■ Easier to mix control and data flow with NEON
+
+
+file:///home/d/Downloads/Porting%20to%20ARM%2064-bit.pdf
+
+* I wonder at what point inlining stops being useful
+
+I am under the impression it's an 8 stage pipeline
+
+memset(a,0,16) str(xor(a,a); two instructions, 32? 
+
+* Other identities
+
+I wonder if a pre-compiler for the filtering language is possible
+in general?
+
+# More aggressive filtering ideas as a baseline for the campus network
+# I have long been filtering out hip, and me doing stress experiments
+# on fc::/8 fill me with terror if something accidentally escapes.
+
+# IPv4 Section
+
+# My network is on 20-23
+
+in ip 172.20.0.0/14 ge 14 allow
+in ip 172.16.0.0/12 ge 12 deny
+
+# ignore self assigned ips - I get these from boxes that didn't quite
+# get their wifi up in time, or after a crash somewhere else
+
+in ip 169.254.0.0/16 ge 16 deny
+
+# No other rfc19xx addresses allowed
+
+in ip 192.168.0.0/16 ge 16 deny # no 192.168 on my network
+in ip 10.0.0.0/8 ge 8 deny # no 10
+
+out ip 169.254.0.0/16 ge 16 deny # Don't export any either
+# FIXME - can be more aggressive about not exporting them.
+
+# IPv6 section
+
+# my management lan is on this
+in ip fd99::/64 ge 64 allow
+
+# My internal ULAs - le 64 is accepted syntax but didn't work
+#
+in ip fd5d:1c42:b40d::/48 ge 48 # le 64 allow
+
+# in ip fd5d:1c42:b40d:fffc:/62 ge 64 allow # My internal meshy networks
+# in ip fd5d:1c42:b40d:fffa:/64 ge 64 allow # internal anycast dns
+
+#in ip fdXX:YY::/48 ge 48 allow  # my new management lan is on this
+#in ip never:you:mind::/60 # my vpn tunnel is on this
+#in ip never:you:mind2::/60 # my other tunnel is on this
+
+in ip 2601::/20 ge 20 allow     # Comcast supplies dynamic ipv6 addresses
+                  # And I never know what they will hand me
+                  # next. I get 56, 60s, 64s
+                  # Presently the patter is 2601:646:
+#in ip 2601:646::/34 ?
+
+in ip fc::/8 ge 8 deny # I use fc for testing stuff
+in ip fd::/8 ge 8 deny # I am otherwise perpetually passing accidental v6 around
+
+# Block invalid ipv6 routes
+
+in ip 2001:db8::/32 ge 32 deny
+in ip 2002::/16 ge 16 deny
+in ip 2001::/32 ge 32 deny # teredo
+in ip 2001:10::/28 ge 28 deny # orchid this bugged me majorly once. HIP.
+# in ip ff00::/8 ge 8 deny # just because
+
+# Two VPNS - well these were originally 6to4 hurricane tunnels
+
+# Virtual machines
+# (Need to put up the risc-v box somewhere)
+
+# Source specific default routes allowed
+# src-prefix ::0/
+
+# Never allow a non-vpn address to talk to a vpn address
+
+# Do allow consistent tunneling
+
+# Special stuff (vpn edges)
+
+# Self section
+
+in ip 0.0.0.0/0 eq 0 allow # allow a default route
+
+# allow src-specific default routes only
+# FIXME
+# Fixme export these for RA as regular routes
+
+# I now inject the "right" addresses from address assignement and lede
+# via the new proto facility
+
+redistribute proto 44 #  metric 2048 # Tell the world about the ips I have
+redistribute local deny # Don't tell it about other ips I have
+
+# Don't allow in any other addresses to the real world
+# Don't allow spoofing 75.75.75.75 etc
+# Rely on default routes to get to the real world.
+# This minimizes the damage a rogue router announcing a default route to
+# the area around it
+
+in deny
+
+* Test idea
+
+Address to BGP route table lookup
+
+* printf
+
+union Vec4 {
+    v4sf v;
+    float e[4];
+    int i[4];
+    uint u[4];
+    uchar c[16];
+};
+
+Vec4 vec;
+vec.v = (v4sf){0.1f,0.2f,0.3f,0.4f};
+printf("%f %f %f %f\n", vec.e[0], vec.e[1], vec.e[2], vec.e[3]);
+
 * It's coming back to me.
 
 What I'd ended up doing was writing a custom gdb parser that let me 
