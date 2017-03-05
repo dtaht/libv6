@@ -63,12 +63,15 @@ static inline int init_simd() {
      return 0;
 }
 
-static inline uint32_t is_not_zero(usimd v)
+static inline size_t is_not_zero(usimd v)
 {
     // I keep thinking I should just be able to get the max from all
     // lanes and skip this step entirely. FIXME. UMAXV exists for
-    // all lanes in aarch64. armv7?
-  
+    // all lanes in aarch64, so we can return size_t. What's the
+  // intrinsic? armv7?
+
+  //    return vget_lane_u64(vpmax_u64(v,v), 0); 
+
     uint32x2_t tmp = vorr_u32(vget_low_u32(v), vget_high_u32(v));
     return vget_lane_u32(vpmax_u32(tmp, tmp), 0); 
 }
