@@ -8,7 +8,7 @@ INCLUDES+=common.h native.h native_neon.h reset.h my_memcpy.h native_64bit.h
 INCLUDES+=native_sse2.h
 INCLUDESNEON=common_regs.h native_neon_regs.h
 # FIXME this is different between arm7 and aarch64
-RESERVED=-ffixed-q4 -ffixed-q5 -ffixed-q6 -ffixed-q7
+RESERVED=-ffixed-q4 -ffixed-q5 -ffixed-q6 -ffixed-q7 -flax-vector-conversions -fverbose-asm
 
 SRC=benchmark.c benchmark_data.c
 #CFLAGS=-std=c11 -g -Wall c11 doesn't have the !@# endian macros
@@ -45,6 +45,15 @@ bench_O3_aarch64.o: $(SRC) $(INCLUDES) $(INCLUDESNEON)
 bench_O3_aarch64.s: $(SRC) $(INCLUDES) $(INCLUDESNEON)
 	$(CROSSCC) $(CFLAGS) -O3 $(RESERVED) -S benchmarkregs.c -o $@
 
+testregs: $(SRC) $(INCLUDES) $(INCLUDESNEON)
+	$(CROSSCC) $(CFLAGS) -O3 $(RESERVED) benchmark_data.c testregs.c -o $@
+
+testregs.o: $(SRC) $(INCLUDES) $(INCLUDESNEON)
+	$(CROSSCC) $(CFLAGS) -O3 $(RESERVED) testregs.c -c -o $@
+
+testregs.s: $(SRC) $(INCLUDES) $(INCLUDESNEON)
+	$(CROSSCC) $(CFLAGS) -O3 $(RESERVED) -S testregs.c -o $@
+
 # Compiler sanity check
 
 arm7_compiler: compiler.c
@@ -69,4 +78,4 @@ run: 	$(PROGS)
 	./bench_O3
 
 clean: 
-	rm -f $(PROGS) gmon.out
+	rm -f $(PROGS) gmon.out *.s *.o
