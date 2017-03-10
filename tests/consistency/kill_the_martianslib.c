@@ -7,6 +7,15 @@
 
 #include "kill_the_martians.h"
 
+// The original routine was NOT inlined
+
+int
+v4mapped_orig(const unsigned char *address)
+{
+    return memcmp(address, v4prefix, 12) == 0;
+}
+
+
 const unsigned char v4prefix[16] =
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, 0, 0, 0, 0 };
 

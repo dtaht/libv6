@@ -16,6 +16,10 @@
 extern const unsigned char v4prefix[16];
 extern const unsigned char zeroes[16];
 
+// The original routine was opaque
+
+extern int v4mapped_orig(const unsigned char *address);
+
 typedef struct {
 	unsigned char p[16];
 	int plen;
@@ -58,7 +62,10 @@ static inline unsigned long get_clock(void)
 #endif
 }
 #endif
-#else
+#endif
+
+#if 1
+#ifdef __arm__
 extern int fddev;
 static inline long long
 get_clock(void)
@@ -67,6 +74,7 @@ get_clock(void)
  if (read(fddev, &result, sizeof(result)) < sizeof(result)) return 0;
  return result;
 }
+#endif
 #endif
 
 extern void fool_compiler(prefix *p);

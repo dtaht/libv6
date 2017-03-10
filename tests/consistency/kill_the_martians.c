@@ -3,13 +3,6 @@
 
 #include "kill_the_martians.h"
 
-static inline int
-v4mapped_orig(const unsigned char *address)
-{
-    return memcmp(address, v4prefix, 12) == 0;
-}
-
-
 static inline size_t
 v4mapped(const unsigned char *address)
 {
@@ -34,7 +27,7 @@ martian_prefix_old(const unsigned char *prefix, int plen)
         (plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80) ||
         (plen >= 128 && memcmp(prefix, zeroes, 15) == 0 &&
          (prefix[15] == 0 || prefix[15] == 1)) ||
-        (plen >= 96 && v4mapped(prefix) &&
+        (plen >= 96 && v4mapped_orig(prefix) &&
          ((plen >= 104 && (prefix[12] == 127 || prefix[12] == 0)) ||
           (plen >= 100 && (prefix[12] & 0xE0) == 0xE0))))
         return true;
