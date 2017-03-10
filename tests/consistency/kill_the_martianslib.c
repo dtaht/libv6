@@ -33,13 +33,7 @@ prefix * gen_random_prefixes(int count) {
 	return p;
 }
 
-int start_clock(void) {
-	return 0;
-}
 
-int stop_clock(void) {
-	return 0;
-}
 
 // Sometimes I think passing the additonal typing along (*[16]) universally might be of help
 

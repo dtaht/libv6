@@ -85,6 +85,40 @@ v4nmapped(const usimd address)
     return is_not_zero(veorq_u32(up1,v4_prefix));
 }
 
+static inline int
+v4nmapped_dual(const usimd address1, const usimd address2)
+{
+    uint32x4_t up1 = vandq_u32(bits96,address1));
+    uint32x4_t up2 = vandq_u32(bits96,address2));
+    up1 = veorq_u32(up1,v4_prefix); 
+    up2 = veorq_u32(up2,v4_prefix);
+    /* truth table: 0 0  both are v4_mapped
+                    1234 5432 both are not v4_mapped
+                    0 1234 one is not v4_mapped and the other is
+
+       the result we want is true when both are or are not v4_mapped
+       they are disjoint. And my brain crashes. AND-NOT?.
+
+       an eor gets me 1111s. 
+       an or gets me a random value. 
+       a not gets me 1111s or another random value. Hmm... lets try another
+       way.
+       a successful eq against the v4_prefix gets me 1111s across the board...
+       nand of bits 48? not and? what?
+
+       moving further down to where this is called we care if they are
+       fully equal and if fully disjoint...
+       perhaps some of my problem is that my representation of a v4
+       prefix is wrong. We cannot have a v4 prefix that is all ones or
+       all zeros, by definition of ipv4. , so in a true comparison for
+       is this a v4 prefix, we need all zeroes high, the ones indicating
+       and random bits in the lowest 4 bytes. But is a default route 
+	a zero? Aggh.. brain crash.*/
+
+     // fixme, wrong 
+     return is_not_zero(veorq_u32(vorq_u32(up1,up2),v4_prefix));
+}
+
 static inline size_t v4mapped (const usimd address) {
 	return !v4nmapped(address);
 }

@@ -19,6 +19,22 @@ CROSSCC=aarch64-linux-gnu-gcc-5
 
 all: $(PROGS)
 
+kill_the_martians: kill_the_martians.c kill_the_martians.h kill_the_martianslib.c
+	$(CC) $(CFLAGS) -Os kill_the_martians.c kill_the_martianslib.c -o $@
+
+kill_the_martians.s: kill_the_martians.c kill_the_martians.h kill_the_martianslib.c
+	$(CC) $(CFLAGS) -fverbose-asm -S -Os kill_the_martians.c -o $@
+
+kill_the_martians_O3.s: kill_the_martians.c kill_the_martians.h kill_the_martianslib.c
+	$(CC) $(CFLAGS) -O3 -fverbose-asm -S kill_the_martians.c -o $@
+
+kill_the_martians_O3.o: kill_the_martians.c kill_the_martians.h kill_the_martianslib.c
+	$(CC) $(CFLAGS) -O3 -c -fverbose-asm kill_the_martians.c -o $@
+
+kill_the_martians.o: kill_the_martians.c kill_the_martians.h kill_the_martianslib.c
+	$(CC) $(CFLAGS) -Os -c -fverbose-asm kill_the_martians.c -o $@
+
+
 bench_Os: $(SRC) $(INCLUDES)
 	$(CC) $(CFLAGS) -Os $(H64) $(SRC) -o $@
 bench_O1: $(SRC) $(INCLUDES)

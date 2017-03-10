@@ -31,8 +31,33 @@ extern int count_martian_prefixes_new(prefix *p, int count);
 extern int count_martian_prefixes_old(prefix *p, int count);
 extern prefix * gen_random_prefixes(int count);
 
-extern int start_clock(void);
-extern int stop_clock(void);
+#ifdef __x86_64__
+// x86_64 specific for now
+
+static inline unsigned long get_clock(void) {
+  unsigned a, d;
+  asm volatile("rdtsc" : "=a" (a), "=d" (d));
+  return ((unsigned long)a) | (((unsigned long)d) << 32);
+}
+
+#endif
+
+// http://neocontra.blogspot.com/2013/05/user-mode-performance-counters-for.html
+
+// from the bad old days http://hardwarebug.org/2010/01/14/beware-the-builtins/
+
+#ifdef __arm__
+static inline unsigned int get_clock(void)
+{
+#if defined(__GNUC__) && defined(__ARM_ARCH_7A__)
+        uint32_t r = 0;
+        asm volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(r) );
+        return r;
+#endif
+}
+#endif
+
+
 extern void fool_compiler(prefix *p);
 
 #endif
