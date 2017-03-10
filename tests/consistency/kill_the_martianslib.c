@@ -15,6 +15,10 @@ const unsigned char llprefix[16] =
 
 const unsigned char zeroes[16] = { 0 };
 
+#ifdef __arm__
+#include "perfevents.c"
+#endif
+
 unsigned char *random_prefix() {
 	static __thread unsigned int a[4] = {0};
 	a[0] = random();
@@ -32,8 +36,6 @@ prefix * gen_random_prefixes(int count) {
 	}
 	return p;
 }
-
-
 
 // Sometimes I think passing the additonal typing along (*[16]) universally might be of help
 

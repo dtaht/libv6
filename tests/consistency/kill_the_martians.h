@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 
 extern const unsigned char v4prefix[16];
@@ -46,8 +47,9 @@ static inline unsigned long get_clock(void) {
 
 // from the bad old days http://hardwarebug.org/2010/01/14/beware-the-builtins/
 
+#if 0
 #ifdef __arm__
-static inline unsigned int get_clock(void)
+static inline unsigned long get_clock(void)
 {
 #if defined(__GNUC__) && defined(__ARM_ARCH_7A__)
         uint32_t r = 0;
@@ -56,7 +58,16 @@ static inline unsigned int get_clock(void)
 #endif
 }
 #endif
-
+#else
+extern int fddev;
+static inline long long
+get_clock(void)
+{
+ long long result = 0;
+ if (read(fddev, &result, sizeof(result)) < sizeof(result)) return 0;
+ return result;
+}
+#endif
 
 extern void fool_compiler(prefix *p);
 

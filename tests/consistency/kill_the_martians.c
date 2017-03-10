@@ -101,10 +101,10 @@ martian_prefix_new(const unsigned char *prefix, int plen)
 
 //#define PREFIXES 512 /* don't stress the dcache overmuch */
 //#define PREFIXES 512 /* don't stress the dcache overmuch */
-#define PREFIXES 512 /* don't stress the dcache overmuch */
+#define PREFIXES 256 /* don't stress the dcache overmuch */
 
 int main() {
-	unsigned long a,b,c,d;
+        unsigned long a,b,c,d;
 	int v1,v2;
 	double fp1, fp2;
 	prefix *prefixes = gen_random_prefixes(PREFIXES);
