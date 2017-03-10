@@ -6,3 +6,5 @@ bench_O1
 bench_O2
 bench_O3
 bench_Os
+kill_the_martians*.o
+kill_the_martians*.s
