@@ -1,0 +1,22 @@
+ifneq ($(KERNELRELEASE),)
+
+# kbuild part of makefile
+
+CFLAGS_perfcnt_enable.o := -DDEBUG
+obj-m := perfcnt_enable.o
+
+else
+
+# normal makefile
+
+KDIR ?= /lib/modules/$(shell uname -r)/build
+
+module:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules
+
+clean:
+	$(MAKE) -C $(KDIR) M=$(PWD) clean
+
+.PHONY: module clean
+
+endif
