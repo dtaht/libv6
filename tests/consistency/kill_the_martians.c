@@ -18,7 +18,7 @@ v4mapped(const unsigned char *address)
 }
 
 /* The problem with the original routine is that it can essentially
-   execute all paths */
+   execute all paths, and the v4mapped call was in a separate library entirely */
 
 int
 martian_prefix_old(const unsigned char *prefix, int plen)
@@ -94,7 +94,7 @@ martian_prefix_new(const unsigned char *prefix, int plen)
 
 //#define PREFIXES 512 /* don't stress the dcache overmuch */
 //#define PREFIXES 512 /* don't stress the dcache overmuch */
-#define PREFIXES 256 /* don't stress the dcache overmuch */
+#define PREFIXES 512 /* don't stress the dcache overmuch */
 
 int main() {
         unsigned long a,b,c,d;
