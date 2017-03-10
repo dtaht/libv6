@@ -2,11 +2,13 @@
 
 PROGS+=bench_Os bench_O1 bench_O2 bench_O3
 PROGS+=bench_Os_neon bench_O3_neon
-NEON=-DHAVE_NEON -mfpu=neon
+#NEON=-DHAVE_NEON -mfpu=neon
 #NEON=-DHAVE_NEON
 INCLUDES+=common.h native.h native_neon.h reset.h my_memcpy.h native_64bit.h
 INCLUDES+=native_sse2.h
-RESERVED=-ffixed-q4 -ffixed-q5 -ffixed-q6 -ffixed-q7
+INCLUDESNEON=common_regs.h native_neon_regs.h
+# FIXME this is different between arm7 and aarch64
+RESERVED=-ffixed-q4 -ffixed-q5 -ffixed-q6 -ffixed-q7 -flax-vector-conversions -fverbose-asm
 
 SRC=benchmark.c benchmark_data.c
 #CFLAGS=-std=c11 -g -Wall c11 doesn't have the !@# endian macros
@@ -15,7 +17,7 @@ CFLAGS=-std=gnu99 -g -Wall -DHAVE_64BIT_ARCH
 #H64=-DHAVE_SSE2
 H64=$(NEON)
 
-CROSSCC=aarch64-linux-gnu-gcc-5
+CROSSCC=aarch64-linux-gnu-gcc
 
 all: $(PROGS)
 
@@ -45,10 +47,28 @@ bench_O3: $(SRC) $(INCLUDES)
 	$(CC) $(CFLAGS) -O3 $(H64) $(SRC) -o $@
 
 bench_Os_neon: $(SRC) $(INCLUDES)
-	$(CROSSCC) $(CFLAGS) -S -Os $(NEON) benchmark.c -o $@
+	$(CROSSCC) $(CFLAGS) -Os $(NEON) benchmark.c -o $@
 
 bench_O3_neon: $(SRC) $(INCLUDES)
-	$(CROSSCC) $(CFLAGS) -S -O3 $(NEON) benchmark.c -o $@
+	$(CROSSCC) $(CFLAGS) -O3 $(NEON) $(RESERVED) benchmark.c -o $@
+
+bench_O3_aarch64: $(SRC) $(INCLUDES) $(INCLUDESNEON)
+	$(CROSSCC) $(CFLAGS) -O3 $(RESERVED) benchmark_data.c benchmarkregs.c -o $@
+
+bench_O3_aarch64.o: $(SRC) $(INCLUDES) $(INCLUDESNEON)
+	$(CROSSCC) $(CFLAGS) -O3 $(RESERVED) benchmarkregs.c -c -o $@
+
+bench_O3_aarch64.s: $(SRC) $(INCLUDES) $(INCLUDESNEON)
+	$(CROSSCC) $(CFLAGS) -O3 $(RESERVED) -S benchmarkregs.c -o $@
+
+testregs: $(SRC) $(INCLUDES) $(INCLUDESNEON)
+	$(CROSSCC) $(CFLAGS) -O3 $(RESERVED) benchmark_data.c testregs.c -o $@
+
+testregs.o: $(SRC) $(INCLUDES) $(INCLUDESNEON)
+	$(CROSSCC) $(CFLAGS) -O3 $(RESERVED) testregs.c -c -o $@
+
+testregs.s: $(SRC) $(INCLUDES) $(INCLUDESNEON)
+	$(CROSSCC) $(CFLAGS) -O3 $(RESERVED) -S testregs.c -o $@
 
 # Compiler sanity check
 
@@ -74,4 +94,4 @@ run: 	$(PROGS)
 	./bench_O3
 
 clean: 
-	rm -f $(PROGS) gmon.out
+	rm -f $(PROGS) gmon.out *.s *.o

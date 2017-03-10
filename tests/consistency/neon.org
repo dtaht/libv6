@@ -1,3 +1,463 @@
+* Another crazy idea
+
+Instead of holding the protocol constant in the kernel, use one per routerid and flip their metrics around to suit.
+
+Or use tables to do this. The kernel flushes a given route from a table for us, the other takes over.
+
+Think about this.
+
+
+root@dancer:~# ip -6 route add fc87::/64 dev eno1 table 902 proto 45 metric 1025 
+root@dancer:~# ip -6 route add fc87::/64 dev eno1 table 903 proto 45 metric 1025 
+root@dancer:~# ip -6 route show proto 45 (or flush)
+doesn't work, we have to know the table
+
+We can flush with a single proto patch
+
+RTNETLINK answers: File exists
+root@dancer:~# ip -6 route add fc80::/64 dev eno1 proto 46 metric 1025
+root@dancer:~# ip -6 route add fc80::/64 dev eno1 proto 47 metric 1026
+root@dancer:~# ip -6 route show | grep fc80
+fc80::/64 dev eno1 proto 45 metric 1024  pref medium
+fc80::/64 dev eno1 proto 46 metric 1025  pref medium
+fc80::/64 dev eno1 proto 47 metric 1026  pref medium
+
+Or one per oid? We only allow 20 interfaces currently...
+**
+
+root@dancer:~# ip route replace fc66::/64 metric 1025 metric 1027
+RTNETLINK answers: No such device
+root@dancer:~# ip route replace fc66::/64 dev eno1 metric 1025 metric 1027
+root@dancer:~# ip -6 route show fc66
+Error: inet prefix is expected rather than "fc66".
+root@dancer:~# ip -6 route show | grep fc66
+fc66::/64 dev eno1 metric 1024  pref medium
+fc66::/64 dev eno1 metric 1025  pref medium
+fc66::/64 dev eno1 metric 1026  pref medium
+fc66::/64 dev eno1 metric 1027  pref medium
+root@dancer:~# ip route change fc66::/64 dev eno1 metric 1027 metric 1028
+RTNETLINK answers: No such file or directory
+root@dancer:~# ip route change fc66::/64 dev eno1 metric 1025 metric 1028
+RTNETLINK answers: No such file or directory
+
+
+[sudo] password for d: 
+root@dancer:~/git/libv6/tests/consistency# cd
+root@dancer:~# ip route add fc66::/64 dev eno1
+root@dancer:~# ip route add fc66::/64 dev eno1 metric 1025
+root@dancer:~# ip route add fc66::/64 dev eno1 metric 1026
+
+
+* Keep wanting to use the plen for garbage collection
+
+255 or 129 = source specific
+
+or the pointer with a ton of extra bits left over
+
+* Unify metric table?
+
+If we have 5 routers, they might all basically have each roughly
+the same metric for a given route, and we don't need to recalculate them all.
+
+So we sort by routerids and merge metrics and then only have to solve for
+uncommon metrics between tem.
+
+
+we can also announce less if we had a way of merging stuff this way
+
+
+* RCU essentially the metric comparisons
+
+so we can interrupt a calculation in the middle and get a hello out
+
+Can also, then, essentially thread this portion of things.
+
+* Alternative sorting structure
+keep one source specific table (by 128 plen ptrs)
+keep one regular structure (by 128 plen ptrs)
+Use a bitmask to distinguish between which have values and which don't and use
+ffs to move between them.
+
+(common values for me are 48, 56, 60, 64, 128 for ipv6, and 16, 20, 22, 24, 32 for ipv4)
+
+* Radix sort rather than quicksort
+
+quicksort works against any length value. Radix works against fixed values.
+
+* Vector saturating subtract (to zero?)
+
+int32x4_t  vqsubq_s32(int32x4_t a, int32x4_t b);   // VQSUB.S32 q0,q0,q0
+
+
+* BIC
+
+. AND-NOT lets you use the same mask to set bits (with OR) or clear
+bits (with AND-NOT). I guess the SSE architects wanted to save an
+opcode, and in practice, you’ll find AND-NOT more useful than NOT. BTW
+the fastest way to set an XMM register to all ones (0xFFFF….FFFF) is
+to compare the register to itself; i.e.:
+
+https://mischasan.wordpress.com/2011/04/04/what-is-sse-good-for-2-bit-vector-operations/
+
+
+* 
+
+Initialize a vector from a literal bit pattern
+These intrinsics create a vector from a literal bit pattern.
+int8x8_t    vcreate_s8(uint64_t a);   // VMOV d0,r0,r0
+
+// Set all lanes to the same value (255?)
+uint32x4_t  vdupq_n_u32(uint32_t value);
+
+Vector saturating narrow integer
+
+//uint32x2_t vqmovn_u64(uint64x2_t a);  // VQMOVN.U64 d0,q0
+
+uint16x4_t vqmovn_u32(uint32x4_t a);  // VQMOVN.U32 d0,q0
+
+
+Bitwise Select
+
+* TODO Heh. I was hoist by my own compile guards in the benchmark.
+
+Calling the neon intrinsics twice.
+
+* Some useful looking intrinsics
+
+  //    uint64x2_t tmp = vorr_u32(vget_low_u32(v), vget_high_u32(v));
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+veorq_s16 (int16x8_t __a, int16x8_t __b)
+{
+  return __a ^ __b;
+}
+
+
+
+__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
+vbicq_u64 (uint64x2_t __a, uint64x2_t __b)
+{
+  return __a & ~__b;
+}
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vpmax_f32 (float32x2_t a, float32x2_t b)
+{
+  float32x2_t result;
+  __asm__ ("fmaxp %0.2s, %1.2s, %2.2s"
+           : "=w"(result)
+           : "w"(a), "w"(b)
+           : /* No clobbers */);
+  return result;
+}
+
+__extension__ static __inline float64_t __attribute__ ((__always_inline__))
+vpmaxnmqd_f64 (float64x2_t a)
+{
+  float64_t result;
+  __asm__ ("fmaxnmp %d0,%1.2d"
+           : "=w"(result)
+           : "w"(a)
+           : /* No clobbers */);
+  return result;
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vpmaxq_u32 (uint32x4_t a, uint32x4_t b)
+{
+  uint32x4_t result;
+  __asm__ ("umaxp %0.4s, %1.4s, %2.4s"
+           : "=w"(result)
+           : "w"(a), "w"(b)
+           : /* No clobbers */);
+  return result;
+}
+
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vpmaxq_u32 (uint32x4_t a, uint32x4_t b)
+{
+  uint32x4_t result;
+  __asm__ ("umaxp %0.4s, %1.4s, %2.4s"
+           : "=w"(result)
+           : "w"(a), "w"(b)
+           : /* No clobbers */);
+  return result;
+}
+
+Hah. I wondered how they created zeros.
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vqmovn_high_s32 (int16x4_t a, int32x4_t b)
+{
+  int16x8_t result = vcombine_s16 (a, vcreate_s16 (__AARCH64_UINT64_C (0x0)));
+  __asm__ ("sqxtn2 %0.8h, %1.4s"
+           : "+w"(result)
+           : "w"(b)
+           : /* No clobbers */);
+  return result;
+}
+
+#define vqrshrn_high_n_s64(a, b, c)                                     \
+  __extension__                                                         \
+    ({                                                                  \
+       int64x2_t b_ = (b);                                              \
+       int32x2_t a_ = (a);                                              \
+       int32x4_t result = vcombine_s32                                  \
+                            (a_, vcreate_s32                            \
+                                   (__AARCH64_UINT64_C (0x0)));         \
+       __asm__ ("sqrshrn2 %0.4s, %1.2d, #%2"                            \
+                : "+w"(result)                                          \
+                : "w"(b_), "i"(c)                                       \
+                : /* No clobbers */);                                   \
+       result;                                                          \
+     })
+
+#define vset_lane_u8(a, b, c)                                           \
+  __extension__                                                         \
+    ({                                                                  \
+       uint8x8_t b_ = (b);                                              \
+       uint8_t a_ = (a);                                                \
+       uint8x8_t result;                                                \
+       __asm__ ("ins %0.b[%3], %w1"                                     \
+                : "=w"(result)                                          \
+                : "r"(a_), "0"(b_), "i"(c)                              \
+                : /* No clobbers */);                                   \
+       result;                                                          \
+     })
+
+Does this mean I can store a single byte?
+
+    #define vst1_lane_u8(a, b, c)                                           \
+  __extension__                                                         \
+    ({                                                                  \
+       uint8x8_t b_ = (b);                                              \
+       uint8_t * a_ = (a);                                              \
+       __asm__ ("st1 {%1.b}[%2],[%0]"                                   \
+                :                                                       \
+                : "r"(a_), "w"(b_), "i"(c)                              \
+                : "memory");                                            \
+     })
+
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vsubhn_high_u32 (uint16x4_t a, uint32x4_t b, uint32x4_t c)
+
+Yes virginia, you cand load 4 lanes
+in one shot. There is a union in my future.
+
+__LD2_LANE_FUNC (int64x2x2_t, int64_t, 2d, d, s64, q)
+
+__ST4_LANE_FUNC (uint32x4x4_t, uint32_t, v4si, si, u32)
+
+What's the eq
+mean?
+
+
+vqdmulhq_laneq_s32 (int32x4_t __a, int32x4_t __b, const int __c)
+{
+  return __builtin_aarch64_sqdmulh_laneqv4si (__a, __b, __c);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vqtbl2_u8 (uint8x16x2_t tab, uint8x8_t idx)
+{
+  uint8x8_t result;
+  __asm__ ("ld1 {v16.16b, v17.16b}, %1\n\t"
+           "tbl %0.8b, {v16.16b, v17.16b}, %2.8b\n\t"
+           :"=w"(result)
+           :"Q"(tab),"w"(idx)
+           :"memory", "v16", "v17");
+  return result;
+}
+
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vqtbx1_s8 (int8x8_t r, int8x16_t tab, uint8x8_t idx)
+{
+  int8x8_t result = r;
+  __asm__ ("tbx %0.8b,{%1.16b},%2.8b"
+           : "+w"(result)
+           : "w"(tab), "w"(idx)
+           : /* No clobbers */);
+  return result;
+}
+
+shift
+
+We already know they are equal to the size
+of the mask. A further subtract will yield
+postive, negative, or equal (0) to the size of the largest
+one
+
+we put in both masks and don't compare
+them
+
+can we abuse fp?
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vceqq_u8 (uint8x16_t __a, uint8x16_t __b)
+{
+  return (uint8x16_t) __builtin_aarch64_cmeqv16qi ((int8x16_t) __a,
+                                                   (int8x16_t) __b);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vceqzq_u8 (uint8x16_t __a)
+{
+  uint8x16_t __b = {0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0};
+  return (uint8x16_t) __builtin_aarch64_cmeqv16qi ((int8x16_t) __a,
+                                                   (int8x16_t) __b);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vdup_laneq_u32 (uint32x4_t __a, const int __b)
+{
+  return __aarch64_vdup_laneq_u32 (__a, __b);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vext_s8 (int8x8_t __a, int8x8_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 8);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint8x8_t)
+      {8-__c, 9-__c, 10-__c, 11-__c, 12-__c, 13-__c, 14-__c, 15-__c});
+#else
+  return __builtin_shuffle (__a, __b,
+      (uint8x8_t) {__c, __c+1, __c+2, __c+3, __c+4, __c+5, __c+6, __c+7});
+#endif
+}
+
+It was not clearn this needed four instructions
+to express. 
+
+__extension__ static __inline uint64x1x4_t __attribute__ ((__always_inline__))
+vld4_u64 (const uint64_t * __a)
+{
+  uint64x1x4_t ret;
+  __builtin_aarch64_simd_xi __o;
+  __o = __builtin_aarch64_ld4di ((const __builtin_aarch64_simd_di *) __a);
+  ret.val[0] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 0);
+  ret.val[1] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 1);
+  ret.val[2] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 2);
+  ret.val[3] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 3);
+  return ret;
+}
+
+__extension__ static __inline uint64x2x4_t __attribute__ ((__always_inline__))
+vld4q_u64 (const uint64_t * __a)
+{ 
+  uint64x2x4_t ret;
+  __builtin_aarch64_simd_xi __o;
+  __o = __builtin_aarch64_ld4v2di ((const __builtin_aarch64_simd_di *) __a);
+  ret.val[0] = (uint64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 0);
+  ret.val[1] = (uint64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 1);
+  ret.val[2] = (uint64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 2);
+  ret.val[3] = (uint64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 3);
+  return ret;
+} 
+
+
+__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
+vmaxv_u32 (uint32x2_t __a)
+{
+  return vget_lane_u32 ((uint32x2_t)
+                __builtin_aarch64_reduc_umax_v2si ((int32x2_t) __a),
+                0);
+}
+
+This is basically my isnotzer
+
+__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
+vmaxvq_u32 (uint32x4_t __a)
+{
+  return vgetq_lane_u32 ((uint32x4_t)
+                __builtin_aarch64_reduc_umax_v4si ((int32x4_t) __a),
+                0);
+}
+
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vmla_laneq_s32 (int32x2_t __a, int32x2_t __b,
+                int32x4_t __c, const int __lane)
+{
+  return (__a + (__b * __aarch64_vgetq_lane_s32 (__c, __lane)));
+}
+
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vmla_laneq_s32 (int32x2_t __a, int32x2_t __b,
+                int32x4_t __c, const int __lane)
+{
+  return (__a + (__b * __aarch64_vgetq_lane_s32 (__c, __lane)));
+}
+
+__extension__ static __inline int16_t __attribute__ ((__always_inline__))
+vqmovns_s32 (int32_t __a)
+{
+  return (int16_t) __builtin_aarch64_sqmovnsi (__a);
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vrev16q_p8 (poly8x16_t a)
+{
+  return __builtin_shuffle (a,
+      (uint8x16_t) { 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14 });
+}
+
+
+vrshl_u8 (uint8x8_t __a, int8x8_t __b)
+{
+  return __builtin_aarch64_urshlv8qi_uus (__a, __b);
+}
+
+static __inline uint32_t
+vsha1h_u32 (uint32_t hash_e)
+{
+  return __builtin_aarch64_crypto_sha1hsi_uu (hash_e);
+}
+
+This takes a constant int? but??
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vshlq_n_s64 (int64x2_t __a, const int __b)
+{
+  return (int64x2_t) __builtin_aarch64_ashlv2di (__a, __b);
+}
+
+* Can we sse the cost calc?
+
+    unsigned short refmetric;
+    unsigned short cost;
+    unsigned short add_metric;
+    unsigned short seqno;
+
+We could also break out the metric
+table from the main route table
+and crunch it seperately
+
+** Aarm 64 bit api
+8 params passed forward and back in regs
+r9-r15 are scratchr19-r28 are callee saved
+
+
+te Unlike in AArch32, in AArch64 the 128-bit and 64-bit views of a SIMD and Floating-Point register do not
+overlap
+
+simd - v0-v7 are subroutine call/retrun
+v8-v15 must be preserved 
+v16-v31 must not be preserved
+
+dumb:
+
+Additionally, only the bottom 64-bits of each
+value stored in v8-v15 need to be preserved1
+The FPSR is a status register that holds the cumulative exception bits of the floating-point unit. It contains the
+fields IDC, IXC, UFC, OFC, DZC, IOC and QC. These fields are not preserved across a public interface and 
+
+
 * Getting ones or zeros is it's own instruction now
 
 MOVI Vn.2D, #uimm64
