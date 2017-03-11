@@ -62,4 +62,20 @@ int count_martian_prefixes_new(prefix *p, int count) {
 	return c;
 }
 
+int count_martian_prefixes_new_single(prefix *p, prefix *p2, int count) {
+	int c = 0;
+	for(int i=0;i<count;i++)
+		c += martian_prefix_new((const unsigned char*)&p[i].p,p[i].plen) ||
+			martian_prefix_new((const unsigned char*)&p2[i].p,p2[i].plen);
+	return c;
+}
+
+int count_martian_prefixes_new_dual(prefix *p, prefix *p2, int count) {
+	int c = 0;
+	for(int i=0;i<count;i++)
+		c += martian_prefix_new_dual((const unsigned char*)&p[i].p,p[i].plen,
+					(const unsigned char*)&p2[i].p,p2[i].plen);
+	return c;
+}
+
 void fool_compiler(prefix *p) {}

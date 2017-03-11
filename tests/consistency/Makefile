@@ -24,6 +24,9 @@ all: $(PROGS)
 kill_the_martians: kill_the_martians.c kill_the_martians.h kill_the_martianslib.c
 	$(CC) $(CFLAGS) -Os kill_the_martians.c kill_the_martianslib.c -o $@
 
+kill_the_martians_O3: kill_the_martians.c kill_the_martians.h kill_the_martianslib.c
+	$(CC) $(CFLAGS) -O3 kill_the_martians.c kill_the_martianslib.c -o $@
+
 kill_the_martians.s: kill_the_martians.c kill_the_martians.h kill_the_martianslib.c
 	$(CC) $(CFLAGS) -fverbose-asm -S -Os kill_the_martians.c -o $@
 

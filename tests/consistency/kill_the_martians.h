@@ -31,9 +31,15 @@ martian_prefix_new(const unsigned char *prefix, int plen);
 extern int
 martian_prefix_old(const unsigned char *prefix, int plen);
 
-
 extern int count_martian_prefixes_new(prefix *p, int count);
 extern int count_martian_prefixes_old(prefix *p, int count);
+extern int count_martian_prefixes_new_dual(prefix *p, prefix *p2, int count);
+extern int count_martian_prefixes_new_single(prefix *p, prefix *p2, int count);
+
+extern int
+martian_prefix_new_dual(const unsigned char *prefix, int plen,
+			const unsigned char *prefix1, int plen2);
+
 extern prefix * gen_random_prefixes(int count);
 
 #ifdef __x86_64__
