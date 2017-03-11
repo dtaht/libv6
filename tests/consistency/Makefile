@@ -2,7 +2,7 @@
 
 PROGS+=bench_Os bench_O1 bench_O2 bench_O3
 PROGS+=bench_Os_neon bench_O3_neon
-#NEON=-DHAVE_NEON -mfpu=neon
+NEON=-DHAVE_NEON -mfpu=neon -mcpu=cortex-a7 -mfloat-abi=hard
 #NEON=-DHAVE_NEON
 INCLUDES+=common.h native.h native_neon.h reset.h my_memcpy.h native_64bit.h
 INCLUDES+=native_sse2.h
@@ -12,7 +12,7 @@ RESERVED=-ffixed-q4 -ffixed-q5 -ffixed-q6 -ffixed-q7 -flax-vector-conversions -f
 
 SRC=benchmark.c benchmark_data.c
 #CFLAGS=-std=c11 -g -Wall c11 doesn't have the !@# endian macros
-CFLAGS=-std=gnu99 -g -Wall -DHAVE_64BIT_ARCH
+CFLAGS=-std=gnu99 -Wall $(NEON)
 #NATIVEARCH=$(())
 #H64=-DHAVE_SSE2
 H64=$(NEON)

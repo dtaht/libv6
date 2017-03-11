@@ -21,7 +21,7 @@ v4mapped(const unsigned char *address)
    execute all paths, and the v4mapped call was in a separate library entirely */
 
 int
-martian_prefix_lessold(const unsigned char *prefix, int plen)
+martian_prefix_old(const unsigned char *prefix, int plen)
 {
         if((plen >= 8 && prefix[0] == 0xFF) ||
         (plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80) ||
@@ -36,7 +36,7 @@ martian_prefix_lessold(const unsigned char *prefix, int plen)
 
 
 int
-martian_prefix_old(const unsigned char *prefix, int plen)
+martian_prefix_reallyold(const unsigned char *prefix, int plen)
 {
         if((plen >= 8 && prefix[0] == 0xFF) ||
         (plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80) ||
@@ -279,10 +279,12 @@ int main() {
 	printf("                       speedup: %g compares/prefix: %g\n", fp1/fp2, (fp1/fp2)/PREFIXES);
 	// And just to make sure I'm not fooling myself, run it backwards which is hotter
         fool_compiler(prefixes);
+        v2 = count_martian_prefixes_new(prefixes,1); // heat up the icache
 	c = get_clock();
         v2 = count_martian_prefixes_new(prefixes,PREFIXES);
 	d = get_clock();
         fool_compiler(prefixes);
+        v2 = count_martian_prefixes_old(prefixes,1); // heat up the icache
 	a = get_clock();
         v1 = count_martian_prefixes_old(prefixes,PREFIXES);
 	b = get_clock();
