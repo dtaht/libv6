@@ -56,6 +56,11 @@ martian_prefix_reallyold(const unsigned char *prefix, int plen)
 address has a 0xFF 0xFF in the 10th and 11th places. It uses more native address
 comparisons where feasible independent of the endian-ness.
 
+FIXME: IT HAS BEEN BROKEN since I started writing it - in the case of a v4mapped
+prefix, it is 10 bytes of zeros you need to match, not 8.
+
+My tests never showed that. I need more elaborate tests in general.
+
 */
 
 // This does the logical compare first then carries it
