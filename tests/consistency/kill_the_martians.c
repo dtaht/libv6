@@ -122,7 +122,7 @@ martian_prefix_new(const unsigned char *prefix, int plen)
 	// The compiler should automatically defer or interleave this load
 	// until it is actually needed
 
-	unsigned long long p = (*(const long long *) &prefix[0]);
+	unsigned long long p = (*(const unsigned long long *) &prefix[0]);
 
 //	if(p) seemed to be a lose
 /* Is it possibly a v4prefix? */
@@ -170,8 +170,7 @@ martian_prefix_new(const unsigned char *prefix, int plen)
         /* Crap. It's got lots of zeros. */
 	/* false = Not a martian and generally, unreachable in normal ipv6 data sets */
 
-        return((plen >= 128 && (prefix[15] == 0 || prefix[15] == 1) && memcmp(prefix + 8, zeroes, 7) == 0));
-
+        return((plen >= 128 && (p - 2) & *(unsigned long long *) (prefix + 8)));
 
 }
 
@@ -252,10 +251,10 @@ martian_prefix_new_dual(const unsigned char *prefix, int plen,
 		martian_prefix_new2(prefix1,plen2));
 }
 
-#define PREFIXES 64 // A real micro-microbenchmark that's actually how this is used
+//#define PREFIXES 64 // A real micro-microbenchmark that's actually how this is used
 //#define PREFIXES 64 /* don't stress the dcache overmuch */
 //#define PREFIXES 512 /* don't stress the dcache overmuch */
-//#define PREFIXES 64000 /* don't stress the dcache overmuch */
+#define PREFIXES 64000 /* don't stress the dcache overmuch */
 
 int main() {
         unsigned long a,b,c,d;

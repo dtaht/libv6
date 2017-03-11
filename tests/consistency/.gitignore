@@ -8,3 +8,4 @@ bench_O3
 bench_Os
 kill_the_martians*.o
 kill_the_martians*.s
+kill_the_martians_*
