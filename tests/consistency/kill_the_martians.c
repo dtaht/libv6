@@ -117,7 +117,7 @@ martian_prefix_new_string(const unsigned char *prefix, int plen)
 #define unlikely(x)     __builtin_expect((x),0)
 
 int
-martian_prefix_new2(const unsigned char *prefix, int plen)
+martian_prefix_new(const unsigned char *prefix, int plen)
 {
 	// The compiler should automatically defer or interleave this load
 	// until it is actually needed
@@ -160,11 +160,8 @@ martian_prefix_new2(const unsigned char *prefix, int plen)
 		
 //	if(likely(p)) {
 	if(p) {
-//	unsigned short p1 = p & 0xFFFF;
-		return( (plen >= 8 && (p & 0xFF) == 0xFF) ||
-			(plen >= 10 && (p & 0xFE80) == 0xFE80 ));
-//		return( (plen >= 8 && (p1 & 0xFF) == 0xFF) ||
-//			(plen >= 10 && (p1 & 0xFE80) == 0xFE80 ));
+        return( (plen >= 8 && prefix[0] == 0xFF) ||
+		(plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80));
 	}
 
         /* Crap. It's got lots of zeros. */
@@ -177,7 +174,7 @@ martian_prefix_new2(const unsigned char *prefix, int plen)
 }
 
 inline int
-martian_prefix_new(const unsigned char *prefix, int plen)
+martian_prefix_new2(const unsigned char *prefix, int plen)
 {
 	// The compiler will automatically defer or interleave this load
 	// until it is actually needed
