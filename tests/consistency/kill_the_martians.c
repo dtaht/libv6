@@ -167,10 +167,13 @@ martian_prefix_new(const unsigned char *prefix, int plen)
         /* Crap. It's got lots of zeros. */
 	/* false = Not a martian and generally, unreachable in normal ipv6 data sets */
 
-// This was a thing of beauty. And it was also wrong.
+// This was a thing of beauty. We've got zeroes, and all we need to check for is the
+// last digit being all zeros or a one.
+// And it may still be wrong ^? + 1? xor?
+	// FIXME: Need to write more tests for edge cases
 
-//        return((plen >= 128 && (p - 2) & *(unsigned long long *) (prefix + 8)));
-	return((plen >= 128 && (prefix[15] == 0 || prefix[15] == 1) && memcmp(prefix + 8, zeroes, 7) == 0));
+        return((plen >= 128 && (p - 2) & *(unsigned long long *) (prefix + 8)));
+//	return((plen >= 128 && (prefix[15] == 0 || prefix[15] == 1) && memcmp(prefix + 8, zeroes, 7) == 0));
 }
 
 inline int
@@ -251,9 +254,9 @@ martian_prefix_new_dual(const unsigned char *prefix, int plen,
 }
 
 //#define PREFIXES 2 // A real micro-microbenchmark that's actually how this is used
-//#define PREFIXES 64 /* don't stress the dcache overmuch */
+#define PREFIXES 64 /* don't stress the dcache overmuch */
 //#define PREFIXES 512 /* don't stress the dcache overmuch */
-#define PREFIXES 64000 /* don't stress the dcache overmuch */
+//#define PREFIXES (1024*1024*sizeof(prefix)) /* Blow up l3 too! */
 
 int main() {
         unsigned long a,b,c,d;

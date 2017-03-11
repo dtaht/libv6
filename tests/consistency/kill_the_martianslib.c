@@ -37,6 +37,36 @@ unsigned char *random_prefix() {
 	return (unsigned char *) a;
 }
 
+enum common_prefixes {
+	linklocal,
+	v6multicast,
+	v4map,
+	allones,
+	allzeroes,
+	v6localhost,
+	v4multicast,
+	v4localhost,
+	COMMON_PREFIXES_MAX
+};
+
+// What we need to do next is generate legal AND illegal prefixes in these ranges
+
+/*
+prefix * gen_common_prefixes(void) {
+	prefix *p = calloc(COMMON_PREFIXES_MAX,sizeof(prefix));
+        p[linklocal]     = { 0xfe, 0x80 }, 10;
+        p[v6multicast]   = { { 0xff }, 8 };
+        p[v4map]         = { { 0,0,0,0, 0xff, 0xff }, 96 };
+        p[allzeros]      =   { { 0 }, 128 };
+        p[allones]       =   { { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, 128 };
+        p[v6localhost]   = p[allzeroes]; p[v6localhost].p[15] = 1;
+        p[v4localhost]   = p[v4map]; p[v4localhost].p[12] = 127; p[v4localhost].plen = 100;
+        p[v4multicast]   = p[v4map]; p[v4multicast].p[12] = 0xff; p[v4multicast].plen = 104;
+	return p;
+}
+*/
+
+
 prefix * gen_random_prefixes(int count) {
 	prefix *p = calloc(count,sizeof(prefix));
 	for(int i = 0; i < count; i++) {
