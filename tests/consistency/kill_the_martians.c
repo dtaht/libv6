@@ -21,7 +21,7 @@ v4mapped(const unsigned char *address)
    execute all paths, and the v4mapped call was in a separate library entirely */
 
 int
-martian_prefix_old(const unsigned char *prefix, int plen)
+martian_prefix_lessold(const unsigned char *prefix, int plen)
 {
         if((plen >= 8 && prefix[0] == 0xFF) ||
         (plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80) ||
@@ -36,7 +36,7 @@ martian_prefix_old(const unsigned char *prefix, int plen)
 
 
 int
-martian_prefix_reallyold(const unsigned char *prefix, int plen)
+martian_prefix_old(const unsigned char *prefix, int plen)
 {
         if((plen >= 8 && prefix[0] == 0xFF) ||
         (plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80) ||
@@ -66,7 +66,7 @@ My tests never showed that. I need more elaborate tests in general.
 // This does the logical compare first then carries it
 
 int
-martian_prefix_new(const unsigned char *prefix, int plen)
+martian_prefix_new_string(const unsigned char *prefix, int plen)
 {
 	// The compiler should automatically defer or interleave this load
 	// until it is actually needed
@@ -75,7 +75,7 @@ martian_prefix_new(const unsigned char *prefix, int plen)
 
 /* Is it possibly a v4prefix? */
 
-	if(prefix[10] == 0xFF && prefix[11] ==0xFF) {
+	if(*(unsigned int *) &prefix[8] == htobe32(0xffff)) {
 		// Likely v4mapped but is it a martian?
 		if (plen >= 96) {
 			if((plen >= 104 &&
@@ -93,8 +93,8 @@ martian_prefix_new(const unsigned char *prefix, int plen)
            but might be multicast or link local. This is a pretty pointless
            optimization. */
 
-//        return( (plen >= 8 && prefix[0] == 0xFF) ||
-//		(plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80));
+        return( (plen >= 8 && prefix[0] == 0xFF) ||
+		(plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80));
 
 	}
 
@@ -182,7 +182,7 @@ martian_prefix_new_neon(const unsigned char *prefix, int plen)
 */
 
 int
-martian_prefix_new_reg(const unsigned char *prefix, int plen)
+martian_prefix_new(const unsigned char *prefix, int plen)
 {
 	// The compiler should automatically defer or interleave this load
 	// until it is actually needed
@@ -192,7 +192,7 @@ martian_prefix_new_reg(const unsigned char *prefix, int plen)
 //	if(p) seemed to be a lose
 /* Is it possibly a v4prefix? */
 
-	if(prefix[10] == 0xFF && prefix[11] ==0xFF) {
+	if(*(unsigned int *) &prefix[8] == htobe32(0xffff)) {
 		// Likely v4mapped but is it a martian?
 		if (plen >= 96) {
 			if((plen >= 104 &&
@@ -207,25 +207,17 @@ martian_prefix_new_reg(const unsigned char *prefix, int plen)
 
 	/* Definately not v4mapped and must be IPv6 at this point, but we know
            for sure it's not going to be a localhost or localnet due to the 0xFF
-           but might be multicast or link local. This is a pretty pointless
-           optimization. */
+           but might be multicast or link local. */
 
-//        return( (plen >= 8 && prefix[0] == 0xFF) ||
-//		(plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80));
+        return( (plen >= 8 && prefix[0] == 0xFF) ||
+		(plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80));
 
 	}
 
         /* Definately not v4mapped at this point. Is it multicast or link local? */
 
-	// likely? Flip these two? Not sure this is correct for alternate endians
-// Does this need to be the logical operations? Can I just return size_t?
-	// Can I just do the booleans? What happens to my thinking if I move
-	// ALL this bit to the top?
-// does likely do the right thing on the non-zero true?
-		
-//	if(likely(p)) {
 	if(p) {
-        return( (plen >= 8 && prefix[0] == 0xFF) ||
+		return((plen >= 8 && prefix[0] == 0xFF) ||
 		(plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80));
 	}
 
