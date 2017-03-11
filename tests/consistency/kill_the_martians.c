@@ -24,7 +24,7 @@ v4mapped(const unsigned char *address)
    execute all paths, and the v4mapped call was in a separate library entirely */
 
 int
-martian_prefix_lessold(const unsigned char *prefix, int plen)
+martian_prefix_old(const unsigned char *prefix, int plen)
 {
         if((plen >= 8 && prefix[0] == 0xFF) ||
         (plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80) ||
@@ -39,7 +39,7 @@ martian_prefix_lessold(const unsigned char *prefix, int plen)
 
 
 int
-martian_prefix_old(const unsigned char *prefix, int plen)
+martian_prefix_orig(const unsigned char *prefix, int plen)
 {
         if((plen >= 8 && prefix[0] == 0xFF) ||
         (plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80) ||
@@ -305,7 +305,7 @@ martian_prefix_new(const unsigned char *prefix, int plen)
 	// until it is actually needed
 
   uint32x2_t p = vld1_u32((const uint32_t *) prefix);
-  p = vpmax_u32(p,p);
+  p = vpmax_u32(p,p); // 0 if 0 nonzero if 
 
   /* Is it possibly a v4prefix? */
 
@@ -316,18 +316,18 @@ martian_prefix_new(const unsigned char *prefix, int plen)
 					(prefix[12] == 127 || prefix[12] == 0))
 				|| (plen >= 100 && (prefix[12] & 0xE0) == 0xE0))
 				/* is it also v4mapped? */
-			  if(!vget_lane_u32(p,0))
-					return true;
+			  	if(vget_lane_u32(p,0))
+					  return true;
 
-	                if(!vget_lane_u32(p,0)) return false; /* v4mapped but not a martian */
+	                if(vget_lane_u32(p,0)) return false; /* v4mapped but not a martian */
 		}
 
 	/* Definately not v4mapped and must be IPv6 at this point, but we know
            for sure it's not going to be a localhost or localnet due to the 0xFF
            but might be multicast or link local. This is a pretty pointless
-           optimization. */
+           optimization but seems to convince the compiler to emit better code */
 
-        return( (plen >= 8 && prefix[0] == 0xFF) ||
+	return( (plen >= 8 && prefix[0] == 0xFF) ||
 		(plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80));
 
 	}
@@ -342,7 +342,8 @@ martian_prefix_new(const unsigned char *prefix, int plen)
 
         /* Crap. It's got lots of zeros. */
 	/* false = Not a martian and generally, unreachable in normal ipv6 data sets */
-
+//      Can this be neon?
+//      return((plen >= 128 && (p - 2) & *(unsigned long long *) (prefix + 8)));
         return((plen >= 128 && (prefix[15] == 0 || prefix[15] == 1) && memcmp(prefix + 8, zeroes, 7) == 0));
 
 
