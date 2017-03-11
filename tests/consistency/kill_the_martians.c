@@ -21,7 +21,7 @@ v4mapped(const unsigned char *address)
    execute all paths, and the v4mapped call was in a separate library entirely */
 
 int
-martian_prefix_old(const unsigned char *prefix, int plen)
+martian_prefix_lessold(const unsigned char *prefix, int plen)
 {
         if((plen >= 8 && prefix[0] == 0xFF) ||
         (plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80) ||
@@ -36,7 +36,7 @@ martian_prefix_old(const unsigned char *prefix, int plen)
 
 
 int
-martian_prefix_older(const unsigned char *prefix, int plen)
+martian_prefix_old(const unsigned char *prefix, int plen)
 {
         if((plen >= 8 && prefix[0] == 0xFF) ||
         (plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80) ||
@@ -117,7 +117,7 @@ martian_prefix_new_string(const unsigned char *prefix, int plen)
 #define unlikely(x)     __builtin_expect((x),0)
 
 int
-martian_prefix_new(const unsigned char *prefix, int plen)
+martian_prefix_new2(const unsigned char *prefix, int plen)
 {
 	// The compiler should automatically defer or interleave this load
 	// until it is actually needed
@@ -160,22 +160,24 @@ martian_prefix_new(const unsigned char *prefix, int plen)
 		
 //	if(likely(p)) {
 	if(p) {
-	unsigned short p1 = p & 0xFFFF;
-//		return( (plen >= 8 && ((unsigned char)p & 0xFF) == 0xFF) ||
-//			(plen >= 10 && ((unsigned short)p & 0xFE80) == 0xFE80 ));
-		return( (plen >= 8 && (p1 & 0xFF) == 0xFF) ||
-			(plen >= 10 && (p1 & 0xFE80) == 0xFE80 ));
+//	unsigned short p1 = p & 0xFFFF;
+		return( (plen >= 8 && (p & 0xFF) == 0xFF) ||
+			(plen >= 10 && (p & 0xFE80) == 0xFE80 ));
+//		return( (plen >= 8 && (p1 & 0xFF) == 0xFF) ||
+//			(plen >= 10 && (p1 & 0xFE80) == 0xFE80 ));
 	}
 
         /* Crap. It's got lots of zeros. */
 	/* false = Not a martian and generally, unreachable in normal ipv6 data sets */
 
-        return((plen >= 128 && (p - 2) & *(unsigned long long *) (prefix + 8)));
+// This was a thing of beauty. And it was also wrong.
 
+//        return((plen >= 128 && (p - 2) & *(unsigned long long *) (prefix + 8)));
+	return((plen >= 128 && (prefix[15] == 0 || prefix[15] == 1) && memcmp(prefix + 8, zeroes, 7) == 0));
 }
 
 inline int
-martian_prefix_new2(const unsigned char *prefix, int plen)
+martian_prefix_new(const unsigned char *prefix, int plen)
 {
 	// The compiler will automatically defer or interleave this load
 	// until it is actually needed
@@ -251,7 +253,7 @@ martian_prefix_new_dual(const unsigned char *prefix, int plen,
 		martian_prefix_new2(prefix1,plen2));
 }
 
-//#define PREFIXES 64 // A real micro-microbenchmark that's actually how this is used
+//#define PREFIXES 2 // A real micro-microbenchmark that's actually how this is used
 //#define PREFIXES 64 /* don't stress the dcache overmuch */
 //#define PREFIXES 512 /* don't stress the dcache overmuch */
 #define PREFIXES 64000 /* don't stress the dcache overmuch */
