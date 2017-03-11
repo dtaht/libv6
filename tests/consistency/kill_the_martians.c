@@ -392,6 +392,10 @@ int main() {
 	double fp1, fp2;
 	prefix *prefixes = gen_random_prefixes(PREFIXES);
 	prefix *prefixes1 = gen_random_prefixes(PREFIXES);
+	if(prefixes == NULL || prefixes1 == NULL) {
+		printf("Not enough memory for this test\n");
+		exit(1);
+	}
         fool_compiler(prefixes);
 	a = get_clock();
         v1 = count_martian_prefixes_old(prefixes,PREFIXES);
