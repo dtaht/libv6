@@ -23,6 +23,7 @@ extern int v4mapped_orig(const unsigned char *address);
 typedef struct {
 	unsigned char p[16];
 	int plen;
+	unsigned char pad[12];
 } prefix;
 
 extern int

@@ -61,7 +61,7 @@ comparisons where feasible independent of the endian-ness.
 // This does the logical compare first then carries it
 
 int
-martian_prefix_new_string(const unsigned char *prefix, int plen)
+martian_prefix_new(const unsigned char *prefix, int plen)
 {
 	// The compiler should automatically defer or interleave this load
 	// until it is actually needed
@@ -116,8 +116,68 @@ martian_prefix_new_string(const unsigned char *prefix, int plen)
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
 
+/*
+
+I try to remember while attempting to rewrite this as pure boolean
+logic, with minimal stalls, that the original result comes to 70+
+instructions, admittedly all but 8 that decode down to thumb2 size,
+so in order to win using more pure neon, I have to come up with
+something that is no more than, say, 40 instructions.
+
+AND: that as trying to express this in essentially assembler is 
+tedious, I should not give up as the routine expands well beyond
+the original C code. Also, at some point, perhaps, certain
+constants will be kept in registers in the first place.
+
+It might be that me wanting to put everything into 128 bit regs
+is futile, and things might yielf more to 64 bitness.
+
 int
-martian_prefix_new(const unsigned char *prefix, int plen)
+martian_prefix_new_neon(const unsigned char *prefix, int plen)
+{
+	// The compiler should automatically defer or interleave this load
+	// until it is actually needed
+	uint32x4_t p =  vld1q_u32((const unsigned int *) prefix);
+	uint32x4_t z = veorq_u32(p,p);
+	uint32x4_t o = bceqq_u32(p,p);
+	uint32x4_t ll = z;
+	uint32x4_t is_zeros = veorq_u32(p,z);
+	uint32x4_t just_one = vaddq_u32(p,z); // fixme vcombine ? vinc?
+	ll = vld_load_lane(z,ll,7);
+        d = vld1q_lane_u32((uint32_t *) src + 12,d,0); // 3? vld?
+
+	if(prefix[10] == 0xFF && prefix[11] ==0xFF) {
+		// Likely v4mapped but is it a martian?
+		if (plen >= 96) {
+			if((plen >= 104 &&
+					(prefix[12] == 127 || prefix[12] == 0))
+				|| (plen >= 100 && (prefix[12] & 0xE0) == 0xE0))
+				// is it also v4mapped?
+				if(p == 0LL)
+					return true;
+
+	                if(p == 0LL) return false; // v4mapped but not a martian 
+		}
+	}
+
+        // Definately not v4mapped at this point. Is it multicast or link local?
+
+	if(p) {
+        return( (plen >= 8 && prefix[0] == 0xFF) ||
+		(plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80));
+	}
+
+        // Crap. It's got lots of zeros.
+	// false = Not a martian and generally, unreachable in normal ipv6 data sets
+
+        return((plen >= 128 && (p - 2) & *(unsigned long long *) (prefix + 8)));
+//	return((plen >= 128 && (prefix[15] == 0 || prefix[15] == 1) && memcmp(prefix + 8, zeroes, 7) == 0));
+}
+
+*/
+
+int
+martian_prefix_new_reg(const unsigned char *prefix, int plen)
 {
 	// The compiler should automatically defer or interleave this load
 	// until it is actually needed
