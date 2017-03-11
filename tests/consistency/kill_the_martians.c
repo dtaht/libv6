@@ -186,7 +186,7 @@ martian_prefix_new_neon(const unsigned char *prefix, int plen)
 */
 
 int
-martian_prefix_new_reg(const unsigned char *prefix, int plen)
+martian_prefix_new(const unsigned char *prefix, int plen)
 {
 	// The compiler should automatically defer or interleave this load
 	// until it is actually needed
@@ -379,10 +379,12 @@ martian_prefix_new_dual(const unsigned char *prefix, int plen,
 		martian_prefix_new(prefix1,plen2));
 }
 
+#ifndef PREFIXES
 //#define PREFIXES 2 // A real micro-microbenchmark that's actually how this is used
-#define PREFIXES 64 /* don't stress the dcache overmuch */
+//#define PREFIXES 64 /* don't stress the dcache overmuch */
 //#define PREFIXES 512 /* don't stress the dcache overmuch */
-//#define PREFIXES (1024*1024*sizeof(prefix)) /* Blow up l3 too! */
+#define PREFIXES (1024*sizeof(prefix)) /* Blow up l3 too! */
+#endif
 
 int main() {
         unsigned long a,b,c,d;
