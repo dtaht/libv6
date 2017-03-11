@@ -2,6 +2,9 @@
    I can imagine. This is an attempt to speed it up */
 
 #include "kill_the_martians.h"
+#ifdef HAVE_NEON
+#include <arm_neon.h>
+#endif
 
 static inline size_t
 v4mapped(const unsigned char *address)
@@ -49,6 +52,7 @@ martian_prefix_old(const unsigned char *prefix, int plen)
 	return false;
 }
 
+#ifndef HAVE_NEON
 /* This (usually) halves the search space by starting with the most unlikely
    match (0xFFFF in the 10th and 11th bytes), and fanning out from there
 
@@ -182,7 +186,7 @@ martian_prefix_new_neon(const unsigned char *prefix, int plen)
 */
 
 int
-martian_prefix_new(const unsigned char *prefix, int plen)
+martian_prefix_new_reg(const unsigned char *prefix, int plen)
 {
 	// The compiler should automatically defer or interleave this load
 	// until it is actually needed
@@ -209,15 +213,18 @@ martian_prefix_new(const unsigned char *prefix, int plen)
            for sure it's not going to be a localhost or localnet due to the 0xFF
            but might be multicast or link local. */
 
-        return( (plen >= 8 && prefix[0] == 0xFF) ||
-		(plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80));
+        //return( (plen >= 8 && prefix[0] == 0xFF) ||
+	//	(plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80));
 
 	}
 
         /* Definately not v4mapped at this point. Is it multicast or link local? */
 
 	if(p) {
-		return((plen >= 8 && prefix[0] == 0xFF) ||
+//		unsigned int p1 = (p << 32) & htobe32(0xffff);
+//		return((plen >= 8 && (p1 & htobe32(0xff)) == htobe32(0xff)) ||
+//		(plen >= 10 && (p1 & htobe32(0xFE80)) == htobe32(0xFE80)));
+        return( (plen >= 8 && prefix[0] == 0xFF) ||
 		(plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80));
 	}
 
@@ -232,6 +239,7 @@ martian_prefix_new(const unsigned char *prefix, int plen)
         return((plen >= 128 && (p - 2) & *(unsigned long long *) (prefix + 8)));
 //	return((plen >= 128 && (prefix[15] == 0 || prefix[15] == 1) && memcmp(prefix + 8, zeroes, 7) == 0));
 }
+
 
 inline int
 martian_prefix_new2(const unsigned char *prefix, int plen)
@@ -282,6 +290,66 @@ martian_prefix_new2(const unsigned char *prefix, int plen)
 
 }
 
+#endif
+
+#ifdef HAVE_NEON
+static inline uint32_t is_not_zero64(const uint32x2_t v)
+{
+    return vget_lane_u32(vpmax_u32(v, v), 0);
+}
+
+inline int
+martian_prefix_new(const unsigned char *prefix, int plen)
+{
+	// The compiler will automatically defer or interleave this load
+	// until it is actually needed
+
+  uint32x2_t p = vld1_u32((const uint32_t *) prefix);
+  p = vpmax_u32(p,p);
+
+  /* Is it possibly a v4prefix? */
+
+	if(prefix[10] == 0xFF && prefix[11] ==0xFF) {
+		// Likely v4mapped but is it a martian?
+		if (plen >= 96) {
+			if((plen >= 104 &&
+					(prefix[12] == 127 || prefix[12] == 0))
+				|| (plen >= 100 && (prefix[12] & 0xE0) == 0xE0))
+				/* is it also v4mapped? */
+			  if(!vget_lane_u32(p,0))
+					return true;
+
+	                if(!vget_lane_u32(p,0)) return false; /* v4mapped but not a martian */
+		}
+
+	/* Definately not v4mapped and must be IPv6 at this point, but we know
+           for sure it's not going to be a localhost or localnet due to the 0xFF
+           but might be multicast or link local. This is a pretty pointless
+           optimization. */
+
+        return( (plen >= 8 && prefix[0] == 0xFF) ||
+		(plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80));
+
+	}
+
+        /* Definately not v4mapped at this point. Is it multicast or link local? */
+
+	if(vget_lane_u32(p,0)) {
+
+        return( (plen >= 8 && prefix[0] == 0xFF) ||
+		(plen >= 10 && prefix[0] == 0xFE && (prefix[1] & 0xC0) == 0x80));
+	}
+
+        /* Crap. It's got lots of zeros. */
+	/* false = Not a martian and generally, unreachable in normal ipv6 data sets */
+
+        return((plen >= 128 && (prefix[15] == 0 || prefix[15] == 1) && memcmp(prefix + 8, zeroes, 7) == 0));
+
+
+}
+
+#endif
+
 // If we are lucky the compiler will find a place to optimize and wedge these two together
 
 /* Theoretically, we can lift the src_plen check to here and do both in parallel
@@ -306,8 +374,8 @@ the most common case.
 int
 martian_prefix_new_dual(const unsigned char *prefix, int plen,
 			const unsigned char *prefix1, int plen2) {
-	return(martian_prefix_new2(prefix,plen) ||
-		martian_prefix_new2(prefix1,plen2));
+	return(martian_prefix_new(prefix,plen) ||
+		martian_prefix_new(prefix1,plen2));
 }
 
 //#define PREFIXES 2 // A real micro-microbenchmark that's actually how this is used
