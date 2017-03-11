@@ -122,7 +122,7 @@ martian_prefix_new(const unsigned char *prefix, int plen)
 	// The compiler should automatically defer or interleave this load
 	// until it is actually needed
 
-	long long p = (*(const long long *) &prefix[0]);
+	unsigned long long p = (*(const long long *) &prefix[0]);
 
 //	if(p) seemed to be a lose
 /* Is it possibly a v4prefix? */
