@@ -69,6 +69,8 @@ prefix * gen_common_prefixes(void) {
 
 prefix * gen_random_prefixes(int count) {
 	prefix *p = calloc(count,sizeof(prefix));
+	if(p == NULL) return NULL;
+
 	for(int i = 0; i < count; i++) {
 		memcpy(p[i].p,random_prefix(),16);
 		p[i].plen = random() % 128;
