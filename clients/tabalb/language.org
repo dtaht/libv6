@@ -1,0 +1,12 @@
+* DUMP
+** neighbours
+** routes
+** xroutes
+** interfaces
+** filters
+* ADD
+** router
+* Show
+** best route
+** stats
+

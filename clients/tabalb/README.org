@@ -1,0 +1,338 @@
+* Features
+** Listener mode
+Try to see what's going on on the network and infer what other routers
+are doing.
+
+** Parsinimous with memory.
+
+The global variables are all offset with single *globals.
+
+* C11
+It's a better C. How much better can a good C programmer be if he writes
+in a better C?
+** vararrays
+** Bounds checking
+** Vectors
+** Strong typing
+** Generics
+
+** Anonymous structs and unions
+I can use these (finally) to make dealing with vectors easier
+
+An anonymous struct or union is one that has neither a tag name nor a typedef name. It’s useful for nesting aggregates, e.g., a union member of a struct. The following C11 code declares a struct with an anonymous union and accesses the union’s data member directly:
+
+struct T //C++, C11
+{
+int m;
+union //anonymous
+{
+  char * index;
+  int key;
+};
+};
+struct T t;
+t.key=1300; //access the union's member directly
+
+*
+
+_Noreturn void func (); //C11, func never returns
+
+The alignof operator reports the alignment of its operand. Finally, the aligned_alloc() function.
+
+void *aligned_alloc(size_t algn, size_t size);
+* Hah. I just learned of qsort_r - which takes an additional context argument
+* #pragma omp parallel for
+
+* librcu
+
+* Performance driven design for multicores
+https://arxiv.org/pdf/1206.3738.pdf
+linux has a really nice per cpu facility... does c11?
+https://0xax.gitbooks.io/linux-insides/content/Concepts/per-cpu.html
+Use C11 atomics for push/pop
+http://yurovsky.github.io/2015/06/04/lockfree-ipc/
+
+ -mcx16 tells 16 byte wide cmpx is there.
+
+* qsort stable sort:
+
+http://nullprogram.com/blog/2014/08/29/
+
+* Object independence
+
+The concept of "routing" is independent of the data it is using - be
+they ipv4 or ipv6 addresses, mpls, or CCN, the core algorithms for
+"routing" are independent of that.
+
+* Passive and stubby support
+
+** Unique table search algorithm
+
+I am (presently) planning on a combination of popcount (usually
+inequality), and the index being the same (equality) - should
+dramatically reduce the number of compares on insert or find.
+
+* time and timers
+
+Use a very different notion of time - onchip timers or cycle counters
+
+* Sane things on overload, which includes crashing gracefully
+* librcu
+* Produce minimal yet robust kernel route tables
+* Sane use of globals and overlays
+
+Use "overlays" so you want to be able to throw away your configuration
+code after boot.
+
+"Hey, look, we have plugins!" -
+
+** Constant Loader
+** Packet Parser
+** Packet Encoder
+** Configurator
+** Metric Generator
+** Interface Processor
+** Queue Manager
+** GC
+** Logger
+
+RingBuffer
+
+It also is a write only data structure amiable to hardware and the
+parallela. The ring itself is an on chip register, the data can go off
+chip pretty fast.
+
+Might abuse the internationalization standard for this: _
+
+There are issues with formattting multiple arguments but we'll see what
+happens as we hit that.
+
+* Additive offsets
+
+So in any place where the address range is disjoint (physical vs
+virtual, two very different processors, hardware) - pointer walking is
+basically impossible.
+
+*Additive* indexed structures don't have this problem.
+
+Similarly - "work" can be abstracted into a series of
+virtual machine instructions, into a "queue", and managed
+appropriately.
+
+* Essentially run in hard real time with bounded operations
+
+** Kernel Reads
+** Kernel Writes
+** Route calculations
+** Scheduled updates to heartbeat-like operations
+** Congestion control
+** RingBuffers & Concurrency
+
+* Design notes
+** Wrapping the API
+
+The ABI for co-processor registers sucks! It makes no guarantees that
+any of the high parts of your registers will be saved.
+
+Careful abstraction out of all library calls (to push and pop your
+own registers) is needed.
+
+*** Also thread intercontext switching is a problem
+but I merely wanted to put a bunch of needed constants in registers...
+
+a need that is declining now that I'm coming up with ways to further
+abstract the interfaces.
+
+** Pure data wherever possible
+
+It's just an address with a plen. 
+
+** Generational garbage collection
+
+** sane use of restrict and aliasing rules
+
+** Kernel Route and regular route table are merged
+
+We use proto 255 for internal routes.
+
+** loop unrolling
+
+By putting hard guarantees on each operation we can take advantage of
+the loop operations
+
+** Atomic memory operations and read/copy/update
+
+I am extremely tempted to try librcu because I just don't understand it
+deeply enough.
+
+** Memory allocation tricks
+
+Babel uses a very clever technique to almost entirely avoid run time
+memory allocation. Inside of each function there is a tiny ringbuffer
+that basically limits your calls in a single function (with message
+passing) to no more than 4 calls at a time - but it's *brilliant*!
+
+const char *
+format_thousands(unsigned int value)
+{
+    static char buf[4][15];
+    static int i = 0;
+    i = (i + 1) % 4;
+    snprintf(buf[i], 15, "%d.%.3d", value / 1000, value % 1000);
+    return buf[i];
+}
+
+
+This can be made, if it were threaded (__thread) and used with rigor.
+
+Also this could be shared bufferspace for all functions were it the same
+amount of space and guarenteed to be so. That might scale better.
+
+One per thread? 1 per processor? 1 per destination processor?
+It's generally much faster to write another processors memory than
+to read it.
+
+__thread bufpool[255][15];
+static bufpool_index_get;
+
+const char *
+format_thousands(unsigned int value)
+{
+    char *buf = getbuf(); // Magically increases the ring
+    snprintf(buf, 15, "%d.%.3d", value / 1000, value % 1000);
+    return buf;
+}
+
+** Concurrency
+
+With the additive index structure(s) - we might - be able
+to in some cases naturally achieve massive parallelism.
+
+Take the table calculation for example. We could wedge
+a portion of each table onto each parallella processor by
+using the index as a cpu mask also for memory allocation
+purposes, as well as stride.
+
+** Protobufs?
+
+* Initial Target OSes
+** Lede compatability
+
+In particular - direct adoption of the libuci bus seems needed.
+
+* OS and hardware choices
+** Linux/Lede
+** RIOT-OS or TinyOS
+
+Whichever one ate the ipv6 koolaid.
+
+** Epiphany co-processor
+
+Because I have one.
+
+** Beaglebone PRU
+
+It is completely unrealistic to think I could make this run on something
+that small. But I like hard realtime!
+
+** ESP32
+
+No existing ipv6 support. :(
+
+** GPU
+
+Because it's there (raspi?).
+
+** Hypervisor
+** Risc V (64 and 128 bit)
+
+** BPF VM
+
+Rather than use the existing and admittedly powerful babel rule
+language, expressions suitable for a BPF compiler (with shortcuts) will
+be used.
+
+P4 is also of interest.
+
+** Verilog
+
+To keep myself honest during the design phase I am strongly considering
+simultaneously writing the representation and algorithms in verilog
+(more likely scala's chisel).
+
+** Concurrency
+
+* Congestion Control
+
+Despite all these CPU enhancing things, we also need to better periodically
+measure connectivity somehow. Leveraging the ack
+
+We also can explore "flinging routes into the future" when overloaded,
+extending hellos, etc, etc.
+
+* Amiable to a hardware implementation
+
+A route co-processor cannot easily do pointer chasing between virtual
+and physical memory, or even between two processes.
+
+It can
+
+My choice of data structures started falling naturally out of this,
+as did my implementation languages
+
+** Lua
+  as an interpreter of a purely table driven language, it seems likely
+that getting a lua version (assuming a decent netlink facility can be found)
+would be a good, small, example. 
+** Golang
+because it's there, and has good concurrency features.
+** C11
+because that's the way the fast world has to be.
+
+* Evaluating Alternatives
+It seems that the switching guys think the way I do about routing. Routing
+calculations tend to be unbounded and more CS-like, and there is not a single
+routing daemon I'm aware of that thinks like I do about it. It seems like I
+have no choice but to write something from scratch.
+
+** BGP would be the best target
+
+But it's too hairy. Babel (or some other DV protocol like bmx) is ideal. Many of
+the data structures and methods developed here may eventually apply.
+
+** OLSR
+Lots of nice plugins, link state, doesn't do determinism either.
+
+** Quagga
+** Bird
+
+Too big, too clunky, too old.
+
+* Plan
+** Make compile on everything regularly
+Start by targetting something *hard* like tinyOS
+** Get Basic proto table import working
+*** This exercises the encoding, insertion, and playback routines
+*** Also develops the netlink interface(s)
+I might try to use BPF to open multiple sockets to get per proto info
+** Resurrect my ring buffer tricks
+Use high and low watermarks to deal with things
+** Command Parser
+Would rather use something like flex than anything custom per se'. Yes, I'm old.
+antlr4 is in java. I've heard nice things about lemon, too, but bison has been improved of late.
+
+json formatted output might be nice sometimes
+
+https://en.wikipedia.org/wiki/Comparison_of_parser_generators
+
+Ragel? http://www.colm.net/open-source/ragel/ cool visualizer
+
+http://re2c.org/
+
+Peg?
+
+https://en.wikipedia.org/wiki/PackCC
+
+https://sourceforge.net/p/packcc/wiki/Home/
+** Packet Parser
+
