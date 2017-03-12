@@ -6,6 +6,10 @@
 #include <arm_neon.h>
 #endif
 
+#ifdef __mips__
+#define htobe32(a) (a)
+#endif
+
 static inline size_t
 v4mapped(const unsigned char *address)
 {

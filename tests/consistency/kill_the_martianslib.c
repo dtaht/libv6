@@ -24,9 +24,9 @@ const unsigned char llprefix[16] =
 
 const unsigned char zeroes[16] = { 0 };
 
-#ifdef __arm__
+//#if defined (__arm__) || defined (__mips__)
 #include "perfevents.c"
-#endif
+//#endif
 
 unsigned char *random_prefix() {
 	static __thread unsigned int a[4] = {0};
@@ -70,7 +70,7 @@ prefix * gen_common_prefixes(void) {
 prefix * gen_random_prefixes(int count) {
 	prefix *p = calloc(count,sizeof(prefix));
 	if(p == NULL) return NULL;
-
+#pragma omp parallel for
 	for(int i = 0; i < count; i++) {
 		memcpy(p[i].p,random_prefix(),16);
 		p[i].plen = random() % 128;
@@ -89,6 +89,7 @@ int count_martian_prefixes_old(prefix *p, int count) {
 
 int count_martian_prefixes_new(prefix *p, int count) {
 	int c = 0;
+#pragma omp parallel for
 	for(int i=0;i<count;i++)
 		c += martian_prefix_new((const unsigned char*)&p[i].p,p[i].plen);
 	return c;
@@ -96,6 +97,7 @@ int count_martian_prefixes_new(prefix *p, int count) {
 
 int count_martian_prefixes_new_single(prefix *p, prefix *p2, int count) {
 	int c = 0;
+#pragma omp parallel for
 	for(int i=0;i<count;i++)
 		c += martian_prefix_new((const unsigned char*)&p[i].p,p[i].plen) ||
 			martian_prefix_new((const unsigned char*)&p2[i].p,p2[i].plen);

@@ -72,7 +72,7 @@ static inline unsigned long get_clock(void)
 #endif
 
 #if 1
-#ifdef __arm__
+#if defined (__arm__) || defined(__mips__)
 extern int fddev;
 static inline long long
 get_clock(void)
