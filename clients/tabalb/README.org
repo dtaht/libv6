@@ -40,6 +40,19 @@ _Noreturn void func (); //C11, func never returns
 The alignof operator reports the alignment of its operand. Finally, the aligned_alloc() function.
 
 void *aligned_alloc(size_t algn, size_t size);
+
+* Try to be good about restrict and pure functions
+
+pure might often be of aid here.
+restrict I'm not in the habit of using at all.
+const tends to bug me.
+
+C++ 11 has
+
+constexpr unsigned static_strlen(const char * str, unsigned offset = 0) {
+        return (*str == '\0') ? offset : static_strlen(str + 1, offset + 1);
+}
+
 * Hah. I just learned of qsort_r - which takes an additional context argument
 * #pragma omp parallel for
 
