@@ -387,7 +387,7 @@ martian_prefix_new_dual(const unsigned char *prefix, int plen,
 //#define PREFIXES 2 // A real micro-microbenchmark that's actually how this is used
 //#define PREFIXES 64 /* don't stress the dcache overmuch */
 //#define PREFIXES 512 /* don't stress the dcache overmuch */
-#define PREFIXES (1024*sizeof(prefix)) /* Blow up l3 too! */
+#define PREFIXES (1024*64*sizeof(prefix)) /* Blow up l3 too! */
 #endif
 
 int main() {

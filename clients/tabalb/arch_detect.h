@@ -1,8 +1,6 @@
 /**
  * arch_detect.h
  *
- * Toke Høiland-Jørgensen
- * 2017-03-08
  */
 
 #ifndef ARCH_DETECT_H
