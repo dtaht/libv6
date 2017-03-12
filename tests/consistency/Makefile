@@ -20,7 +20,7 @@ endif
 
 SRC=benchmark.c benchmark_data.c
 #CFLAGS=-std=c11 -g -Wall c11 doesn't have the !@# endian macros
-CFLAGS=-std=gnu99 -Wall $(NEON) -fopenmp
+CFLAGS=-std=gnu99 -Wall $(NEON) #-fopenmp
 #NATIVEARCH=$(())
 #H64=-DHAVE_SSE2
 H64=$(NEON)
