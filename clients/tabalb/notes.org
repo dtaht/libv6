@@ -1,0 +1,19 @@
+* There are 10 global variables
+* Everything is optimized for vector processing
+** aligned to natural boundaries
+** always in tables large enough for a prefetch overrun
+* Everything is a table - with frequently accessed types in their own table indexed separately
+** all classification is on the way in
+** No pointers
+* C bitfields are used where appropriate, masks elsewhere
+** Very small values everywhere - think hardware or 16 bit microcontroller
+* Code sharing is maximized
+* C11 features like structure return are used extensively
+** Often structures are returned instead of using the stack
+In the case of NEON and SSE we can slam the structures into existing registers.
+In the case of hardware certain things end up in registers anyway.
+Yes, structures are a PITA in regular C, and hard on the compiler.
+* Internationalization will be enabled
+** But string sharing across modules is hard
+* Direct calls to library functions are wrapped
+** Because at some point I'm going to violate the ABI
