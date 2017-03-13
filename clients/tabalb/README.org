@@ -141,6 +141,7 @@ appropriately.
 ** Congestion control
 ** RingBuffers & Concurrency
 
+
 * Design notes
 ** Wrapping the API
 
@@ -291,7 +292,7 @@ and physical memory, or even between two processes.
 It can
 
 My choice of data structures started falling naturally out of this,
-as did my implementation languages
+as did my implementation languages:
 
 ** Lua
   as an interpreter of a purely table driven language, it seems likely
@@ -303,6 +304,7 @@ because it's there, and has good concurrency features.
 because that's the way the fast world has to be.
 
 * Evaluating Alternatives
+
 It seems that the switching guys think the way I do about routing. Routing
 calculations tend to be unbounded and more CS-like, and there is not a single
 routing daemon I'm aware of that thinks like I do about it. It seems like I

@@ -8,8 +8,19 @@
 #ifndef TABELD_H
 #define TABELD_H
 
-#include <stdint.>
-#include <simd.h>
+#include <stdint.h>
+#include "align.h"
+#include "simd.h"
+
+#ifndef INFINITY
+#define INFINITY (0xFFFF)
+#endif
+
+// FIXME
+
+#define CACHELINE_ALIGN
+
+#define MIN(a,b) (a > b ? a : b)
 
 /*
   24 = sizeof (filter_result)
@@ -33,20 +44,35 @@
   24 = sizeof (zone)
 
 What we are doing here is extremely similar to the zone concept
+but applied everywhere.
+
 */
+
+// All addresses are kept as vector types to start with
+
+typedef uint8_t v6addr_t __attribute__ ((vector_size(16))); // v6 addresses
+typedef uint8_t r6addr_t __attribute__ ((vector_size(8)));  // Router ID
+
+/* There is a hard limit of 64k anything in the system presently,
+   but we can change that if we need to */
 
 typedef uint16_t ubase_t;
 
 typedef ubase_t address_t;
-typedef ubase_t rid_t; /* router id */
-typedef ubase_t toffset;
+typedef ubase_t neigh_t;
+typedef ubase_t route_t;
+typedef ubase_t rid_t;   /* router id */
 typedef ubase_t seqno_t;
+
+typedef uint16_t ifindex_t; // the spec says this is an int
+typedef uint8_t proto_t;    // We pee on 255 for special stuff
+
 typedef uint8_t plen_t;
 typedef uint8_t popcnt_t;
-typedef uint32_t ttime_t;
-typedef ubase_t gc_t; // Garbage collection
+typedef ubase_t gc_t; // Garbage collection (arguably could be 8)
 
-typedef ttable * address_p;
+typedef uint32_t ttime_t; // time in usec
+// typedef ttable * address_p;
 
 /* Unified metric table too, expressable as a vector */
 
@@ -54,22 +80,8 @@ typedef struct  {
     ubase_t ref;
     ubase_t cost;
     ubase_t add;
-    ubase_t seqno; // 0 ? infinity?
+    ubase_t pad; // 0 ? infinity?
 } metric_t;
-
-/* Horizontal add ? */
-
-// I like the idea of somehow vectorizing the route metric
-// calculation
-/*
-
-static inline int
-route_metric(const struct babel_route *route)
-{
-    int m = (int)route->refmetric + route->cost + route->add_metric;
-    return MIN(m, INFINITY);
-}
-*/
 
 /* martian detector needs to pass a much larger struct on the stack,
    and can further classify things from there */
@@ -82,8 +94,6 @@ route_metric(const struct babel_route *route)
 	}
 }
 */
-
-//typedef tchar  * taddress;
 
 // A given address has these characteristics
 // and is kept in parallel with another table
@@ -104,8 +114,9 @@ typedef struct {
 // in registers
 
 typedef struct {
+	int32_t pad;
 	addrflags_t flags;
-	paddr_t address;
+	v6addr_t address;
 } fulladdr_t;
 
 // The original source table was 80 bytes
@@ -120,7 +131,7 @@ typedef struct {
         ubase_t route_count; // wtf is this for?
         ttime_t time; // gc instead?
 //	gc_t gc;
-} source;
+} sources_t;
 
 typedef struct {
     rid_t id;
@@ -129,28 +140,70 @@ typedef struct {
     unsigned char pad[2];
 } buffered_update;
 
-// I don't know why xroute and babel_route are different
-//
+typedef struct {
+	uint32_t debug:2;
+	uint32_t stubby:1;
+	uint32_t link_detect:1;
+	uint32_t all_wireless:1;
+	uint32_t has_ipv6_subtrees:1;
+	uint32_t do_daemonise:1;
+	uint32_t skip_kernel_setup:1;
+	uint32_t have_id:1;
+	uint32_t random_id:1;
+	uint32_t config_finalized:1;
+// Unicast hello?
+// Asymmetric hello?
+// rtt always?
+	
+// I might regret this
 
-struct xroute {
-    address_t prefix;
+	uint32_t kernel_routes_changed:1;
+	uint32_t kernel_rules_changed:1;
+        uint32_t kernel_link_changed:1;
+	uint32_t kernel_addr_changed:1;
+
+	// I could see adding - compute_bloated, discarding, GC or
+	// other states here. Maybe.
+
+} global_flags;
+
+// I don't know why xroute and babel_route are different.
+// The are not going to be, for me
+
+// parse_packet bugs me
+
+// a src_prefix plen of 255 means this is not a src specific
+// route. As an optimization this basically just is 0 for the
+// the offset table
+
+typedef struct {
     address_t src_prefix;
-    ubase_t metric; // FIXME metric is a short here?
+    address_t prefix;
+    address_t dest;
     ifindex_t ifindex;
+    metric_t metric; // FIXME metric is a short here?
     proto_t proto;
-} CACHELINE_ALIGN;
+} routes_t CACHELINE_ALIGN;
 
+// I like the idea of somehow vectorizing the route metric
+// calculation
+
+/* Horizontal add ? */
+
+static inline int
+route_metric(const metric_t metric)
+{
+    int m = (int)metric.ref + metric.cost + metric.add;
+    return MIN(m, INFINITY);
+}
 
 // Some unconverted structures
+// A neighbour is a router. It's shorter to type
 
-struct babel_route {
-    struct babel_route *next;
-    struct source *src;
-    ubase_t refmetric;
-    ubase_t cost;
-    ubase_t add_metric;
-    ubase_t seqno;
-    struct neighbour *neigh;
+typedef struct {
+    rid_t id;
+    metric_t m;
+    neigh_t neigh;  //
     ubase_t nexthop_idx;
     time_t time;
     int expires;
@@ -160,7 +213,6 @@ struct babel_route {
     short installed;
     short channels_len;
     unsigned char *channels;
-} CACHELINE_ALIGN;
-
+} routers_t CACHELINE_ALIGN;
 
 #endif
