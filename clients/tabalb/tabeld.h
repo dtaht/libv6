@@ -108,6 +108,7 @@ typedef struct {
 	uint16_t martian:1;
 	uint16_t v4:1;
 	uint16_t v6:1;
+	uint16_t aggregated:1;
 } addrflags_t;
 
 // However we do need to parse it on some occasions and/or pass it around
@@ -151,11 +152,11 @@ typedef struct {
 	uint32_t have_id:1;
 	uint32_t random_id:1;
 	uint32_t config_finalized:1;
-// Unicast hello?
-// Asymmetric hello?
-// rtt always?
-	
-// I might regret this
+	uint32_t use_unicast_hello:1;
+	uint32_t use_unicast_ihu:1;
+	uint32_t default_metric:2;
+
+// I might regret this as it changes
 
 	uint32_t kernel_routes_changed:1;
 	uint32_t kernel_rules_changed:1;
