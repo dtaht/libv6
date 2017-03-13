@@ -147,14 +147,22 @@ typedef struct {
 	uint32_t link_detect:1;
 	uint32_t all_wireless:1;
 	uint32_t has_ipv6_subtrees:1;
+	uint32_t ipv4:1;
+	uint32_t ipv6:1;
 	uint32_t do_daemonise:1;
 	uint32_t skip_kernel_setup:1;
+	uint32_t iff_running:1;
 	uint32_t have_id:1;
 	uint32_t random_id:1;
+	uint32_t deoptimize_wired:1;
+	uint32_t split_horizon:1;
 	uint32_t config_finalized:1;
-	uint32_t use_unicast_hello:1;
+	uint32_t monitor:1;
+	uint32_t flush_invisible:1;
+	uint32_t use_unicast:1;
 	uint32_t use_unicast_ihu:1;
-	uint32_t default_metric:2;
+ 	uint32_t default_metric:2;
+	uint32_t diversity:2;
 
 // I might regret this as it changes
 
@@ -166,7 +174,7 @@ typedef struct {
 	// I could see adding - compute_bloated, discarding, GC or
 	// other states here. Maybe.
 
-} global_flags;
+} global_flags_t;
 
 // I don't know why xroute and babel_route are different.
 // The are not going to be, for me

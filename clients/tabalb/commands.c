@@ -66,7 +66,6 @@ my callbacks = {
 
 int dump_routers(router_filt filt) {
 	int c = 0;
-	push_regs();
 	for (int i = 0; i < routers.size; i++) {
 		if(routers[i].flags & filt) {
 		c++;
@@ -74,7 +73,6 @@ int dump_routers(router_filt filt) {
 			format_eui64(routers.a[i]));
 		}
 	}
-	pop_regs();
 	return c;
 }
 
