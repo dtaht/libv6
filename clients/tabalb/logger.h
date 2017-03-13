@@ -6,13 +6,11 @@
 
 #ifndef LOGGER_H
 #define LOGGER_H
-
-#define logger(a,b,...) log(a,b,__LINE__,__func__, ...)
+#define tlogger(a,b,...) tlog(a,b,__LINE__,__func__, ...)
+#define DONOTHING do { } while 0
 
 extern int print(...);
-extern int log(int errlevel, int err, int line, char *file, char *func, ...);
-
-#define DONOTHING do { } while 0
+extern int tlog(int errlevel, int err, int line, char *file, char *func, ...);
 
 // Logging is done both on severity and on type or file basis
 

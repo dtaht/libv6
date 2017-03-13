@@ -39,7 +39,6 @@ typedef struct {
 	char *plugin;
 	char *config_file;
 	char *pidfile;
-
 } CommandLineOpts_t;
 
 extern CommandLineOpts_t process_options(int argc, char **argv, CommandLineOpts_t o);
