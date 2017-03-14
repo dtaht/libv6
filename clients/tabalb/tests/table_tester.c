@@ -61,7 +61,6 @@ test_insertion_speed() {
 		match += s[i] == compare_ip_eq(a[i],a[i+512 & MAX_ADDRS]);
 	}
 
-
 // These should get "marked" gone
 
 	speed("Delete:", c, get_cycles());
