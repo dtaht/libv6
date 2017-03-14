@@ -235,12 +235,11 @@ CommandLineOpts_t tabeld_default_options(CommandLineOpts_t o) {
 	// tabeld_default_language(o);
 }
 
-//register global_flags_t tflags asm("d1");
-
+#ifdef TEST_MODULE
 int main(int argc, char **argv) {
   CommandLineOpts_t o = { 0 };
-//  setlocale(LC_COLLATE,"C");
   o = process_options(argc,argv,tabeld_default_options(o));
   tflags = o.g;
   return(0);
 }
+#endif

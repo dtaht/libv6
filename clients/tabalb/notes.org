@@ -131,3 +131,16 @@ feature to find balance, and the tests at least, are written for x86 only.
 There's support in gcc and clang and glib and newlib
 
 not sure if it is in musl
+
+* An API begins to emerge
+
+This whole thing is a bit much for ddpd, but the table management
+gets simpler the more I abstract things.
+
+split_prefix
+dump_prefixes
+
+* macaddr_t table
+
+One of my dreams has long been to implement the rotating mac hash first described
+to me by fred baker 4+ years ago. It can try to create a perfect hash, too.

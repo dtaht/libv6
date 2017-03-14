@@ -62,6 +62,7 @@ typedef ubase_t neigh_t;
 typedef ubase_t route_t;
 typedef ubase_t rid_t;   /* router id */
 typedef ubase_t seqno_t;
+typedef ubase_t macaddr_t;
 
 typedef uint16_t ifindex_t; // the spec says this is an int
 typedef uint8_t proto_t;    // We pee on 255 for special stuff
@@ -71,8 +72,8 @@ typedef uint8_t popcnt_t;
 typedef ubase_t gc_t; // Garbage collection (arguably could be 8)
 
 typedef uint32_t ttime_t; // time in usec
-// typedef ttable * address_p;
 
+// typedef ttable * address_p;
 /* Unified metric table too, expressable as a vector */
 
 typedef struct  {

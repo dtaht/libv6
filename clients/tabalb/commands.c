@@ -90,3 +90,13 @@ int dump_routes(routes_filt filt) {
 	return c;
 }
 
+// Used to quickly dump the command strings to a file
+
+#ifdef CMD_DUMP
+int main() {
+   for(int i = 0; cmds[i].string != NULL; i++) printf("%s\n");
+   return 0;
+}
+#endif
+#ifdef MODULE_TEST
+#endif
