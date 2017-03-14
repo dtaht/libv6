@@ -3,3 +3,4 @@ TAGS
 *.o
 a.out
 core
+cmds.c

@@ -2,5 +2,5 @@
 #include "arch_detect.h"
 
 int main() {
-	printf("Hello from the %s architecture!\n", arch);
+	printf("ARCH=%s\n", arch);
 }

@@ -76,3 +76,6 @@ TAGS: $(HEADERS) $(SRCS)
 
 clean:
 	rm -f *.o tabeld
+
+reallyclean: clean
+	rm -f *~ *.out tags TAGS
