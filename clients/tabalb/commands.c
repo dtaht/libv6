@@ -29,7 +29,7 @@ enum router_filt {
 
 typedef void (*event_cb_t)(int arg1, int arg2);
 struct cb { char *cmd, *event_cb_t cb, int arg1, int arg2} ;
-void dump_routers(router_filt filt, int arg);
+void dump_routers(router_filt filt, int arg, int arg2);
 
 // This started getting ambitious on me - as in being able to specify
 // a neighbor, interface or router. Also enabling/disabling logging.
@@ -66,7 +66,7 @@ const cb callbacks[] = {
 
 // Use duff's device?
 
-void dump_routers(router_filt filt, int arg) {
+void dump_routers(router_filt filt, int arg, int arg2) {
 	int c = 0;
 	for (int i = 0; i < routers.size; i++) {
 		if(routers[i].flags & filt) {

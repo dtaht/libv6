@@ -43,3 +43,46 @@ ROUTES
 Originally I was going to use a hasher. popcnt has a great property 
 in that if two popcounts are different, we know things are different.
 
+* Plenty of registers
+
+Experimentation with the e-gcc C compiler showed that the
+registers  identified  as  requiring  “Callee  Saved”  (22  of  them)
+are only available if the special word “register” is prepended
+to local  variable declarations.  The four registers  identified as
+“Reserved for constants” are not allocated and hence not used
+in any C code fragments we inspected.
+* Merging routes
+** popcount is hamming distance
+so it is guaranteed to go down as you seach /64 /63 /62
+
+* TODO memoized queries
+* Multiple Parallallea
+Well, what do you do when you run out of space 64,000 routes?
+You start up a garuntted to be disjoint set on another cpu,
+much like being generational, you send a generation onwards
+
+
+* Disjoint portions of the data set
+* truth
+* Combiner for routes, using the hamming distance
+and triggering the garbage collector at each step outwards.
+
+append combined routes with a distance to the next possible route
+
+we establish a combining state, where we see that as a possibility
+looking back at the routes we had
+
+*** with an internall compressed routing table we can further optimize
+*** and only 
+
+we can also spread out existing route announcements sanely across the compressed
+table over a longer interval
+
+* Compression and eq and volume changes
+
+Thinking aoubt this as an audio problem, with a very low hz is helpful
+
+* plugin traffic generator
+* plugin traffic monitor
+* plugin wifi stats
+** plugin for other stuff

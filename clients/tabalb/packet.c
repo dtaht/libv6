@@ -96,7 +96,7 @@ fulladdr_t classify_address(int ae, int plen, unsigned int omitted,
         break;
     default: goto err;
     }
-    addr.flags.popcnt = popcount(addr.address);
+    addr.flags.pop = popcount(addr.address);
 //?     normalize_prefix(p_r, prefix, plen < 0 ? 128 : ae == 1 ? plen + 96 : plen);
     addr.flags.len = plen;
 
