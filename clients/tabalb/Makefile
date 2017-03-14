@@ -8,7 +8,9 @@ HEADERS = align.h c11.h command_line.h globals.h interface.h kernel.h logger.h \
           kernel_input.h neighbor.h shared.h tabeld.h util.h
 
 PROGS = tabeld
-CFLAGS = -std=gnu11 -O3 -Wall -I../../include
+CFLAGS = -std=gnu11 -O3 -Wall -I../../lib
+
+CFLAGS += -msse4.2
 
 # Will this bit of crazyness work?
 #BUILDS = $(shell $(make) -C $(C) CC=$(C))

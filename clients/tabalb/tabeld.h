@@ -10,7 +10,6 @@
 
 #include <stdint.h>
 #include "align.h"
-#include "simd.h"
 
 #ifndef INFINITY
 #define INFINITY (0xFFFF)
@@ -115,9 +114,9 @@ typedef struct {
 // in registers
 
 typedef struct {
-	int32_t pad;
-	addrflags_t flags;
 	v6addr_t address;
+	addrflags_t flags;
+	int32_t pad;
 } fulladdr_t;
 
 // The original source table was 80 bytes

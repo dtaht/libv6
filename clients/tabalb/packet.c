@@ -5,7 +5,9 @@
  * 2017-03-13
  */
 
+#include "shared.h"
 #include "packet.h"
+
 /* Parse an address, encoded in the somewhat baroque compressed
    representation used by Babel.  Return a struct containing the 
    classified address. 
@@ -16,10 +18,11 @@ ae == 2
 ae == 3 ll address
 
 I imagined that ae == 4 will one day 
-I have another ae compression method in mind - a "agregiated route"
+I have another ae compression method in mind - a "aggregated route"
 */
 
-// A goto in a macro? What could go wrong?
+// A goto in a macro? What could go wrong? How I am going to get the
+// addr over right? As a string? what?
 
 #define packet_err(e) { debug_log_address(1,1, e, addr); goto err; }
 
@@ -37,7 +40,6 @@ fulladdr_t classify_address(int ae, int plen, unsigned int omitted,
     fulladdr_t addr;
     addr.addr  = addrs[0];
     addr.flags = addrflags[0];
-
 */
     fulladdr_t addr = {0};
     addr.flags.len = addr.flags.pop = 255; // bogus packet is 255s
@@ -65,7 +67,7 @@ fulladdr_t classify_address(int ae, int plen, unsigned int omitted,
             if(dp == NULL || !v4mapped(dp))
 		packet_err("Bogus ipv4 packet encoding");
 
-	    addr.address.u4 = dp & 0xFF << omitted; // wrong: pull bytes here
+	    addr.address.u[3] = dp & 0xFF << omitted; // wrong: pull bytes here
         }
         if(pb > omitted) memcpy(prefix + 12 + omitted, p, pb - omitted);
         ret = pb - omitted; // not sure why this exists
@@ -88,15 +90,15 @@ fulladdr_t classify_address(int ae, int plen, unsigned int omitted,
 		    packet_err("LL Packet omitted offset wrong"); 
         prefix[0] = 0xfe;
         prefix[1] = 0x80;
-        addr.ll = 1;
+        addr.flags.ll = 1;
         if(pb > 8) memcpy(prefix + 8, p, pb - 8);
         ret = pb - 8;
         break;
     default: goto err;
     }
-    addr.popcnt = popcount(addr.addr);
+    addr.flags.popcnt = popcount(addr.address);
 //?     normalize_prefix(p_r, prefix, plen < 0 ? 128 : ae == 1 ? plen + 96 : plen);
-    addr.len = plen;
+    addr.flags.len = plen;
 
 err:
     return addr;

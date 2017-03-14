@@ -34,7 +34,10 @@
 #include <linux/bpf.h>
 #include <linux/fib_rules.h>
 #include <net/if_arp.h>
-
 #include <netinet/in.h>
+
+#include "tabeld.h"
+#include "globals.h"
+#include "simd.h"
 
 #endif

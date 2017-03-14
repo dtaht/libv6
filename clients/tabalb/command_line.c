@@ -20,6 +20,11 @@
 #include <assert.h>
 #include <getopt.h>
 #include <iconv.h>
+
+// In order to get registers may have to declare these
+// even earlier than this
+
+#include "shared.h"
 #include "command_line.h"
 
 typedef struct {
@@ -123,9 +128,9 @@ static const struct option long_options[] = {
   { "logfile"		, required_argument	, NULL , 'L'  } ,
   { "config_statement"	, required_argument	, NULL , 'C'  } ,
   { "pidfile"		, required_argument	, NULL , 'I' } ,
+  { "help"		, no_argument		, NULL , '?' } ,
 
 #ifdef HAVE_EXTENSIONS
-  { "help"		, no_argument		, NULL , '?' } ,
   { "about"		, no_argument		, NULL , '&' } ,
   { "output_format"	, required_argument	, NULL , '0' } ,
   { "use_unicast"	, no_argument		, NULL , 'U' } ,
@@ -153,8 +158,8 @@ static const struct option long_options[] = {
 
 static char * plugin_load(char *a) { return NULL; }
 
-/* Yes, I am passing this structure around. Try to imagine we're dealing with 
-   hardware here. */
+/* Yes, I am passing this structure around. Try to imagine
+   we're dealing with hardware here. */
 
 CommandLineOpts_t process_options(int argc, char **argv, CommandLineOpts_t o)
 {
@@ -230,12 +235,12 @@ CommandLineOpts_t tabeld_default_options(CommandLineOpts_t o) {
 	// tabeld_default_language(o);
 }
 
+//register global_flags_t tflags asm("d1");
 
 int main(int argc, char **argv) {
-  int            result;
-  int            words;
   CommandLineOpts_t o = { 0 };
 //  setlocale(LC_COLLATE,"C");
-  process_options(argc,argv,tabeld_default_options(o));
+  o = process_options(argc,argv,tabeld_default_options(o));
+  tflags = o.g;
   return(0);
 }

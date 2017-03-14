@@ -8,18 +8,38 @@
 * C bitfields are used where appropriate, masks elsewhere
 ** Very small values everywhere - think hardware or 16 bit microcontroller
 * Code sharing is maximized
+* Internationalization will be enabled
+** But string sharing across modules is hard
 * C11 features like structure return are used extensively
 ** Often structures are returned instead of using the stack
 In the case of NEON and SSE we can slam the structures into existing registers.
 In the case of hardware certain things end up in registers anyway.
 Yes, structures are a PITA in regular C, and hard on the compiler and code author.
-* Internationalization will be enabled
-** But string sharing across modules is hard
-* Direct calls to library functions are wrapped
-** Because at some point I'm going to violate the std ABI
-There will be a few globals kept always in registers
 * trap handler
 I am thinking more and more that instead of a classic goto err thing, we should
 define and have a trap handler instead. For example, in the future there might 
 be more and different ae encodings than we know how to handle.
+
+* Ipv4 vs IPv6
+It is making more and more sense to have disjoint ipv4 and ipv6 tables
+The metadata remains the same, but the other index is referenced from an
+altenate starting point. How to do this?
+* Direct calls to library functions are wrapped
+** Because at some point I'm going to violate the std ABI
+There will be a few globals kept always in registers
+** Register Set essentially looks like this
+FLAGS
+TRAPS
+BASEOFFSET
+V6ADDRS
+V4ADDRS
+V6META
+V4META
+INTERFACES
+ROUTERS
+ROUTES
+
+* popcount rather than hashes
+Originally I was going to use a hasher. popcnt has a great property 
+in that if two popcounts are different, we know things are different.
 

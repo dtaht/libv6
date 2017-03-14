@@ -5,6 +5,7 @@
  * 2017-03-13
  */
 
+#include "shared.h"
 #include "input.h"
 
 int

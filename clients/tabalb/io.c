@@ -6,7 +6,6 @@
  */
 
 #include "shared.h"
-#include "tabeld.h"
 #include "io.h"
 #include "init.h"
 

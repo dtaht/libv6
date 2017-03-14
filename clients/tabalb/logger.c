@@ -10,6 +10,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 
+#include "shared.h"
 #include "logger.h"
 
 int v4mapped_vec(usimd a) { return 0; }

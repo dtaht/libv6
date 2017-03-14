@@ -8,7 +8,6 @@
 #include "commands.h"
 
 #include "shared.h"
-#include "tabeld.h"
 #include "io.h"
 #include "init.h"
 
@@ -28,6 +27,10 @@ enum router_filt {
 	MAX_router_filt
 };
 
+typedef void (*event_cb_t)(int arg1, int arg2);
+struct cb { char *cmd, *event_cb_t cb, int arg1, int arg2} ;
+void dump_routers(router_filt filt, int arg);
+
 // This started getting ambitious on me - as in being able to specify
 // a neighbor, interface or router. Also enabling/disabling logging.
 // It's already a sizeable increase on the existing babel interface
@@ -36,7 +39,7 @@ enum router_filt {
 // json output, text, logging... the config itself... memory usage...
 // Aggghhhhh
 
-my callbacks = {
+const cb callbacks[] = {
 	{ "dump", dump_routers, ROUTER_FILT_ALL, 0 },
 	{ "dump routers", dump_routers, ROUTER_FILT_ALL, 0 },
 	{ "dump neighbours", dump_routers, ROUTER_FILT_ALL, 0 },
@@ -61,10 +64,9 @@ my callbacks = {
 	{ NULL, NULL, 0 }
 };
 
-
 // Use duff's device?
 
-int dump_routers(router_filt filt) {
+void dump_routers(router_filt filt, int arg) {
 	int c = 0;
 	for (int i = 0; i < routers.size; i++) {
 		if(routers[i].flags & filt) {

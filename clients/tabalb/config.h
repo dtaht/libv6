@@ -8,6 +8,17 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+typedef struct
+{
+  char *filename;
+  int fd;
+  off_t size;
+  void *map;
+} fmap;
+
+extern fmap get_file(fmap f);
+extern fmap close_file(fmap f);
+
 // I'm not sure why or even if I need this
 // Can't I just write the thing directly?
 

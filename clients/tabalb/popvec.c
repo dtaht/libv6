@@ -13,5 +13,7 @@ static uint16_t atable[128]; // offsets? ptrs? to starting points?
 /*
 
 a = get_startpoint(popcnt_t p) { return atable[p]; }
+index << 5; ? use index + offset + ?
 
 */
+
