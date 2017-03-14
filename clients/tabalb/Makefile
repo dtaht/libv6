@@ -1,5 +1,5 @@
 SRCS  = command_line.c commands.c init.c input.c io.c logger.c
-SRCS += main.c  packet.c parser.c popvec.c test.c
+SRCS += packet.c parser.c popvec.c test.c
 
 #SRCS += kernel_netlink.c 
 
@@ -33,6 +33,14 @@ tabeld-whole: tabeld-whole.c
 
 tabeld-$(ARCH): $(HEADERS) $(SRCS)
 	$(CROSSCC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) -o tabled-$(ARCH)
+
+extract_keys: extract_keys.c 
+
+cmds.gp: commands.c
+	extract_keys commands.c
+
+cmdshash.c: cmds.gp
+	gperf -c -C cmds.gp > cmdshash.c
 
 #$(TARGET)/test: test.c
 #	$(CC) $(CFLAGS) test.c -o $(TARGET)/test
