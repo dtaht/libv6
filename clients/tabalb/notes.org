@@ -43,6 +43,10 @@ ROUTES
 Originally I was going to use a hasher. popcnt has a great property 
 in that if two popcounts are different, we know things are different.
 
+The algorithm is becoming more similar to a classic skip list 
+every day. My intent is to do generational garbage collection
+on a tick (either per packet or time based).
+
 * Plenty of registers
 
 Experimentation with the e-gcc C compiler showed that the
@@ -56,14 +60,22 @@ in any C code fragments we inspected.
 so it is guaranteed to go down as you seach /64 /63 /62
 
 * TODO memoized queries
+
+Multiple query types are essentially memoizable - 
+
 * Multiple Parallallea
+
 Well, what do you do when you run out of space 64,000 routes?
 You start up a garuntted to be disjoint set on another cpu,
 much like being generational, you send a generation onwards
+with a clear filter between them. One clear filter is:
 
+prefix/plen - throw all possible matches against this 
+prefix less than plen into another table entirely
 
 * Disjoint portions of the data set
 * truth
+
 * Combiner for routes, using the hamming distance
 and triggering the garbage collector at each step outwards.
 
@@ -72,11 +84,16 @@ append combined routes with a distance to the next possible route
 we establish a combining state, where we see that as a possibility
 looking back at the routes we had
 
-*** with an internall compressed routing table we can further optimize
-*** and only 
+*** with an internal compressed routing table we can further optimize
+and only export to the kernel "the solution", which in many cases degrades
+to just the retracted routes and a default route.
 
-we can also spread out existing route announcements sanely across the compressed
-table over a longer interval
+We can also spread out existing route announcements sanely across the compressed
+table over a longer interval in the routing announcements
+
+and one day, just announce the aggregated routes as "true", and treat
+the arrival of a subset route (with, perhaps a different metric) as the 
+onset of uncertainty.
 
 * Compression and eq and volume changes
 
@@ -86,3 +103,31 @@ Thinking aoubt this as an audio problem, with a very low hz is helpful
 * plugin traffic monitor
 * plugin wifi stats
 ** plugin for other stuff
+
+* Tests
+
+Test performance of insert/delete/update/search mechanisms
+
+* Ringbuffer - found one here for c11 (pthreads)
+
+https://github.com/rmind/ringbuf/tree/master/src
+
+but I still want *my* ringbuffer which was a header file that took fixed length quantities and 
+used the mmap trick, and had a few other features like high and low watermarks.
+
+https://github.com/stv0g/c11-queues.git looks better. Still - fixed length 
+quantities, generated at compile time, would be better, as well as a high/low watermark
+feature to find balance, and the tests at least, are written for x86 only.
+
+* TODO I still need to look over librcu.
+
+* TODO Get a reasonably generic get_cycles routine.
+
+* New C99 trick of the month %zd
+
+%zd does the right thing for where %ld and %d are different.
+%zu as well.
+
+There's support in gcc and clang and glib and newlib
+
+not sure if it is in musl
