@@ -3,6 +3,13 @@
 #include <stdlib.h>
 #include <printf.h>
 
+// printf_arginfo_function is the new best thing
+// http://stackoverflow.com/questions/31945480/how-to-use-register-printf-specifier-with-printf-size
+
+// register_printf_function (int __spec, printf_function __func, printf_arginfo_function __arginfo) __THROW __attribute_deprecated__; extern int register_printf_specifier (int __spec, printf_function __func, printf_arginfo_size_function __arginfo) __THROW;
+
+// http://codingrelic.geekhold.com/2008/12/printf-acular.html
+
 typedef struct
 {
   char *name;

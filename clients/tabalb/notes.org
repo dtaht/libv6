@@ -144,3 +144,19 @@ dump_prefixes
 
 One of my dreams has long been to implement the rotating mac hash first described
 to me by fred baker 4+ years ago. It can try to create a perfect hash, too.
+
+* While I'm at it, printf abuse
+
+%A Address
+%P Prefix
+%M Macaddr
+
+Then I can pass a string like
+
+pass("%P via %A via %A over %M", prefix, address, nexthop, macaddr);
+
+and not have to copy OR format those variables;
+
+Or write a more specialized one.
+
+

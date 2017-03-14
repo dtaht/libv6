@@ -3,12 +3,14 @@
 
 #include <stdint.h>
 
-#if defined (__x86_64__) | defined (__arm__) | defined (__epiphany__)
+#if !defined(NO_CYCLES) && \
+	(defined (__x86_64__) | defined (__arm__) | defined (__epiphany__))
 
 #ifdef __x86_64__
 
 typedef uint64_t cycles_t;
 #define CYCLES_FMT "%lu"
+static inline int init_get_cycles() { return 0; } // Always works on this arch
 
 /** Get CPU timestep counter */
 __attribute__((always_inline)) static inline cycles_t get_cycles()
@@ -29,6 +31,11 @@ __attribute__((always_inline)) static inline cycles_t get_cycles()
 
 #ifdef __arm__
 typedef cycles_t uint32_t;
+
+// Sometimes works on this arch. I need to try to hook the perf lib
+// Also look over the right register for aarch64
+
+static inline int init_get_cycles() { return 0; }
 #define CYCLES_FMT "%u"
 
 __attribute__((always_inline)) static inline cycles_t get_cycles(void)
@@ -42,16 +49,29 @@ __attribute__((always_inline)) static inline cycles_t get_cycles(void)
 #ifdef __epiphany__
 #define CYCLES_FMT "%u"
 typedef uint32_t cycles_t;
-
+static inline int init_get_cycles() { return 0; } // Always works on this arch
+static inline cycles_t get_cycles() { return 0L; }
+static inline cycles_t get_all_cycles() { return 0L; }
 #endif
 
 #else
 
-#warning no sane get_cycles on this arch so benchmarking is impossible
-
+#ifdef NO_CYCLES
 #define CYCLES_FMT "%u"
 typedef uint32_t cycles_t;
+
+// I want to compile this out even harder than this
+
+static inline int init_get_cycles() { return 0; } 
 static inline cycles_t get_cycles() { return 0L; }
+
+#else
+#warning no sane get_cycles on this arch so benchmarking is impossible
+#define CYCLES_FMT "%u"
+typedef uint32_t cycles_t;
+static inline int init_get_cycles() { return -1; } // Always fails on this arch
+static inline cycles_t get_cycles() { return 0L; }
+#endif
 #endif
 
 #endif
