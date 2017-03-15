@@ -1,3 +1,5 @@
+PROGS = tabeld
+
 SRCS  = command_line.c commands.c init.c input.c io.c logger.c
 SRCS += packet.c parser.c popvec.c test.c
 
@@ -5,12 +7,13 @@ OBJS := $(patsubst %.c,%.o,$(SRCS))
 
 #SRCS += kernel_netlink.c 
 
-HEADERS = align.h c11.h command_line.h globals.h interface.h kernel.h logger.h \
-          resend.h simd.h traps.h arch_detect.h c11threads.h config.h init.h io.h \
-          kernel_input.h neighbor.h shared.h tabeld.h util.h
+BHEADERS = align.h c11.h command_line.h globals.h interface.h kernel.h \
+	  logger.h resend.h simd.h traps.h arch_detect.h c11threads.h \
+	  config.h init.h io.h kernel_input.h neighbor.h shared.h \			  tabeld.h util.h
 
-PROGS = tabeld
-CFLAGS  = -std=gnu11 -O3 -Wall -I../../lib
+HEADERS := $(patsubst ../*.h)
+
+CFLAGS  = -std=gnu11 -O3 -Wall -I../../lib -Iincludes
 CFLAGS += -msse4.2
 
 all: $(PROGS)

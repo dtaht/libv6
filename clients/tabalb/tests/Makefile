@@ -10,7 +10,7 @@ DEFINES = $(PLATFORM_DEFINES)
 CFLAGS = $(CDEBUGFLAGS) $(DEFINES) $(EXTRA_DEFINES)
 CFLAGS += -I$(INCDIR)
 
-INCLUDES1 = $(wildcard ../*.h)
+INCLUDES = $(wildcard $(INCDIR)/*.h)
 
 all: $(PROGS)
 
@@ -22,7 +22,7 @@ percentz: percentz.c
 
 test_arch: test_arch.c
 
-show_struct_packing: show_struct_packing.c $(INCLUDES1)
+show_struct_packing: show_struct_packing.c $(INCLUDES)
 
 run: percentz test_get_cycles table_tester show_struct_packing
 	./percentz

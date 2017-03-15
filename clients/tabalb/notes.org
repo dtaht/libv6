@@ -159,4 +159,110 @@ and not have to copy OR format those variables;
 
 Or write a more specialized one.
 
+* FMA - floating point metrics
+
+The missing "4th" additive field could be replaced by a user specified one
+
+And I'm dying to use a FMA somewhere - the idea of multiplying a result by a
+smoothing factor that is actually floating point is a cool idea.
+
+Also we need to use saturating arithmetic carefully.
+
+* Partition based on plen for city-scale routing
+
+As the only 64k bounds that are likely to be exceeded is the total number of addresses
+or routes, we can easily partition off a separate virtual co-processor to handle
+that, and still share data on interfaces, next hops, and so on.
+
+You can find nearly any division that works, and split off the work as it
+happens
+
+fc::/7
+172.26.16.0/16
+172.26.26.0/16
+
+all represent clear partitions of work.
+
+We can have a number of virtual processors much larger than the actual number of
+processors and swap them in and out as needed.
+
+You can, in general, always do this, even if you don't actually have to.
+
+* combining pop and plen
+
+If I made plen always negative a plen of 0 = 0, -128 = ?
+I want to distinguish between a source specific and non source specific route
+
+// https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html#g_t_005f_005fatomic-Builtins
+// Built-in Function: type __atomic_fetch_xor (type *ptr, type val, int memorder)
+
+* Interruptable garbage collection
+
+At any point a garbage collection attempt can be interrupted, discarded, and
+retried. As opposed to "stop the world". 
+
+gc also tries to keep track of how much work is left, in case stopping the
+world is needed.
+
+* Merge sort
+
+It is inefficient to insert each new route and metric one at a time, when
+up to 80 arrive in a single packet. Instead, all routes are staged, partitioned,
+then merged.
+
+* Native endian
+
+I would rather like to use native endianess, converting on the way in and out
+as a means to make memcmp-like operations mildly easier to think about.
+
+* partitioner
+
+pushing the partitioning into netlink would be nice -
+"give me only things that affect these subnets".
+
+* rules extension for sets
+in-set
+aorr(a,b,c,d) action
+aand
+
+* Strides and minimal table wandering instructions
+
+Originally I thought I'd generate one codebase per function, indexing off of the
+globally reserved register for that function.
+
+as I think about it there are a limited number of strides (4,8,16,64?) and truth
+values, and so we are probably better off with one generated function per stride
+on some architectures, and use an index register per se' more directly, with
+post-autoincrement, where available.
+
+this also lines up well with thumb (bottom 8 registers are 16 bit instructions),
+adapteva (same), and on x86_64 it's an extra byte per higher reg, also.
+
+I honestly can't remember if the idx register concept survived past 386 at the moment.
+
+* For_each_bla
+
+no: 
+stagger(cmd,op,timeval);
+stagger(cmd,op,timeval) {
+whichcores(mask);
+multicast(cmd,random,op,timeval)
+}
+cast
+
+* Use select profiligately
+
+* --protocol-extensions
+ae for aggregation
+ae lying - gradually increase the metric of a smaller route while holding the
+aggregate low until the listening router has a brief phase of expiring the route
+personally
+and also announcing via normal ae that aggregated route
+unicast hello
+hello with stats
+wait for hellos
+udp-lite for route transfers - we have a basic fq problem in that we want 
+our command channel for heartbeats and a data channel for route transfers
+
+We *could* listen on another port. But udp-lite is "just there".
 

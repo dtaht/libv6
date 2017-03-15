@@ -6,6 +6,22 @@
 #if !defined(NO_CYCLES) && \
 	(defined (__x86_64__) | defined (__arm__) | defined (__epiphany__))
 
+// haven't decided on this API YET
+// if doing anything with start or end
+// title ? doonething do aother should compile out
+
+#define GET_CYCLES_INIT(title,name,start,end) \
+	static char *__cyclestitle = name;    \
+	cycles_t start; cycles_t end;
+
+#define GET_CYCLES_START(title,start,end)
+#define GET_CYCLES_STOP(title,start,end)
+#define GET_CYCLES_RESUME(title,start,end)
+#define GET_CYCLES_CHECK(title,start,end)
+#define GET_CYCLES_CLEAN(title,start,end)
+
+
+
 #ifdef __x86_64__
 
 typedef uint64_t cycles_t;

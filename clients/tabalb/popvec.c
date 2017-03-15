@@ -31,8 +31,8 @@ lookup_plen(table,value)
 lookup_addr(table,value)
 return_set()
 
-we can improve the basic search time by
-leveraging that the max(pop) is relative to the min(plen)
+we can improve the basic search time by leveraging that the max(pop)
+is relative to the min(plen)
 
 solvers
 min_cost
@@ -55,13 +55,23 @@ min_length
 // unroll = min(MAX_TABLE,8)
 
 // with 256 routes it cuts the size of the search space by a factor of 8.
+// r == 0 && src.popplen == dst.popplen when false = 0
+// and doesn't increment when false, causing the backtrack to have to
+// go to the beginning of the loop and re-run from there.
+
+// r += && src.popplen == dst.popplen when false = 1
+// has the pleasing property of giving you an exact figure on what to
+// backtrack to. Seven times through the loop after a hit, r becomes 7.
+
+// sadly it creates a carried dependency that you can't run stuff 
+// unrolled unless you do it by hand
 
 insert(int offset, size) {
 	int i = offset;
 start:	for (i, i < size % MAX_TABLE, i++)	{
 		r += src.pop == dst[i].pop && src.plen==dst.plen;
 	}
-	// no need to manually prefect
+	// no need to manually prefetch nowadays
 	PREFETCH(dst[i+1],0,3); // check reads ?1 
 	if(r) { // some non-zero value but backtracking is cheap
 		oldi = i - MAX_TABLE;

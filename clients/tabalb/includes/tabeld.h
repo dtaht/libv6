@@ -51,9 +51,16 @@ but applied everywhere.
 
 typedef uint8_t v6addr_t __attribute__ ((vector_size(16))); // v6 addresses
 typedef uint8_t r6addr_t __attribute__ ((vector_size(8)));  // Router ID
+typedef uint8_t emacaddr_t __attribute__ ((vector_size(8))); // We waste 2 bytes on macs
+
+// I would like to vectorize ipv4 but am not sure how to express it cleanly
+// typedef uint8_t v4addr_t __attribute__ ((vector_size(4))); // v6 addresses
+
+typedef uint32_t v4addr_t;
 
 /* There is a hard limit of 64k anything in the system presently,
-   but we can change that if we need to */
+   but we can change that if we need to and/or fire off another
+   vm to split it */
 
 typedef uint16_t ubase_t;
 
@@ -69,7 +76,8 @@ typedef uint8_t proto_t;    // We pee on 255 for special stuff
 
 typedef uint8_t plen_t;
 typedef uint8_t popcnt_t;
-typedef ubase_t gc_t; // Garbage collection (arguably could be 8)
+
+typedef unit8_t gc_t; // Garbage collection could be 4 bits
 
 typedef uint32_t ttime_t; // time in usec
 
@@ -80,7 +88,7 @@ typedef struct  {
     ubase_t ref;
     ubase_t cost;
     ubase_t add;
-    ubase_t pad; // 0 ? infinity?
+    ubase_t user; // 0 ? infinity?
 } metric_t;
 
 /* martian detector needs to pass a much larger struct on the stack,
@@ -108,7 +116,31 @@ typedef struct {
 	uint16_t martian:1;
 	uint16_t v4:1;
 	uint16_t v6:1;
-	uint16_t aggregated:1;
+
+	uint16_t aggregating:2;
+
+	// This idea is around the concept of both
+	// aggregating routes and watching for potential changes ahead
+	// We only have 4 states:
+	// 3 = stable. 10 = stablizing 01 = going unstable 00 = unstable
+        // or the reverse 0s here. Dunno
+
+	uint16_t stability:2;
+
+	// I could put in more state here - nexthop, dest, src...
+	// hmm lets do that
+	// and see if that helps the GC phase. Inverting the
+	// sense of the logic saves on some initialization maybe
+	// An address that has none of these bits unset is nearly
+	// dead.
+
+	uint16_t dead:1; // Do the next bits suffice for GC
+	uint16_t notspecific:1;
+	uint16_t notnexthop:1;
+	uint16_t notsrc:1;
+	uint16_t notdst:1;
+	uint16_t notaddress:1;
+
 } addrflags_t;
 
 // However we do need to parse it on some occasions and/or pass it around
@@ -117,11 +149,12 @@ typedef struct {
 typedef struct {
 	v6addr_t address;
 	addrflags_t flags;
-	int32_t pad;
+	int32_t special;
 } fulladdr_t;
 
 // The original source table was 80 bytes
-// This is 16
+// This is 16 and I begrudge the time and route_count
+// fields.
 
 typedef struct {
 	rid_t id;
@@ -130,7 +163,7 @@ typedef struct {
         seqno_t seqno;
         ubase_t metric;
         ubase_t route_count; // wtf is this for?
-        ttime_t time; // gc instead?
+        ttime_t time; // gc tick instead?
 //	gc_t gc;
 } sources_t;
 
@@ -182,7 +215,7 @@ typedef struct {
 // parse_packet bugs me
 
 // a src_prefix plen of 255 means this is not a src specific
-// route. As an optimization this basically just is 0 for the
+// route. As an optimization this basically just is at 0 for the
 // the offset table
 
 typedef struct {
@@ -197,7 +230,7 @@ typedef struct {
 // I like the idea of somehow vectorizing the route metric
 // calculation
 
-/* Horizontal add ? */
+/* Horizontal add with saturating arith ? */
 
 static inline int
 route_metric(const metric_t metric)

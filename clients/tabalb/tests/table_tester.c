@@ -22,8 +22,6 @@ address_t s[MAX_ADDRS]
 // I also want to feed results into a ringbuffer 
 // rather than call a print routine directly
 
-#define FOR_ALL_ADDRS
-
 // * c? &c 
 
 test_insertion_speed() {
