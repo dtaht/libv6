@@ -19,6 +19,7 @@
 #include <netinet/ip.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include "debug.h"
 
 //#include "sockets.h"
 
@@ -59,30 +60,34 @@ SO_SNDBUF
 
  */
 
+// This is actually a trap or will be when I'm done
+
 static int fail(int s) {
     int saved_errno = errno;
     close(s);
+    perror("mesg");
+    BACKTRACE("err");
     errno = saved_errno;
     return -1;
 }
 
 typedef struct {
 	uint8_t val;
+	uint8_t ign;
 	uint8_t proto;
 	uint8_t opt;
-	uint8_t ign;
 } socket_defaults_t;
 
 socket_defaults_t babel_defaults[] = {
 	{ 1, 1, IPPROTO_IPV6, IPV6_V6ONLY },
 	{ 0, 1, SOL_SOCKET, SO_REUSEADDR },
-	{ 1, 1, IPPROTO_IPV6, IPV6_MULTICAST_LOOP },
+	{ 1, 1, IPPROTO_IPV6, IPV6_MULTICAST_LOOP }, // ?
         { 0, 1, IPPROTO_IPV6, IPV6_UNICAST_HOPS },
         { 1, 1, IPPROTO_IPV6, IPV6_MULTICAST_HOPS },
 #ifdef IPV6_TCLASS
         { 2, 0, IPPROTO_IPV6, IPV6_TCLASS }, // ECN
 #endif
-        { 0,0,0 },
+        { 0, 0, 0, 0},
 };
 
 int
@@ -105,7 +110,7 @@ tabeld_socket(sockaddr_in6_t *sin6, int size, int family, int conn, int port, in
     if((rc = fcntl(s, F_GETFD, 0)) < 0) return fail(s);
     if((rc = fcntl(s, F_SETFD, rc | FD_CLOEXEC)) < 0) return fail(s);
 
-    if ((rc = bind(s, &sin6, size)) < 0) return fail(s);
+    if ((rc = bind(s, sin6, size)) < 0) return fail(s);
 
     return s;
 }
@@ -117,7 +122,7 @@ socket_defaults_t tcp_defaults[] = {
 
 int  tcp_server_socket(int local, int port)
 {
-    int s,rc;
+    int s = -1, rc;
     sockaddr_in6_t sin6 = {0};
     sin6.sin6_family = AF_INET6;
     sin6.sin6_port = htons(port);
@@ -147,7 +152,7 @@ int unix_server_socket(const char *path)
 
     strncpy(sun.sun_path, path, sizeof(sun.sun_path));
 
-    if((s = tabeld_socket((sockaddr_in6_t *)&sun, sizeof(sun.sun_path), AF_UNIX, SOCK_STREAM, 6696, IPPROTO_TCP, tcp_defaults)) < 0)
+    if((s = tabeld_socket((sockaddr_in6_t *)&sun, sizeof(sun.sun_path), AF_UNIX, SOCK_STREAM, 6696, IPPROTO_TCP, unix_defaults)) < 0)
 	    return fail(s);
 
     if((rc = listen(s, 2)) < 0) goto fail_unlink;
@@ -160,14 +165,28 @@ fail_unlink:
     return -1;
 }
 
+#ifdef DEBUG_MODULE
+#define TEST_PORT 6669
 int main() {
-	sockaddr_in6_t sin6 = {0};
-	int s1 = tabeld_socket(&sin6, sizeof(sin6), AF_INET6, SOCK_DGRAM, 6696, IPPROTO_UDP, babel_defaults);
-	int s2 = tabeld_socket(&sin6, sizeof(sin6), AF_INET6, SOCK_DGRAM, 6696, IPPROTO_UDPLITE, babel_defaults);
+	sockaddr_in6_t sin60 = {0};
+	sockaddr_in6_t sin61 = {0};
+	sockaddr_in6_t un = {0};
+	sockaddr_in6_t tcp = {0};
+	int fds[8];
 
-	if(s1 < 0) { printf("couldn't open babel socket\n");
-	}
-	if(s2 < 0) { printf("couldn't open babel-lite socket\n");
-	}
+	tcp.sin6_family = sin61.sin6_family = sin60.sin6_family = AF_INET6;
+        tcp.sin6_port = sin61.sin6_port = sin60.sin6_port = htons(TEST_PORT);
+
+	fds[0] = tabeld_socket(&sin60, sizeof(sockaddr_in6_t), AF_INET6, SOCK_DGRAM, TEST_PORT, IPPROTO_UDP, babel_defaults);
+	fds[1] = tabeld_socket(&sin61, sizeof(sockaddr_in6_t), AF_INET6, SOCK_DGRAM, TEST_PORT, IPPROTO_UDPLITE, babel_defaults);
+	fds[2] = unix_server_socket("/tmp/testtabeld.soc");
+	fds[3] = tcp_server_socket(1,TEST_PORT);
+
+	if(fds[0] < 0) printf("couldn't open babel socket\n");
+	if(fds[1] < 0) printf("couldn't open babel-lite socket\n");
+	if(fds[2] < 0) printf("couldn't open unix control socket\n");
+	if(fds[3] < 0) printf("couldn't open tcp control socket\n");
+
 	return 0;
 }
+#endif
