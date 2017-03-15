@@ -16,7 +16,7 @@ OBJS := $(patsubst %.c,%.o,$(SRCS))
 
 DOBJS := $(patsubst %.c,%.dbg,$(SRCS))
 
-HEADERS := $(patsubst %.h,include/%.h,$(BHEADERS))
+HEADERS := $(patsubst %.h,includes/%.h,$(BHEADERS))
 
 # Custom rules to produce debuggable code as well as a gperf hash table
 
