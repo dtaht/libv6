@@ -1,0 +1,41 @@
+* Filtering
+
+What I wanted to be able to do eventually was use bpf packet filters
+extensively. For example, I'd like the existing "in whatever deny" syntax
+to get punted to bpf.
+
+* Possibly using raw sockets rather than other forms would be good
+
+but I got stuck on trying to figure out the offset for udplite
+
+tcpdump -i eno1 -d ip6 and udp dst port 6696 # or dst port 6697
+
+** but what I want is the proto offset AND to not listen to myself
+
+tcpdump -i eno1 -dd ip6 and udp dst port 6696 or ip6 proto 136 # proto offset field
+
+* ip6 protochain 6?
+
+* Got Don't listen to myself
+
+but is it optimal? cheaper to look for udp I think first
+
+tcpdump -i eno1 -dd ip6 src not fe80::0206:98ff:fe00:0232 and udp dst port 6696 or ip6 proto 136  #dst port 6696 ?
+
+* using my local ip
+
+tcpdump -i eno1 -dd ip6 src not fe80::eea8:6bff:fefe:9a2 and udp dst port 6696 or ip6 proto 136
+
+Figuring out how to slam this special address into the filter on a
+per interface basis got hard...
+
+This was helpful
+
+- https://staff.washington.edu/dittrich/talks/core02/tools/tcpdump-filters.txt
+
+tcpdump -i eno1 -dd ip6 src not fe80::eea8:6bff:fefe:9a2 and udp[2:2] = 6696 or ip6 proto 136
+
+** Idea Do receive corrupted packets - interpret these as loss ?
+
+** Mac80211?
+
