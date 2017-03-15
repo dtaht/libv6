@@ -251,6 +251,7 @@ multicast(cmd,random,op,timeval)
 cast
 
 * Use select profiligately
+actually, epoll would be better
 
 * --protocol-extensions
 ae for aggregation
@@ -266,3 +267,74 @@ our command channel for heartbeats and a data channel for route transfers
 
 We *could* listen on another port. But udp-lite is "just there".
 
+* BPF filter on interfaces? One netlink socket per interface?
+* Snoop on traffic? Count routes that I got?
+
+Even with unicast route transfers we can listen in on a raw socket on wifi
+tcpdump ip6 proto udp port 6696 or ( proto udplite port 6696) source address
+that's not me. 
+
+parasitic
+
+Can we turn off udp checksumming? Can we use raw checksumming? Can we just
+grab stuff at the mac80211 layer giving us the qos fields?
+
+Can we deeply inspect the packet? (42?) ? look for a hash? Get the ipclass?
+can we at least filter out all the nonipv4 traffic?
+
+char *opt;
+opt = "eth0";
+setsockopt(sd, SOL_SOCKET, SO_BINDTODEVICE, opt, 4);
+
+My application is running on CentOS 5.5. I'm using raw socket to send data:
+
+sd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+if (sd < 0) {
+  // Error
+}
+const int opt_on = 1;
+rc = setsockopt(m_SocketDescriptor, IPPROTO_IP, IP_HDRINCL, &opt_on, sizeof(opt_on));
+if (rc < 0) {
+  close(sd);
+  // Error
+}
+struct sockaddr_in sin;
+memset(&sin, 0, sizeof(sin));
+sin.sin_family = AF_INET;
+sin.sin_addr.s_addr = my_ip_address;
+
+if (sendto(m_SocketDescriptor, DataBuffer, (size_t)TotalSize, 0, (struct sockaddr *)&sin, sizeof(struct sockaddr)) < 0)  {
+  close(sd);
+  // Error
+}
+
+#define SERVERPORT 5555
+...
+struct ifreq ifr;
+
+
+/* Create the socket */
+sd = socket(AF_INET, SOCK_STREAM, 0);
+if (sd < 0) 
+{
+    printf("Error in socket() creation - %s", strerror(errno));
+}
+
+/* Bind to eth1 interface only - this is a private VLAN */
+memset(&ifr, 0, sizeof(ifr));
+snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "eth1");
+if ((rc = setsockopt(sd, SOL_SOCKET, SO_BINDTODEVICE, (void *)&ifr, sizeof(ifr))) < 0)
+{
+    perror("Server-setsockopt() error for SO_BINDTODEVICE");
+    printf("%s\n", strerror(errno));
+    close(sd);
+    exit(-1);
+}
+
+/* bind to an address */
+memset(&serveraddr, 0x00, sizeof(struct sockaddr_in));
+serveraddr.sin_family = AF_INET;
+serveraddr.sin_port = htons(SERVERPORT);
+serveraddr.sin_addr.s_addr = inet_addr("9.1.2.3");
+
+int rc = bind(sd, (struct sockaddr *)&serveraddr, sizeof(serveraddr));
