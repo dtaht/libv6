@@ -32,8 +32,6 @@ HEADERS := $(patsubst %.h,include/%.h,$(BHEADERS))
 %.bpf: %.filter
 	tcpdump -r wtf.cap -dd -F $< > $@
 
-babel.bpf: babel.filter
-
 # uniq -- dont-verify-checksums ? is that a bpf option?
 # -Q direction in?
 
@@ -87,6 +85,8 @@ cmds.gp: commands.c
 	extract_keys commands.c
 
 cmds.c: cmds.gp
+
+babel.bpf: babel.filter
 
 #$(TARGET)/test: test.c
 #	$(CC) $(CFLAGS) test.c -o $(TARGET)/test
