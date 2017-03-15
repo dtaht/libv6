@@ -8,9 +8,7 @@
 #ifndef RANDOM_BYTES_H
 #define RANDOM_BYTES_H
 
-#include "get_cycles.h"
-
-// FIXME: better PNRG
+// FIXME: do better PNRG
 // For most of babel's current purposes that I can think of,
 // just randomize off the cycle counter and pnrg
 // off of that. This could be better than it is but
@@ -18,7 +16,7 @@
 // and we have an issue in that get_cycles is not always defined
 // and is (sigh) a system call on arm.
 
-#if 0
+#ifdef __arm__
 int
 get_random_bytes(void *buf, int len)
 {
@@ -29,6 +27,7 @@ get_random_bytes(void *buf, int len)
     return rc;
 }
 #else
+#include "get_cycles.h"
 #warning FIXME do better than get_cycles for read_random
 int
 get_random_bytes(void *buf, int len)

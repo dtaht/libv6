@@ -1,13 +1,13 @@
 PROGS = tabeld
 
 SRCS  = command_line.c commands.c init.c input.c io.c logger.c
-SRCS += packet.c parser.c popvec.c test.c
+SRCS += packet.c parser.c popvec.c test.c random_bytes.c
 #SRCS += knetlink.c
 
 BHEADERS = align.h c11.h command_line.h globals.h interface.h kernel.h \
 	  logger.h resend.h simd.h traps.h arch_detect.h c11threads.h \
 	  config.h init.h io.h kernel_input.h neighbor.h shared.h \
-	  tabeld.h util.h
+	  tabeld.h util.h random_bytes.h
 
 CFLAGS  = -std=gnu11 -O3 -Wall -I../../lib -Iincludes
 CFLAGS += -msse4.2
