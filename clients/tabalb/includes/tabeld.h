@@ -77,7 +77,7 @@ typedef uint8_t proto_t;    // We pee on 255 for special stuff
 typedef uint8_t plen_t;
 typedef uint8_t popcnt_t;
 
-typedef unit8_t gc_t; // Garbage collection could be 4 bits
+typedef uint8_t gc_t; // Garbage collection could be 4 bits
 
 typedef uint32_t ttime_t; // time in usec
 

@@ -1,7 +1,7 @@
 PROGS = tabeld
 
 SRCS  = command_line.c commands.c init.c input.c io.c logger.c
-SRCS += packet.c parser.c popvec.c test.c random_bytes.c
+SRCS += packet.c parser.c popvec.c random_bytes.c
 #SRCS += knetlink.c
 
 BHEADERS = align.h c11.h command_line.h globals.h interface.h kernel.h \
