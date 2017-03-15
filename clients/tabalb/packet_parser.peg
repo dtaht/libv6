@@ -1,0 +1,3 @@
+/* packet parsing in peg. Who knew? */
+// verilog: http://yuba.stanford.edu/~nickm/papers/ancs48-gibb.pdf
+// https://github.com/grg/parser-gen/blob/master/README.parse-graphs.md
