@@ -1,0 +1,1 @@
+ip6 src not fe80::eea8:6bff:fefe:9a2 and udp[2:2] = 6696 or ip6 proto 136
