@@ -4,3 +4,5 @@ TAGS
 a.out
 core
 cmds.c
+*.prof
+*.dbg
