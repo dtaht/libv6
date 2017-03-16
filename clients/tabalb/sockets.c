@@ -186,7 +186,8 @@ int main() {
 	if(fds[1] < 0) printf("couldn't open babel-lite socket\n");
 	if(fds[2] < 0) printf("couldn't open unix control socket\n");
 	if(fds[3] < 0) printf("couldn't open tcp control socket\n");
-
+	sleep(60);
+	for(int i = 0; i < 8; i++) close(fds[i]);
 	return 0;
 }
 #endif

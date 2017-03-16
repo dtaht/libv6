@@ -22,5 +22,6 @@ for now, punt, because I have to think about it.
 
 */
 
+/* stumbler, sstagger, stager, stomper, sticker, scatter, gather */
 
 #endif
