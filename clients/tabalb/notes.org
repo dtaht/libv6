@@ -338,3 +338,13 @@ serveraddr.sin_port = htons(SERVERPORT);
 serveraddr.sin_addr.s_addr = inet_addr("9.1.2.3");
 
 int rc = bind(sd, (struct sockaddr *)&serveraddr, sizeof(serveraddr));
+
+* Next up popcount!
+
+implemented as a generic routine for all types using C11 generics.
+I hope.
+
+Then, off to review the table logic. I may adopt go's convention
+for identifying these "registers" here, as they *are* global symbols.
+
+Definately, treating the ipv4 and ipv6 paths as separate is looking like a big win.
