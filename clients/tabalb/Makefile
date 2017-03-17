@@ -2,23 +2,44 @@ PROGS = tabeld
 
 SRCS  = command_line.c commands.c init.c input.c io.c logger.c
 SRCS += packet.c parser.c popvec.c random_bytes.c interfaces.c
-#SRCS += knetlink.c
 
-BHEADERS = align.h c11.h command_line.h globals.h interface.h kernel.h \
+BHEADERS = align.h c11.h command_line.h globals.h interfaces.h kernel.h \
 	  logger.h resend.h simd.h traps.h arch_detect.h c11threads.h \
 	  config.h init.h io.h kernel_input.h neighbor.h shared.h \
 	  tabeld.h util.h random_bytes.h
 
 CFLAGS  = -std=gnu11 -O3 -Wall -I../../lib -Iincludes
-CFLAGS += -msse4.2
 
-OBJS := $(patsubst %.c,%.o,$(SRCS))
+# Arch specific things - still rather fragile
 
-DOBJS := $(patsubst %.c,%.dbg,$(SRCS))
+# FIXME if CROSSCC is defined, reinvoke self with that as we do all the work with CC
+# Worse, these methods break down when using lede's cross compiler regardless
 
-HEADERS := $(patsubst %.h,includes/%.h,$(BHEADERS))
+ifeq ($(CC),e-gcc)          # adapteva compiler
+	CFLAGS +=-m1reg-r63 # use reg -63 for negative constants
+	CFLAGS +=-falign-loops=8
+	CFLAGS +=-falign-functions=8
+endif
 
-# Custom rules to produce debuggable code as well as a gperf hash table
+# Intel - use cpuid? have patch at run time?
+# CFLAGS += -msse4.2
+# SRCS += knetlink.c
+
+# gcc-aarch64-
+# AARCH64
+
+# SRCS += knetlink.c
+
+# ARMv7 gcc-arm-linux-gnueabihf
+
+ifeq ($(CC),arm-linux-gnueabhf-gcc)       # arm cross compiler
+	CFLAGS += -mfpu=neon -DHAVE_NEON  # tell it we have neon
+	SRCS += knetlink.c
+endif
+
+# MIPS
+
+# Custom rules to produce debuggable code, gperf hash table, & bpf
 
 %.prof: %.c
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g -pg $< debug.c -o $@
@@ -31,6 +52,17 @@ HEADERS := $(patsubst %.h,includes/%.h,$(BHEADERS))
 
 %.bpf: %.filter
 	tcpdump -r wtf.cap -dd -F $< > $@
+
+%.s: %.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -fverbose-asm -S $< -o $@
+
+# Construct objects and added SRCS
+
+OBJS += $(patsubst %.c,%.o,$(SRCS))
+
+DOBJS += $(patsubst %.c,%.dbg,$(SRCS))
+
+HEADERS += $(patsubst %.h,includes/%.h,$(BHEADERS))
 
 # uniq -- dont-verify-checksums ? is that a bpf option?
 # -Q direction in?
@@ -73,23 +105,30 @@ tabeld-whole.c: $(HEADERS) $(SRCS)
 	cat $(SRCS) > $@
 
 tabeld-whole.s: tabeld-whole.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) -S -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< -S -o $@
 
 tabeld-whole: tabeld-whole.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -fwhole-program $< -o $@
 
 tabeld-$(ARCH): $(HEADERS) $(SRCS)
 	$(CROSSCC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) -o $@
 
-cmds.gp: commands.c
-	extract_keys commands.c
+# Some preprocessed magic to get an arch string, keys, etc
+
+arch.h: detect_arch.c
+	$(CC) -P $< -o $@
+
+extract_keys: commands.c
+	 cc -DCMD_DUMP $< -o extract_keys
+
+cmds.gp: commands.c extract_keys
+	 extract_keys > cmds.gp
 
 cmds.c: cmds.gp
 
 babel.bpf: babel.filter
 
-#$(TARGET)/test: test.c
-#	$(CC) $(CFLAGS) test.c -o $(TARGET)/test
+# Helper tools
 
 tags: $(HEADERS) $(SRCS)
 	ctags $(HEADERS) $(SRCS)
