@@ -15,6 +15,8 @@
 // right popcount to call... I didn't know, until I coded this, that the SSE4
 // version does not actually run in the SSE regs! So use the C11 generics
 // extension to first map the call to the type
+// Grump:
+// https://en.wikipedia.org/wiki/Bit_Manipulation_Instruction_Sets
 
 #define popcount(X) _Generic((X),                         \
                                 uint128_t : popcount16,   \
