@@ -24,7 +24,7 @@
 #define default_base_v4_metric  0
 #define default_base_v6_metric  1024
 
-#define default_config_port 33124
+#define default_protocol_config_port 33124
 
 #define default_protocol_config_file "/etc/babeld.conf"
 
@@ -42,10 +42,8 @@
 
 // FIXME: Not sure what these are for yet
 
-#define default_protocol_priority 0
 #define	default_protocol_kernel_priority 0
 #define default_protocol_duplicate_priority 0
-#define	default_protocol_priority 0
 
 #define default_config_address "::1"
 
@@ -54,7 +52,7 @@
 #define default_protocol_config_keys_file "/etc/tabelb.conf.keys"
 #define default_protocol_keys_file "/etc/tabelb.keys"
 #define default_protocol_config_mykeys_file "/etc/tabelb.conf.pub"
-#define default_protocol_mykeys_file "/etc/tabelb.pub"
+#define default_protocol_config_mypub_file "/etc/tabelb.pub"
 
 // I dare not run this against mainline babeld so I'm running it over UDPLITE
 // and throwing it into a table I'm not routing with.

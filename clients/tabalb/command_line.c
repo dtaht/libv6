@@ -160,6 +160,10 @@ static const struct option long_options[] = {
 
 static char * plugin_load(char *a) { return NULL; }
 
+static int getl(char *arg) {
+	return strtoul(arg,NULL,10);
+}
+
 /* Yes, I am passing this structure around. Try to imagine
    we're dealing with hardware here. */
 
@@ -181,25 +185,25 @@ CommandLineOpts_t process_options(int argc, char **argv, CommandLineOpts_t o)
     {
       case 'V': o.version = 1;  break;
       case 'm': o.mcast_address = optarg; break;
-      case 'p': o.port = strtoul(optarg,NULL,10); break;
+      case 'p': o.port = getl(optarg); break;
       case 'S': o.state_file = optarg; break;
-      case 'z': o.g.diversity = strtoul(optarg,NULL,10); break;
-      case 'h': o.hello_interval = strtoul(optarg,NULL,10); break;
-      case 'H': o.wired_hello_interval = strtoul(optarg,NULL,10); break;
-      case 'M': o.half_time = strtoul(optarg,NULL,10); break;
-      case 'k': o.kernel_priority = strtoul(optarg,NULL,10); break;
-      case 'A': o.duplicate_priority = strtoul(optarg,NULL,10); break;
+      case 'z': o.g.diversity = getl(optarg); break;
+      case 'h': o.hello_interval = getl(optarg); break;
+      case 'H': o.wired_hello_interval = getl(optarg); break;
+      case 'M': o.half_time = getl(optarg); break;
+      case 'k': o.kernel_priority = getl(optarg); break;
+      case 'A': o.duplicate_priority = getl(optarg); break;
       case 'l': o.g.iff_running = 1; break;
       case 'w': o.g.deoptimize_wired = 1; break;
       case 's': o.g.split_horizon    = 1; break;
       case 'r': o.g.random_id = 1; break;
       case 'u': o.g.flush_invisible = 1; break;
-      case 'd': o.g.debug = strtoul(optarg,NULL,10); break;
-      case 'g': o.config_port = strtoul(optarg,NULL,10); break;
-      case 't': o.table = strtoul(optarg,NULL,10); break; // FIXME multiple tables
-      case 'T': o.table_export = strtoul(optarg,NULL,10); break;
+      case 'd': o.g.debug = getl(optarg); break;
+      case 'g': o.config_port = getl(optarg); break;
+      case 't': o.table = getl(optarg); break; // FIXME multiple tables
+      case 'T': o.table_export = getl(optarg); break;
       case 'c': o.config_file = optarg; break;
-      case 'I': o.pidfile = optarg; break;
+      case 'I': o.pid_file = optarg; break;
       case '?':
       usage("Tabeld: a high speed babel protocol routing daemon"); break;
 
@@ -234,11 +238,41 @@ CommandLineOpts_t tabeld_default_options(CommandLineOpts_t o) {
 	o.g.ipv4 = 1;
 	o.g.ipv6 = 1;
 	o.format = FORMATDEFAULT; // term
+	o.mcast_address = default_protocol_v6addr;
+	o.state_file = default_protocol_state_file;
+	o.config_file = default_protocol_config_file;
+	o.pid_file = default_protocol_pid_file;
+	o.transport1 = default_protocol_v6transport1;
+	o.transport2 = default_protocol_v6transport2;
+	o.id_file = default_protocol_id_file;
+	o.port = default_protocol_v6port;
+	o.config_port = default_protocol_config_port;
+	o.config_local = default_config_local_mux;
+	o.hello_interval = default_protocol_hello_interval;
+	o.wired_hello_interval = default_protocol_wired_hello_interval;
+	o.half_time = default_protocol_half_time;
+	o.kernel_priority = default_protocol_kernel_priority;
+	o.duplicate_priority = default_protocol_duplicate_priority;
+	o.v4kernel_metric = default_base_v4_metric;
+	o.v6kernel_metric = default_base_v6_metric;
+	o.config_address = default_config_address;
+	o.traps = default_protocol_traps;
+	o.allowed_gid = default_config_allowed_gid;
+	o.keys_file = default_protocol_keys_file;
+	o.config_keys_file = default_protocol_config_keys_file;
+	o.my_keys_file = default_protocol_config_mykeys_file;
+	o.my_pub_file = default_protocol_config_mypub_file;
+
+#ifndef PRODUCTION
+	o.udplite = true;
+#endif
 	return o;
 	// tabeld_default_language(o);
 }
 
-#ifdef TEST_MODULE
+#ifdef DEBUG_MODULE
+
+global_flags_t tflags;
 int main(int argc, char **argv) {
   CommandLineOpts_t o = { 0 };
   o = process_options(argc,argv,tabeld_default_options(o));
