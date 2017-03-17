@@ -348,3 +348,31 @@ Then, off to review the table logic. I may adopt go's convention
 for identifying these "registers" here, as they *are* global symbols.
 
 Definately, treating the ipv4 and ipv6 paths as separate is looking like a big win.
+
+* HAT-trie?
+
+https://github.com/malbrain/HatTrie
+
+I would like to plunk some alternative to qsort into mainline babeld.
+
+This might be worthwhile trying
+
+* While I am endlessly appending stuff
+
+Another long stalled out effort was the ipv6 timestamp header.
+
+There was source for this, as I recall... and boy could I use it. I could punt
+timestamping to kernels that supported it. And on a p2p link, the header might
+pass.
+
+
+https://www.ietf.org/proceedings/87/slides/slides-87-6man-4.pdf
+
+And another:
+
+http://www.dcs.gla.ac.uk/~dp/pubs/Pezaros-NOMS04-CRC.pdf
+
+* I incidentally hit upon a good way to experiment with babel with less fear
+
+switch the proto I'm using to UDPLITE
+
