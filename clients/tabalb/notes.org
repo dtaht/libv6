@@ -388,5 +388,69 @@ but I need to think about it.
 
 Similarly, memcmp in sse routines
 
-* going back to ddpd
+* TODO going back to ddpd
 
+should roll the command line api while fresh on my mind
+also - api split prefix/join prefix - uses factory pattern
+
+* TODO EBPF compiler in llvm
+
+What can I make EBPF do?
+
+faster expression for
+
+tcpdump ip6 and '( proto udp or proto 138 )' and offset? portnumber = 6696 and notme
+
+but I actually want to start using extension headers so ip6 chain?
+
+
+    setsockopt(sock, SOL_SOCKET, SO_ATTACH_FILTER_EBPF, &prog_id, sizeof(prog_id));
+
+* options
+
+define run-yacc =
+yacc $(firstword $^)
+mv y.tab.c $@
+endef
+
+* adapteva notes
+
+e-gcc
+ifeq($(CC),e-gcc) 
+CFLAGS +=-m1reg-r63 - use -63 for negative constants
+CFLAGS +=-falign-loops=8
+CFLAGS +=-falign-functions=8
+endif
+
+linker, alloc_size, cold,flatten,always inline, malloc, pure, section
+gcc compiler directives
+
+--entry=entry
+
+__core_row_
+__core_col__
+__stack_start__
+
+http://adapteva.com/docs/epiphany_sdk_ref.pdf pg 49
+
+asm(".global __core_row__;");
+asm(".set __core_row__,0x20;");
+asm(".global __core_col__;");
+asm(".set __core_col__,0x24;");
+
+* Idea: Generational kernel tables.
+
+Use 2 specific kernel tables, send all routes into the new one,
+then change the rule atomically, flush all routes from the old one.
+
+Dealing with netlink's semantics is a pain in the ass.
+
+IF routes get rejected (pointing somewhere wrong), push them on a local stack
+and retry. Ideally the route insertion process is sorted correctly, but who
+knows.
+
+* Auto generate flags arguments big and little endian and a means to print them out.
+
+* Aggregating routes
+
+** join? adjecent? I have a better name for this
