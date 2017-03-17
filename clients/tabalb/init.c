@@ -12,6 +12,7 @@
 #include "shared.h"
 #include "init.h"
 #include "io.h"
+#include "traps.h"
 
 // Reasonable defaults for a small system
 
@@ -82,12 +83,6 @@ bool fill_tables(void *mem) {
 
 #ifdef DEBUG_MODULE
 #define MYMEM "/tabeld-test"
-
-// I thought there was a new version of the ternary operator for C99?
-// #define donothing { do { } while 0; }
-// #define TRAP_LT(operation,value,msg) ((operation) < (value)) ? perror(msg);
-
-#define TRAP_LT(operation,value,msg) if((operation) < (value) ) { perror(msg); exit(-1); }
 
 int main() {
 	int fd;
