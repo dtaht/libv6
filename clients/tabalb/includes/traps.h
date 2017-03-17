@@ -46,4 +46,16 @@ inline trap_t get_tabled_trap_mask(trap_t); // boolean to only see the traps you
 extern trap_t set_tabled_trap_mask(trap_t t);
 extern trap_t set_tabled_trap_cb(trap_t t, trap_callback_t c);
 
+
+#define likely
+#define unlikely
+// I will compile these down differently later and come up with better semantics
+
+#define TRAP_LT(operation,value,msg) if((operation) < (value) ) { perror(msg); exit(-1); }
+#define TRAP_GT(operation,value,msg) if((operation) > (value) ) { perror(msg); exit(-1); }
+#define TRAP_EQ(operation,value,msg) if((operation) == (value) ) { perror(msg); exit(-1); }
+
+#define TRAP_NZ(operation,msg) if((operation)) { perror(msg); exit(-1); }
+#define TRAP_ZERO(operation,msg) if((!operation) { perror(msg); exit(-1); }
+
 #endif
