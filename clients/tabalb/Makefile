@@ -6,7 +6,7 @@ SRCS += packet.c parser.c popvec.c random_bytes.c interfaces.c
 BHEADERS = align.h c11.h command_line.h globals.h interfaces.h kernel.h \
 	  logger.h resend.h simd.h traps.h arch_detect.h c11threads.h \
 	  config.h init.h io.h kernel_input.h neighbor.h shared.h \
-	  tabeld.h util.h random_bytes.h
+	  tabeld.h util.h random_bytes.h traps.h version.h
 
 CFLAGS  = -std=gnu11 -O3 -Wall -I../../lib -Iincludes
 LDFLAGS = -lrt
@@ -68,7 +68,7 @@ HEADERS += $(patsubst %.h,includes/%.h,$(BHEADERS))
 # uniq -- dont-verify-checksums ? is that a bpf option?
 # -Q direction in?
 
-$(DOBJ): $(HEADERS)
+$(DOBJS): $(HEADERS) $(SRCS)
 
 # Will this bit of crazyness work?
 # BUILDS = $(shell $(make) -C $(C) CC=$(C))
@@ -128,6 +128,9 @@ cmds.gp: commands.c extract_keys
 cmds.c: cmds.gp
 
 babel.bpf: babel.filter
+
+includes/version.h: $(SRCS) $(HEADERS)
+	./generate-version.sh > includes/version.h
 
 # Helper tools
 
