@@ -50,12 +50,63 @@ typedef enum {
 #define unlikely(x)     __builtin_expect((x),0)
 
 // I will compile these down differently later and come up with better semantics
+// I'm tempted to add bitwise operators and __func__
+// all of these need to be rewritten to take advantage of the trap register
 
+#if !(defined (TRAP_BASIC) | defined(TRAP_BIG) | defined(TRAP_NONE))
+#define TRAP_BASIC
+#endif
+
+#ifdef TRAP_BASIC
 #define TRAP_LT(operation,value,msg) if(unlikely((operation) < (value))) { perror(msg); exit(-1); }
 #define TRAP_GT(operation,value,msg) if(unlikely((operation) > (value))) { perror(msg); exit(-1); }
 #define TRAP_EQ(operation,value,msg) if(unlikely((operation) == (value)) ) { perror(msg); exit(-1); }
 
-#define TRAP_NZ(operation,msg) if((operation)) { perror(msg); exit(-1); }
-#define TRAP_ZERO(operation,msg) if((!operation) { perror(msg); exit(-1); }
+// In c true is any non zero value
+
+#define TRAP_TRUE(operation,msg) if((operation)) { perror(msg); exit(-1); }
+#define TRAP_FALSE(operation,msg) if(!(operation)) { perror(msg); exit(-1); }
+
+// Synonyms
+
+#define TRAP_NZ(a,b) TRAP_TRUE(a,b)
+#define TRAP_ZERO(a,b) TRAP_FALSE(a,b)
+
+#endif
+
+#ifdef TRAP_BIG
+#define errcmd { char buf[255]; sprintf(buf,"%s in %s", msg, __func__ ); perror(buf); exit(-1); }
+
+#define TRAP_LT(operation,value,msg) if(unlikely((operation) < (value))) errcmd
+#define TRAP_GT(operation,value,msg) if(unlikely((operation) > (value))) errcmd
+#define TRAP_EQ(operation,value,msg) if(unlikely((operation) == (value))) errcmd
+
+// In c true is any non zero value
+
+#define TRAP_TRUE(operation,msg) if((operation)) errcmd
+#define TRAP_FALSE(operation,msg) if(!(operation)) errcmd
+
+// Synonyms
+
+#define TRAP_NZ(a,b) TRAP_TRUE(a,b)
+#define TRAP_ZERO(a,b) TRAP_FALSE(a,b)
+#endif
+
+#ifdef TRAP_NONE
+#define TRAP_LT(operation,value,msg) operation
+#define TRAP_GT(operation,value,msg) operation
+#define TRAP_EQ(operation,value,msg) operation
+
+// In c true is any non zero value
+
+#define TRAP_TRUE(operation,msg) operation
+#define TRAP_FALSE(operation,msg) operation
+
+// Synonyms
+
+#define TRAP_NZ(a,b) TRAP_TRUE(a,b)
+#define TRAP_ZERO(a,b) TRAP_FALSE(a,b)
+
+#endif
 
 #endif
