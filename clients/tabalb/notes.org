@@ -375,4 +375,18 @@ http://www.dcs.gla.ac.uk/~dp/pubs/Pezaros-NOMS04-CRC.pdf
 * I incidentally hit upon a good way to experiment with babel with less fear
 
 switch the proto I'm using to UDPLITE
+* started at popcount
+and made a mess of it
+* Endian
+
+I really, really, really want to convert endianness on the way in and way out.
+
+But as near as I can tell by leveraging popcount and plen first,
+I can just consider > < 
+
+but I need to think about it.
+
+Similarly, memcmp in sse routines
+
+* going back to ddpd
 
