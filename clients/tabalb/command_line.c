@@ -26,6 +26,7 @@
 
 #include "shared.h"
 #include "command_line.h"
+#include "version.h"
 
 typedef struct {
   const int id;
@@ -56,7 +57,7 @@ static const output_types_t output_type[] = {
 
 int usage (char *err) {
   if(err) fprintf(stderr,"%s\n",err);
-  printf("tabeld [options]\n");
+  printf("tabelb %s [options]\n", TABELB_VERSION);
   printf(
 	 "-V --version                  print the version and exit\n"
 	 "-m --multicast_address  \n"
@@ -217,7 +218,7 @@ CommandLineOpts_t process_options(int argc, char **argv, CommandLineOpts_t o)
       case '_': o.g.monitor = 1; break;
       case '+': o.secure = 1; break; // unimplemented
       case '=': o.trust = 1; break; // unimplemented
-      case '@': o.traps = strtoul(optarg,NULL,10); break;
+      case '@': o.traps = getl(optarg); break;
       case '^': o.udplite = 1; break;
       case '1': o.dry_run = 1; break;
       case 'G':

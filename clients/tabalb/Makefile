@@ -9,6 +9,7 @@ BHEADERS = align.h c11.h command_line.h globals.h interfaces.h kernel.h \
 	  tabeld.h util.h random_bytes.h
 
 CFLAGS  = -std=gnu11 -O3 -Wall -I../../lib -Iincludes
+LDFLAGS = -lrt
 
 # Arch specific things - still rather fragile
 
@@ -42,10 +43,10 @@ endif
 # Custom rules to produce debuggable code, gperf hash table, & bpf
 
 %.prof: %.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g -pg $< debug.c -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g -pg $< debug.c $(LDFLAGS) -o $@
 
 %.dbg: %.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< debug.c -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< debug.c $(LDFLAGS) -o $@
 
 %.c: %.gp
 	gperf -m 16 -s 4 -c -C $< > $@
@@ -99,7 +100,7 @@ show: # $(HEADERS)
 	echo $(HEADERS)
 
 tabeld: $(HEADERS) $(SRCS)
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $(LDFLAGS) -o $@
 
 tabeld-whole.c: $(HEADERS) $(SRCS)
 	cat $(SRCS) > $@

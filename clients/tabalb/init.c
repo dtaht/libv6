@@ -5,6 +5,10 @@
  * 2017-03-12
  */
 
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "shared.h"
 #include "init.h"
 #include "io.h"
@@ -32,9 +36,14 @@ v6addr_t *addresses;
 addrflags_t *addrdata;
 
 
+void *place_tables(int fd) {
+	// do some mmap magic here
+	return NULL;
+}
+
 // FIXME - add interfaces and kill calloc as we know it
 
-bool load_tables() {
+bool load_tables(void *mem) {
 	addrs.data      = calloc(BASE,sizeof(v6addr_t));
 	addrdatas.data  = calloc(BASE,sizeof(addrflags_t));
 	routes.data     = calloc(BASE,sizeof(routes_t));
@@ -54,7 +63,7 @@ bool load_tables() {
 
 /* pre-fill link local/mcast/v4mapped/etc/etc */
 
-bool fill_tables() {
+bool fill_tables(void *mem) {
 	addrflags_t temp = {0};
 	addrflags_t *t = (addrflags_t *) addrdatas.data;
 	temp.len = temp.pop = 255; temp.martian = temp.v4 = temp.v6 = true;
@@ -71,7 +80,22 @@ bool fill_tables() {
 	return true;
 }
 
+#ifdef DEBUG_MODULE
+#define MYMEM "/tabeld-test"
+
+// I thought there was a new version of the ternary operator for C99?
+// #define donothing { do { } while 0; }
+// #define TRAP_LT(operation,value,msg) ((operation) < (value)) ? perror(msg);
+
+#define TRAP_LT(operation,value,msg) if((operation) < (value) ) { perror(msg); exit(-1); }
+
 int main() {
-	load_tables();
-	fill_tables();
+	int fd;
+	TRAP_LT((fd = shm_open(MYMEM, O_CREAT|O_RDWR, 0)), 0, "Couldn't open shared memory");
+        void *mem = place_tables(fd);
+        load_tables(mem);
+        fill_tables(mem);
+        TRAP_LT(shm_unlink(MYMEM), 0,"Couldn't close shared memory");
+	printf("success!\n");
 }
+#endif
