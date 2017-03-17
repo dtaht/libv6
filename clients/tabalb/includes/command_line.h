@@ -21,6 +21,7 @@ typedef struct {
 	uint32_t dry_run:1;
 	uint32_t trust:1;
 	uint32_t plugins:1;
+	uint32_t udplite:1;
 	uint32_t traps;
 	uint32_t hello_interval;
 	uint32_t half_time;

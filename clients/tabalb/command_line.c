@@ -94,6 +94,7 @@ int usage (char *err) {
 	 "-+ --secure    use secure transports\n"
 	 "-= --trust     trust other routers\n"
 	 "-@ --traps trap on these errors\n"
+	 "-^ --udp_lite use udp-lite exclusively\n"
 	 "   --plugin\n"
 #endif
 
@@ -142,7 +143,8 @@ static const struct option long_options[] = {
   { "monitor"		, required_argument	, NULL , '_' } ,
   { "plugin"		, required_argument	, NULL , 'G' } ,
   { "traps"             , required_argument     , NULL,  '@' },
-  { "dry-run"           , no_argument           , NULL,  '1' },
+  { "dry_run"           , no_argument           , NULL,  '1' },
+  { "udp_lite"          , no_argument           , NULL,  '^' },
 #endif
   { NULL		, 0			, NULL ,  0  }
 };
@@ -151,7 +153,7 @@ static const struct option long_options[] = {
 #define BOOLOPT(OPTION) OPTION = (strtoul(optarg,NULL,10) & 1)
 
 #ifdef HAVE_EXTENSIONS
-#define QSTRING "Vm:p:S:h:H:z:M:k:A:lwsrud:g:t:T:c:DL:C:I:?U456ST:M:G:"
+#define QSTRING "Vm:p:S:h:H:z:M:k:A:lwsrud:g:t:T:c:DL:C:I:?U456ST:M:G:^"
 #else
 #define QSTRING "Vm:p:S:h:H:z:M:k:A:lwsrud:g:t:T:c:DL:C:I:"
 #endif
@@ -212,6 +214,7 @@ CommandLineOpts_t process_options(int argc, char **argv, CommandLineOpts_t o)
       case '+': o.secure = 1; break; // unimplemented
       case '=': o.trust = 1; break; // unimplemented
       case '@': o.traps = strtoul(optarg,NULL,10); break;
+      case '^': o.udplite = 1; break;
       case '1': o.dry_run = 1; break;
       case 'G':
            o.plugins = 1;
