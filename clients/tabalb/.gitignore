@@ -6,3 +6,4 @@ core
 cmds.c
 *.prof
 *.dbg
+version.h
