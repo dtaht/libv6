@@ -544,5 +544,12 @@ necessarily work well with common post or pre indexed addressing modes.
  moving them back into the main unit. But I think ones, rather than zero,
  is the saner out. Now. Which I didn't before. Hmm....
 
+* Idea: run multiple versions in parallel
+
+we could fire off multiple copies of this to cross check each other.
+
+On both the epiphany and parallella at the same time.
+
+shades of the shuttle.
 
 
