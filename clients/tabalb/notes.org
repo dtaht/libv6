@@ -551,5 +551,8 @@ we could fire off multiple copies of this to cross check each other.
 On both the epiphany and parallella at the same time.
 
 shades of the shuttle.
+* route transfers over authenticated tcp
+
+using the noise framework, and announcing my public key
 
 

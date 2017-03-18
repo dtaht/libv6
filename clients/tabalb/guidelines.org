@@ -51,11 +51,20 @@ MUST be done in all error cases. There are some handy macros that help
 with this, and they exist because we are a virtual machine with no 
 general access to normal C and linux functionality.
 
-** Clients don't share memory space 
+** Clients don't share memory space
 
 And can be pretty much written in anything, with normal calling conventions.
 
 That said, it's sane to try to stick to what's here.
+
+** Tables are terminated as a stopgap from killing yourself
+
+As this is a specialized routing engine, the end of any given table is
+denominated by the special pattern 0xFFFF0000. The only place where this could
+bite me is if the IETF created a multicast address type with this pattern. In
+which case... I am not going to think about it.
+
+I may have just shot myself in the foot here by abstracting out ipv4. Hmm.
 
 ** Plugins share memory space
 
@@ -64,13 +73,76 @@ build or things like the register to register calling convention may
 break.
 
 *** NEVER use a blocking operation unless you are in your own thread
+And yield when it seems appropriate.
 
 *** NEVER run a calculation with an infinite bound
 
 ERM tries to work with tight R/T guaranties throughout. I need
 to come up with a way to express this. If you need to work for longer
 than X, and you need (some) of the data, allocate memory somewhere else
-and do your work at lesiure.
+and do your work at leisure.
+
+Sure - go and do a bulky operation for *a while* without calling YIELD. GC is
+expensive.
+
+Sort of in the plan is to memoize queries AND track how long they take normally
+and what they conflict with, so they can be scheduled better.
+
+but if you do something stupid like
+
+while(1) donothing();
+
+things will get very warm. Hmm. I wrote plugins for this just to see how warm.
+
+*** All operations are reducing operations by default
+given data X, we end up with data of some value X-Y.
+If you have something that explodes in the other direction, expect problems.
+I need to work out just what those are - for example a route dump from this,
+reformatted to fit the kernel, explodes rather much in size - but it is a
+predictable, maximum size.
+
+*** operations are pipelined
+
+*** Work on a local copy, accumulate changes, then commit
+
+to borrow an example from the codebase, here's a rule that gets fired every time
+it succeeds.
+
+static int
+kernel_route_notify(struct kernel_route *route, void *closure)
+{
+    kernel_routes_changed = 1;
+    return -1;
+}
+
+it is better to bulk that up:
+
+static inline int
+kernel_route_notify(struct kernel_route *route, flags, void *closure)
+{
+    flags.kernel_routes_changed = 1; // OR #IMMEDATE something
+}
+
+and after you are done, I think a non-racy version is:
+
+if(flags.krc == 1 && global.flags.krc == 0  ) {
+kflags_barrier_start();
+flags = global.flags;
+flags.krc = 1;
+atomic_update(global,flags);
+kflags_barrier_end();
+}
+
+You should bulk this up for anything that changes global state as the result of
+an operation. (so if you changed kernel routes and addresses, accumulate then
+"commit" both at the same time)
+
+I may try adopting rcu semantics or something else in the and it may end up
+the barrier has to be before and after the if.
+
+You should *only* push things forward in a plugin. It's somebody elses job to
+clear the state change, handled by the main engine.
+
 
 ** Memory structures are (almost) always append only and generational
 
@@ -88,6 +160,15 @@ about a "query" is that it becomes an index.
 *** Ring Buffers
 *** Message passing
 *** Structure passing
+
+** MergeSort, always
+
+- operation: accumulate data (sorted or unsorted)
+- sort the data according the core merge characteristic (or do it as part of the
+  operation)
+- merge the data into the main stream
+
+Merge sort of two sorted data sets is insanely faster than walking pointers.
 
 ** Big vs Little endian
 
@@ -110,9 +191,16 @@ FIXME. All I can say about it.
 
 * General Guidelines
 
+- Use table driven design and think in terms that Codd and Date would understand
+
+- Block on one thing only while having no pending operations
+
 - minimize system calls
 
 - don't use fancy functions
 
 - hook printf rather than call printf directly
+
+- don't use fopen and friends. Use mmap and parse stuff like it was memory in
+  the first place. Then throw it away.
 

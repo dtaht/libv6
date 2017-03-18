@@ -1,0 +1,53 @@
+* Output differences from babeld
+** routers vs neighbours
+neighbour is accepted as a synonym for router
+And as I am an american, so is neighbor
+
+** via vs nexthop
+
+"via" is shorter.
+
+---babeld-compat if you really want nexthop
+
+** Expires and interval timers shows in route tables
+
+disabled with --babeld-compat
+
+* Input differences
+** Only one conf file
+I may extend this to two just to keep the field happy
+** No extensive filtering language
+although what is in erm is a pure superset, I have to write a parser.
+** 
+* Separate control and routing plane
+If you want to get to the daemon you have to separately run a control plane
+interface. They are:
+
+tablec: local shared memory command line client
+tabeln: noise protocol based encrypted network client
+tabelt: tcp based network client
+
+and the related daemons are:
+
+tabled: local shared memory command line server
+tabelnd: noise protocol based encrypted network server
+tabeltd: tcp based network server
+
+Of these, I am planning to immediately convert to using the noise protocol
+framework and never expose authentication or encryption issues to the network.
+
+It just happens to be easier to write a tcp server than that.
+
+I'd also like (if I can get there) to keep the core data itself in essentially
+internal format until it hits the client. It's already highly compressed, why
+expand it on the slowest hop?
+
+It looked like it was semi-possible to either hack up noise to take structures
+directly, or merely use some sort of "stream blob of size X per record" as I do
+seem to have a basic terminator of 0xffffffff0000000 for any given thing. I think. 
+
+* Extensions
+** Pubkey format
+pubkey format:
+key name perms
+
