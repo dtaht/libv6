@@ -8,6 +8,8 @@
 #ifndef TRAPS_H
 #define TRAPS_H
 
+#include <stdnoreturn.h>
+
 // Well... setting is one thing, storage another
 // Resize notice? There will be a bunch of std traps
 // that we will just ignore in the normal case.
@@ -54,7 +56,7 @@ typedef enum {
 // all of these need to be rewritten to take advantage of the trap register
 
 #if !(defined (TRAP_BASIC) | defined(TRAP_BIG) | defined(TRAP_NONE))
-#define TRAP_BASIC
+#define TRAP_BIG
 #endif
 
 #ifdef TRAP_BASIC
@@ -75,16 +77,49 @@ typedef enum {
 #endif
 
 #ifdef TRAP_BIG
-#define errcmd { char buf[255]; sprintf(buf,"%s in %s", msg, __func__ ); perror(buf); exit(-1); }
+// I learned something today. I thought errno was a tls variable that you just
+// got. No. It's a subroutine. Yuck. I'm not doing that. To hell with errno as
+// we know it... eventually.
 
-#define TRAP_LT(operation,value,msg) if(unlikely((operation) < (value))) errcmd
-#define TRAP_GT(operation,value,msg) if(unlikely((operation) > (value))) errcmd
-#define TRAP_EQ(operation,value,msg) if(unlikely((operation) == (value))) errcmd
+//  400906:       e8 d5 fe ff ff          callq  4007e0 <__errno_location@plt>
+//  40090b:       8b 38                   mov    (%rax),%edi
+
+// incidentally, this is STILL buggy and scribbles on the stack in some undefined way
+// where does __func__ come from?
+// Not clear if this is the right way to get this right
+
+void static inline errcmd (char *msg, const char *f) __attribute__ ((noreturn));
+
+static inline noreturn void errcmd(char *msg, const char *f) {
+        int len = strlen(msg);
+        int lenf = strlen(f);
+	char buf[lenf + len + 8]; // FIXME: grab as fixed mem from elsewhere and this is not really an inline
+	sprintf(buf,"%s in %s()\n",msg,f);
+/*      it is not too early to stop using sprintf
+	strncpy(buf,msg,len);
+        buf[len++] = ':';
+        buf[len++] = ' ';
+	strncpy(&buf[len],f,strlen(f));
+        buf[len++] = '(';
+        buf[len++] = ')';
+        buf[len++] = '\n';
+        buf[len++] = 0;
+*/
+	perror(buf); // where's my errno?
+	exit(-1);
+}
+
+#define TRAP_LT(operation,value,msg) if(unlikely((operation) < (value))) errcmd(msg, __func__)
+#define TRAP_GT(operation,value,msg) if(unlikely((operation) > (value))) errcmd(msg, __func__)
+#define TRAP_EQ(operation,value,msg) if(unlikely((operation) == (value))) errcmd(msg, __func__)
 
 // In c true is any non zero value
+// in libraries an error return is usually -1 in other word - true. Sigh
+// hmm, can builtin handle nonzero?
 
-#define TRAP_TRUE(operation,msg) if((operation)) errcmd
-#define TRAP_FALSE(operation,msg) if(!(operation)) errcmd
+#define TRAP_TRUE(operation,msg) if((operation)) errcmd(msg,__func__)
+#define TRAP_FALSE(operation,msg) if(unlikely(!(operation))) errcmd(msg,__func__)
+#define TRAP_ERR(op,msg) TRAP_TRUE(op,msg)
 
 // Synonyms
 
