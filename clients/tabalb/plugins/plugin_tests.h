@@ -20,8 +20,10 @@
 #endif
 
 extern int yield_current(int r);
+extern int yield_current2(int r,tbl_b *ptr);
 
 #define YIELDR(r) yield_current(r)
+#define YIELDR2(r,v) yield_current2(r,v)
 // FIXME: token pasting from hell and doesn't expand correctly yet.
 
 #define PPASTE(t1,t2,v) t1##_##t2##_##v
@@ -118,7 +120,7 @@ extern int yield_current(int r);
 }
 
  SOMETIMES_INLINE int PO(roar_warm_bounded_overrun_explicit_match_yield_xor_char_post)(tbl_a *a,tbl_b *b, unsigned int count) {
-	register volatile unsigned char d COUNTER1;
+	register unsigned char d COUNTER1;
 	d = count;
         unsigned char r = 0; // char? It's just a fuzzy result. I mean flags << or whatever...
 	tbl_a match = *a;
@@ -132,7 +134,7 @@ extern int yield_current(int r);
 }
 
  SOMETIMES_INLINE int PO(roar_warm_bounded_overrun_explicit_match_yield_xor_post)(tbl_a *a,tbl_b *b, unsigned int count) {
-	register volatile unsigned char d COUNTER1;
+	register unsigned char d COUNTER1;
 	d = count;
         int r = 0; // char? It's just a fuzzy result. I mean flags << or whatever...
 	tbl_a match = *a;
@@ -145,6 +147,81 @@ extern int yield_current(int r);
 	return 0;
 }
 
+ SOMETIMES_INLINE int PO(roar_warm_bounded_overrun_explicit_match_yield_xor_post_array)(tbl_a *a,tbl_b *b, unsigned int count) {
+	unsigned char d COUNTER1;
+	d = count;
+        int r = 0; // char? It's just a fuzzy result. I mean flags << or whatever...
+	tbl_a match = *a;
+	int i = 0;
+	// I do hope this can be vectorized automagically as it is key to the backtracker
+	while(1) {
+	         while(d++) r += match ^ b[i++] ;
+	         YIELDR(r);
+		 match = *a++;
+	}
+	return 0;
+}
+
+// Anyway this is closer the real routine hopefully, and we constrain the loop
+// to no more than 15 searches
+
+ SOMETIMES_INLINE int PO(roar_real_unrolled_match)(tbl_a *a,tbl_b *b, unsigned int c) {
+        unsigned int r = -1;
+	tbl_a match = *a;
+	while(1) {
+	         while(c++ & 15) r += match == *b++ ;
+	         YIELDR2(r,b);
+		 r = -1;
+		 match = *a++;
+	}
+	return 0;
+}
+
+// in this case we don't need to pass r
+
+SOMETIMES_INLINE int PO(roar_real_match)(tbl_a *a,tbl_b *b, unsigned int c) {
+        unsigned int r = -1;
+	tbl_a match = *a;
+	while(1) {
+	         while (c++ & 15 & r) r += match == *b++ ;
+	         YIELDR2(r,b);
+		 r = -1;
+		 match = *a++;
+	}
+	return 0;
+}
+
+// or in this case, 255
+
+SOMETIMES_INLINE int PO(roar_real_match_freerun)(tbl_a *a,tbl_b *b, unsigned int c) {
+	unsigned char d = c & 255;
+        unsigned char r = -1;
+	tbl_a match = *a;
+	while(1) {
+	         while (d++) r += match == *b++ ;
+	         YIELDR2(r,b);
+		 r = -1;
+		 match = *a++;
+	}
+	return 0;
+}
+
+// or first hit. For all I know I should switch to pre-inc.
+// in this case, we don't need to pass r
+// I have tried r as an int too. Need to look closer
+
+SOMETIMES_INLINE int PO(roar_real_match_freerun_firsthit)(tbl_a *a,tbl_b *b, unsigned int c) {
+	unsigned char d = c & 255;
+        unsigned char r = -1;
+	tbl_a match = *a;
+	while(1) {
+	         while (d++ & r) r += match == *b++ ;
+	         YIELDR2(r,b);
+		 r = -1;
+		 match = *a++;
+	}
+	return 0;
+}
 
 // FIXME: Add CRC and memory error checks and so forth
 // One good consistency check would be to verify that the table flags matched the data
