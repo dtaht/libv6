@@ -1,0 +1,118 @@
+* erm guidelines
+
+The "Embedded Routing Machine" - ERM - is intended to be able to run on
+bare metal, a coprocessor, within a vm or container, and... also... as 
+a regular Linux process. 
+
+As such it has a few conventions that might look odd to normal C language
+programmers. It is helpful to think of it as a highly specialized cpu
+and assembly language for pounding through routing calculations more
+than anything else.
+
+* Oddities
+** C11isms
+
+*** Structure return, assignment, and so forth
+
+These are used to better emulate how a register machine would work here.
+
+*** Strong typing
+
+Everything is strongly typed, except what isn't. I'm working on that.
+
+*** Threads
+
+We use a mildly specialized c11 fake include file that allows for smaller
+stacks and the simpler __thread typedef.
+
+*** Attributes
+
+do use "pure, const, cold, hot, noreturn", wherever possible. Note that some
+notions of const and pure are violated by the vm and generational
+garbage collector. 
+
+Make sure your code operates correctly with -O3. Run valgrind. Use both
+gcc and llvm.
+
+** Tables everywhere
+
+Don't use pointers.
+
+** Permissions
+
+erm uses shared memory and various permissions tricks to limit access
+to itself. For maximal safety, add your administrative user to the
+appropriate group, and don't access it (after starting) as root. 
+
+** TRAPS and error handling
+
+All library and system calls MUST be trapped, and something appropriate
+MUST be done in all error cases. There are some handy macros that help
+with this, and they exist because we are a virtual machine with no 
+general access to normal C and linux functionality.
+
+** Clients don't share memory space 
+
+And can be pretty much written in anything, with normal calling conventions.
+
+That said, it's sane to try to stick to what's here.
+
+** Plugins share memory space
+
+Be *careful*. Compile with the same compile options as are in the 
+build or things like the register to register calling convention may
+break.
+
+*** NEVER use a blocking operation unless you are in your own thread
+
+*** NEVER run a calculation with an infinite bound
+
+ERM tries to work with tight R/T guaranties throughout. I need
+to come up with a way to express this. If you need to work for longer
+than X, and you need (some) of the data, allocate memory somewhere else
+and do your work at lesiure.
+
+** Memory structures are (almost) always append only and generational
+
+a query is "pure" in that it pulls from a generation of tables and
+(in theory, unless you are asking for a "stream"), always put elsewhere.
+
+Queries are memoized, also, if you so desire. Another way of thinking
+about a "query" is that it becomes an index.
+
+*** All structures must be aligned and padded to a natural vector boundry
+- x86_64 16 bytes
+- arm neon 8 bytes
+
+*** Allocations
+*** Ring Buffers
+*** Message passing
+*** Structure passing
+
+** Big vs Little endian
+
+Internally IP addresses are represented in native (usually little nowadays)
+endian format, and converted on the way in and out back to big endian.
+This makes for faster compares, but also means that you cannot - except in
+well defined cases - use common IETF defined macros like inet_ntop and so
+forth. 
+
+Use the replacement versions provided by the library. The (s)printf
+hooks, are handy in particular.
+
+On the other hand, you can assume that you never need to do a be32 
+conversion as a plugin, unless you are parsing some protocol not
+already handled by the engine. 
+
+** Crash recovery
+
+FIXME. All I can say about it.
+
+* General Guidelines
+
+- minimize system calls
+
+- don't use fancy functions
+
+- hook printf rather than call printf directly
+
