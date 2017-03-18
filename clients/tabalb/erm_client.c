@@ -70,9 +70,11 @@ erm_t * erm_query(erm_t erm, uint32_t *buf, int size) {
 int main() {
 	erm_t e;
         TRAP_WEQ(e = erm_attach_client(MYMEM), (void *) -1, "Couldn't attach to erm instance");
-	printf("success!\n");
-	sleep(30);
-	printf("erm_status: %d\n", erm_status);
+	printf("success! reading from engine...\n");
+	for (int i = 60; i > 0; i--) {
+	        printf("erm_status: %d\n", erm_status(e));
+                usleep(555555);
+	}
 	exit(0);
 }
 

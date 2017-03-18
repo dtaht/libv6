@@ -92,13 +92,14 @@ int main(void) __attribute__ ((cold));
 int main(void) {
 	int fd;
 	int tsize = BASE*16;
-	unsigned char *mem = NULL;
+	uint32_t *mem = NULL;
 	unsigned char *tables = NULL;
 	TRAP_LT((fd = shm_open(MYMEM, O_CREAT|O_RDWR, 0)), 0, "Couldn't open shared memory - aborting");
 	TRAP_WERR((fchmod(fd,S_IRUSR|S_IWUSR|S_IRGRP)), "Couldn't change shared memory mode"); // rw root, r group
         TRAP_WERR((fchown(fd,-1,babel_group)),"Couldn't change shared memory group");
 	// hmm. if it exists we fail?
-	TRAP_WEQ((mem = mmap(NULL,BASE*16,PROT_READ | PROT_WRITE, default_perms, fd ,0)), (void *) -1, "Couldn't mmap shared huge page memory");
+	ftruncate(fd,BASE*16*4);
+	TRAP_WEQ((mem = mmap(NULL, BASE*16, PROT_READ | PROT_WRITE, default_perms, fd ,0)), (void *) -1, "Couldn't mmap shared huge page memory");
 	if(mem == (void *) -1 ) {
 		default_perms &= ~MAP_HUGETLB;
 	        TRAP_EQ((mem = mmap(NULL,BASE*16,PROT_READ | PROT_WRITE,default_perms , fd , 0)), (void *) -1, "Couldn't mmap shared memory - aborting");
@@ -108,7 +109,11 @@ int main(void) {
         load_tables(mem);
         fill_tables(mem);
 	printf("success!\n");
-	sleep(60);
+	for (int i = 60; i > 0; --i) {
+		mem[8] = i;
+		usleep(333333);
+	}
+	mem[8] = 0;
         TRAP_WERR(munmap(mem,tsize), "Couldn't unmap shared memory");
 err:    TRAP_WERR(shm_unlink(MYMEM), "Couldn't close shared memory");
 	printf("exiting\n");
