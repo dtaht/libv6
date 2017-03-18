@@ -521,3 +521,28 @@ simd("mask")
 # no_caller_saved_registers
 # void __f () { /* Do something. */; }
 # void f () __attribute__ ((weak, alias ("__f")));
+* mmap trick
+
+one thing that I keep thinking about using is always using and bit offsets
+so that a program can never overrun its personal memory. Example:
+
+ var[ a = ++a & 16] = will endlessly cycle
+
+The other related trick is mmaping things back onto themselves as per the
+ringbuffer tick.
+
+We have (so far) a definition that the first location of a table is "special",
+in that a compare *could* stop there if it overran. Hmm. What if I made the
+"special value" all ones instead of zero?
+
+ while(match != val && val != 0) val[a = ++a & 16];
+
+however in a couple places, I made it less special than that, and this does not
+necessarily work well with common post or pre indexed addressing modes.
+
+ my "plan" was to always fold these two comparisons into an SSE reg before
+ moving them back into the main unit. But I think ones, rather than zero,
+ is the saner out. Now. Which I didn't before. Hmm....
+
+
+
