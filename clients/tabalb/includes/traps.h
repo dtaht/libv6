@@ -67,7 +67,12 @@ typedef enum {
 // In c true is any non zero value
 
 #define TRAP_TRUE(operation,msg) if((operation)) { perror(msg); exit(-1); }
-#define TRAP_FALSE(operation,msg) if(!(operation)) { perror(msg); exit(-1); }
+#define TRAP_FALSE(operation,msg) if(unlikely(!(operation))) perror(msg); exit(-1); }
+#define TRAP_ERR(op,msg) TRAP_TRUE(op,msg)
+
+#define TRAP_WTRUE(operation,msg) if((operation)) perror(msg)
+#define TRAP_WFALSE(operation,msg) if(unlikely(!(operation))) perror(msg)
+#define TRAP_WERR(op,msg) TRAP_WTRUE(op,msg)
 
 // Synonyms
 
@@ -89,12 +94,13 @@ typedef enum {
 // Not clear if this is the right way to get this right
 
 void static inline errcmd (char *msg, const char *f) __attribute__ ((noreturn));
+void static inline wrncmd (char *msg, const char *f);
 
 static inline noreturn void errcmd(char *msg, const char *f) {
         int len = strlen(msg);
         int lenf = strlen(f);
 	char buf[lenf + len + 8]; // FIXME: grab as fixed mem from elsewhere and this is not really an inline
-	sprintf(buf,"%s in %s()\n",msg,f);
+	sprintf(buf,"%s in %s()",msg,f);
 /*      it is not too early to stop using sprintf
 	strncpy(buf,msg,len);
         buf[len++] = ':';
@@ -102,11 +108,19 @@ static inline noreturn void errcmd(char *msg, const char *f) {
 	strncpy(&buf[len],f,strlen(f));
         buf[len++] = '(';
         buf[len++] = ')';
-        buf[len++] = '\n';
         buf[len++] = 0;
 */
 	perror(buf); // where's my errno?
 	exit(-1);
+}
+
+static inline void wrncmd(char *msg, const char *f) {
+        int len = strlen(msg);
+        int lenf = strlen(f);
+	char buf[lenf + len + 8];
+// FIXME: grab as fixed mem from elsewhere and this is not really an inline
+	sprintf(buf,"warning: %s in %s()",msg,f);
+	perror(buf); // where's my errno?
 }
 
 #define TRAP_LT(operation,value,msg) if(unlikely((operation) < (value))) errcmd(msg, __func__)
@@ -121,6 +135,10 @@ static inline noreturn void errcmd(char *msg, const char *f) {
 #define TRAP_FALSE(operation,msg) if(unlikely(!(operation))) errcmd(msg,__func__)
 #define TRAP_ERR(op,msg) TRAP_TRUE(op,msg)
 
+#define TRAP_WTRUE(operation,msg) if((operation)) wrncmd(msg,__func__)
+#define TRAP_WFALSE(operation,msg) if(unlikely(!(operation))) wrncmd(msg,__func__)
+#define TRAP_WERR(op,msg) TRAP_WTRUE(op,msg)
+
 // Synonyms
 
 #define TRAP_NZ(a,b) TRAP_TRUE(a,b)
@@ -128,6 +146,9 @@ static inline noreturn void errcmd(char *msg, const char *f) {
 #endif
 
 #ifdef TRAP_NONE
+
+// Go ahead, live dangerously.
+
 #define TRAP_LT(operation,value,msg) operation
 #define TRAP_GT(operation,value,msg) operation
 #define TRAP_EQ(operation,value,msg) operation
@@ -136,6 +157,11 @@ static inline noreturn void errcmd(char *msg, const char *f) {
 
 #define TRAP_TRUE(operation,msg) operation
 #define TRAP_FALSE(operation,msg) operation
+#define TRAP_ERR(op,msg) op
+
+#define TRAP_WTRUE(operation,msg) operation
+#define TRAP_WFALSE(operation,msg) operation
+#define TRAP_WERR(op,msg) op
 
 // Synonyms
 

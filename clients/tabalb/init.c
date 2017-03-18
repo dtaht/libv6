@@ -52,9 +52,9 @@ v6addr_t *addresses;
 addrflags_t *addrdata;
 
 
-void *place_tables(int fd) {
+void *place_tables(void *mem) {
 	// do some mmap magic here
-	return NULL;
+	return mem;
 }
 
 // FIXME - add interfaces and kill calloc as we know it
@@ -96,17 +96,31 @@ bool fill_tables(void *mem) {
 	return true;
 }
 
+// Need MAP_FIXED for the parallella
+// probably should use MAP_HUGETLB
+// /sys/kernel/mm/hugepages has a list of other page sizes
+// MAP_LOCKED + mlock are correct ways to keep this in core
+// MAP_POPULATE - zeros in the memory, I guess
+// ftruncate?
+
 #ifdef DEBUG_MODULE
 #define MYMEM "/tabeld-test2"
-
+#define babel_group 84
 int main() {
 	int fd;
+	int tsize = BASE*16;
+	unsigned char *mem = NULL;
+	unsigned char *tables = NULL;
 	TRAP_LT((fd = shm_open(MYMEM, O_CREAT|O_RDWR, 0)), 0, "Couldn't open shared memory");
+	TRAP_WERR((fchmod(fd,S_IRUSR|S_IWUSR|S_IRGRP)), "Couldn't change shared memory mode"); // rw root, r group
+        TRAP_WERR((fchown(fd,-1,babel_group)),"Couldn't change shared memory group");
 	// hmm. if it exists we fail?
-        void *mem = place_tables(fd);
+	TRAP_EQ((mem = mmap(NULL,BASE*16,PROT_READ | PROT_WRITE,MAP_SHARED,fd,0)), (void *) -1, "Couldn't mmap shared memory");
+        tables = place_tables(mem);
         load_tables(mem);
         fill_tables(mem);
-        TRAP_ERR(shm_unlink(MYMEM), "Couldn't close shared memory");
+        TRAP_WERR(shm_unlink(MYMEM), "Couldn't close shared memory");
+        TRAP_WERR(munmap(mem,tsize), "Couldn't unmap shared memory");
 	printf("success!\n");
 }
 #endif
