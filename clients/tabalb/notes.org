@@ -454,3 +454,70 @@ knows.
 * Aggregating routes
 
 ** join? adjecent? I have a better name for this
+
+* x86 notes
+
+** declaring my calloc
+For instance,
+
+void* my_calloc(size_t, size_t) __attribute__((alloc_size(1,2)))
+void* my_realloc(void*, size_t) __attribute__((alloc_size(2)))
+declares that my_calloc returns memory of the size given by the product of parameter 1 and 2 and that my_realloc returns memory of the size given by parameter 2.
+** really wanted to violate the C calling convention
+and just return a set flags register in several cases
+
+
+artificial
+
+useful:
+https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#Common-Function-Attributes
+
+void* my_alloc1(size_t) __attribute__((assume_aligned(16)))
+void* my_alloc2(size_t) __attribute__((assume_aligned(32, 8)))
+
+** cold optimizes for size not speed and puts in a separate section
+** ffreestanding or -fno-builtin might shut the compiler up on my printfs
+-Wformat
+** malloc tells the compiler I can alias stuff
+** const is not allowed to read global memory.
+
+and I want to violate that, selectively. Someone stop me!
+** hot gets optimized extensively yes!
+** flatten
+** no_split_stack
+** bnd_instrument looks USEFUL for doing bounds checking
+fchkp-instrument-marked-only
+extern void *
+mymalloc (size_t len) __attribute__((returns_nonnull));
+** simd is actually a keyword...
+simd("mask")
+
+** Way more compiler options than I want
+
+# -mregparm=num
+# -msseregparm=
+# -mcx16 - have 16 byte cmpxchg
+# -msahf
+# -mmovbe big endian optimization
+# -mcrc32 - used in google's hash
+# -mno-align-stringops - don't bother with alignment
+# -minline-all-stringops
+# -fomit-frame-pointer
+# -mfpmath=sse
+# sseregparm is a function attribute I can declare. Yea!
+# -mno-ieee-fp
+# __builtin_types_compatible_p
+# profile feedback via: -fprofile-arcs
+# __builtin_trap
+# __builtin_parity
+# __builtin_ffsl find first set long
+# __builtin_clzl
+# __builtin_bswap64
+# https://gcc.gnu.org/onlinedocs/gcc/x86-Function-Attributes.html
+# target(abm)
+
+# what does the https://github.com/adobe-flash/crossbridge/blob/master/llvm-gcc-4.2-2.9/gcc/testsuite/gcc.target/i386/fastcall-sseregparm.c
+# fast call do?
+# no_caller_saved_registers
+# void __f () { /* Do something. */; }
+# void f () __attribute__ ((weak, alias ("__f")));
