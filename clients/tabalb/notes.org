@@ -556,3 +556,107 @@ shades of the shuttle.
 using the noise framework, and announcing my public key
 
 
+* So I looked at the code on arm and parallela
+
+I was expect it to use the pre or post indexed addressing mode. It didn't,
+preferring an explicit immediate add. I'd also kind of expected it to fold the
+compare into a conditional instruction. Unless I'm not reading this right.
+
+http://www.cs.uregina.ca/Links/class-info/301/ARM-addressing/lecture.html
+
+What I think I am seeing is register indirect addressing with an offset.
+
+-------------------------------------------------------------------------------------
+	LDR R0, [R1], #4        R1         ; loads R0 with the word pointed at by R1
+					   ; then update the pointer by adding 4
+	to R1
+
+  d0:   f89d 3007       ldrb.w  r3, [sp, #7]
+  d4:   b2db            uxtb    r3, r3
+  d6:   1c5a            adds    r2, r3, #1
+  d8:   b2d2            uxtb    r2, r2
+  da:   f88d 2007       strb.w  r2, [sp, #7]
+  de:   b12b            cbz     r3, ec <tbl_a_tbl_b_roar_warm_bounded_overrun_ex
+plicit_match_yield_post+0x2c>
+  e0:   6833            ldr     r3, [r6, #0]
+  e2:   3604            adds    r6, #4
+  e4:   4299            cmp     r1, r3
+  e6:   bf08            it      eq
+  e8:   3501            addeq   r5, #1
+  ea:   e7f1            b.n     d0 <tbl_a_tbl_b_roar_warm_bounded_overrun_explicit_match_yield_post+0x10>
+
+
+There was a mistake in my original code in taht I used volatile too much, but
+to me, damn it, this load is postindexed. I don't care if the compiler is
+smarter than me or not, I want one less instruction. 
+
+ 2cc:   e5943000        ldr     r3, [r4]
+ 2d0:   e2844004        add     r4, r4, #4
+ 2d4:   e0233001        eor     r3, r3, r1
+ 2d8:   e0855003        add     r5, r5, r3
+ 2dc:   e2823001        add     r3, r2, #1
+ 2e0:   e3520000        cmp     r2, #0
+ 2e4:   e6ef2073        uxtb    r2, r3
+ 2e8:   1afffff7        bne     2cc <tbl_a_tbl_b_roar_warm_bounded_overrun_explicit_match_yield_xor_post_forced_locals+0x1c>
+ 
+-Os after I killed the wrong registration
+
+ 278:   e5962000        ldr     r2, [r6]
+ 27c:   e2866004        add     r6, r6, #4 // WHY?
+ 280:   e0222001        eor     r2, r2, r1
+ 284:   e0855002        add     r5, r5, r2
+ 288:   e1a02003        mov     r2, r3 // WHY? Does the mov have a side effect?
+ 28c:   eafffff5        b       268 <tbl_a_tbl_b_roar_warm_bounded_overrun_explicit_match_yield_xor_post_forced_locals+0x18>
+
+Maybe I need to be explicit about it being an array?... no....
+
+.L47:
+        adds    r3, r2, #1      @ tmp128, d,
+        uxtb    r3, r3  @ d, tmp128
+        cbz     r2, .L50        @ d,
+        ldr     r2, [r7, r5, lsl #2]    @ *_25, *_25
+        adds    r5, r5, #1      @ i, i,
+        eors    r2, r2, r0      @, D.4599, *_25, match
+        add     r6, r6, r2      @ r, D.4599
+        mov     r2, r3  @ d, d
+        b       .L47    @
+
+** So... I hit the web and found that it is a frequently missed optimization in gcc. Sigh
+
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=42612
+
+Given how small this compiles down to in the first place, I got no problem
+rewriting it to "do the right thing". Later. All I'd have to do is change the
+generated assembly to:
+
+ 278:   e5962000        ldr     r2, [r6], #4
+ 280:   e0222001        eor     r2, r2, r1
+ 284:   e0855002        add     r5, r5, r2
+ 288:   e1a02003        mov     r2, r3 // WHY?
+ 28c:   eafffff5        b       268 <tbl_a_tbl_b_roar_warm_bounded_overrun_explicit_match_yield_xor_post_forced_locals+0x18>
+
+And lest you think I'm being anal, that's a 20% reduction in instructions in the
+main loop. And I still don't know why r2 is moving to r3 all the time. Going
+from 6 instuctions to 3 seems like a win - and this is essentially the nomatch
+operation - revised here - but I suspect eor doesn't generate flags... could
+have sworn I could embed a conditional in this tho, on arm
+
+ 278:   e5962000        ldr     r2, [r6], #4
+ 280:   e0222001        eor     r2, r2, r1
+ 28c:   eafffff5        bne       268 <tbl_a_tbl_b_roar_warm_bounded_overrun_explicit_match_yield_xor_post_forced_locals+0x18>
+
+I guess I'll try fiddling with likely and so on.
+
+and the parallella NEEDS indirect post indexed to work well. Grump.
+
+* IMPORTANT NOTE
+
+And lest you think the above can't possibly work and will overrun memory, the
+trick is you always put what you are searching for in a special area at the end
+of the table, so you will ALWAYS match (eventually), and you fix it, later, in
+the backtracker.
+
+Now, it is likely that this as written will stall a lot, but, we'll see.
+
+H/T to mel, the programmer for this old trick, I think. Maybe I'll use cmov,
+I dunno.
