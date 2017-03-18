@@ -141,7 +141,7 @@ TAGS: $(HEADERS) $(SRCS)
 	etags $(HEADERS) $(SRCS)
 
 clean:
-	rm -f *.o tabeld
+	rm -f *.o tabeld *.dbg
 
 reallyclean: clean
-	rm -f *~ *.out *.dbg *.prof tags TAGS
+	rm -f *~ *.out *.prof tags TAGS

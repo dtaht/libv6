@@ -97,10 +97,11 @@ void static inline errcmd (char *msg, const char *f) __attribute__ ((noreturn));
 void static inline wrncmd (char *msg, const char *f);
 
 static inline noreturn void errcmd(char *msg, const char *f) {
+        const char * str = "fail: %s in %s()";
         int len = strlen(msg);
         int lenf = strlen(f);
-	char buf[lenf + len + 8]; // FIXME: grab as fixed mem from elsewhere and this is not really an inline
-	sprintf(buf,"%s in %s()",msg,f);
+	char buf[lenf + len + sizeof(str)+8]; // FIXME: grab as fixed mem from elsewhere and this is not really an inline
+	sprintf(buf,str,msg,f);
 /*      it is not too early to stop using sprintf
 	strncpy(buf,msg,len);
         buf[len++] = ':';
@@ -138,6 +139,8 @@ static inline void wrncmd(char *msg, const char *f) {
 #define TRAP_WTRUE(operation,msg) if((operation)) wrncmd(msg,__func__)
 #define TRAP_WFALSE(operation,msg) if(unlikely(!(operation))) wrncmd(msg,__func__)
 #define TRAP_WERR(op,msg) TRAP_WTRUE(op,msg)
+
+#define TRAP_WEQ(operation,value,msg) if((operation) == (value)) wrncmd(msg, __func__)
 
 // Synonyms
 

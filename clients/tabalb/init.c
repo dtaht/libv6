@@ -104,23 +104,32 @@ bool fill_tables(void *mem) {
 // ftruncate?
 
 #ifdef DEBUG_MODULE
-#define MYMEM "/tabeld-test2"
+#define MYMEM "/tabeld-test3"
 #define babel_group 84
-int main() {
+static int default_perms = (MAP_SHARED | MAP_HUGETLB);
+
+int main(void) __attribute__ ((cold));
+
+int main(void) {
 	int fd;
 	int tsize = BASE*16;
 	unsigned char *mem = NULL;
 	unsigned char *tables = NULL;
-	TRAP_LT((fd = shm_open(MYMEM, O_CREAT|O_RDWR, 0)), 0, "Couldn't open shared memory");
+	TRAP_LT((fd = shm_open(MYMEM, O_CREAT|O_RDWR, 0)), 0, "Couldn't open shared memory - aborting");
 	TRAP_WERR((fchmod(fd,S_IRUSR|S_IWUSR|S_IRGRP)), "Couldn't change shared memory mode"); // rw root, r group
         TRAP_WERR((fchown(fd,-1,babel_group)),"Couldn't change shared memory group");
 	// hmm. if it exists we fail?
-	TRAP_EQ((mem = mmap(NULL,BASE*16,PROT_READ | PROT_WRITE,MAP_SHARED,fd,0)), (void *) -1, "Couldn't mmap shared memory");
+	TRAP_WEQ((mem = mmap(NULL,BASE*16,PROT_READ | PROT_WRITE, default_perms, fd ,0)), (void *) -1, "Couldn't mmap shared huge page memory");
+	if(mem == (void *) -1 ) {
+		default_perms &= ~MAP_HUGETLB;
+	        TRAP_EQ((mem = mmap(NULL,BASE*16,PROT_READ | PROT_WRITE,default_perms , fd , 0)), (void *) -1, "Couldn't mmap shared memory - aborting");
+//	        TRAP_WLEQ(mem = mmap(NULL,BASE*16,PROT_READ | PROT_WRITE,default_perms , fd , 0)), (void *) -1, err, "Couldn't mmap shared memory - aborting");
+	}
         tables = place_tables(mem);
         load_tables(mem);
         fill_tables(mem);
-        TRAP_WERR(shm_unlink(MYMEM), "Couldn't close shared memory");
         TRAP_WERR(munmap(mem,tsize), "Couldn't unmap shared memory");
+err:    TRAP_WERR(shm_unlink(MYMEM), "Couldn't close shared memory");
 	printf("success!\n");
 }
 #endif
