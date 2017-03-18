@@ -18,14 +18,16 @@
 #include "traps.h"
 #include "defaults.h"
 #include "erm_client.h"
+#include "c11threads.h"
 
 // yea, global memory. Shoot me
 
-static int fd = 0;
-static int tsize = BASE*16;
-static uint32_t *mem = NULL;
-static int  default_perms = (MAP_SHARED | MAP_HUGETLB);
-static char file[255] = {0};
+static int default_perms = (MAP_SHARED | MAP_HUGETLB);
+
+static __thread int fd = 0;
+static __thread int tsize = BASE*16;
+static __thread uint32_t *mem = NULL;
+static __thread char file[255] = {0};
 
 int erm_close(erm_t erm) {
         printf("Deregistering erm instance\n"); // TRAP_NOTIFY
