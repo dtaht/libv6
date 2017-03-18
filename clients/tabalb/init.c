@@ -13,28 +13,7 @@
 #include "init.h"
 #include "io.h"
 #include "traps.h"
-
-#if !(defined(SYSTEM_SMALL) | defined(SYSTEM_BIG) )
-#define SYSTEM_SMALL
-#endif
-
-// Reasonable defaults for a small system
-
-#ifdef SYSTEM_SMALL
-#define BASE 64
-#define NUM_ROUTERS 4
-#define NUM_INTERFACES 4
-#endif
-
-// 16 thousand routes is the biggest babel-ish network I know of
-// and 2k is where babeld falls over today. So... hit it with a hammer
-
-#ifdef SYSTEM_BIG
-#define BASE (1024*16)
-#define NUM_ROUTERS 64
-#define NUM_INTERFACES 32
-#endif
-
+#include "defaults.h"
 // Meh. We should just keep the one and keep things to powers of two
 // Why waste four bytes? :).
 // ALWAYS treat addrdata as the canonical reference
@@ -128,8 +107,10 @@ int main(void) {
         tables = place_tables(mem);
         load_tables(mem);
         fill_tables(mem);
+	printf("success!\n");
+	sleep(60);
         TRAP_WERR(munmap(mem,tsize), "Couldn't unmap shared memory");
 err:    TRAP_WERR(shm_unlink(MYMEM), "Couldn't close shared memory");
-	printf("success!\n");
+	printf("exiting\n");
 }
 #endif
