@@ -2,11 +2,12 @@ PROGS = tabeld
 
 SRCS  = command_line.c commands.c init.c input.c io.c logger.c
 SRCS += packet.c parser.c popvec.c random_bytes.c interfaces.c
+SRCS += erm_client.c
 
 BHEADERS = align.h c11.h command_line.h globals.h interfaces.h kernel.h \
 	  logger.h resend.h simd.h traps.h arch_detect.h c11threads.h \
 	  config.h init.h io.h kernel_input.h neighbor.h shared.h \
-	  tabeld.h util.h random_bytes.h traps.h version.h
+	  tabeld.h util.h random_bytes.h traps.h
 
 CFLAGS  = -std=gnu11 -O3 -Wall -I../../lib -Iincludes
 LDFLAGS = -lrt
@@ -68,7 +69,7 @@ HEADERS += $(patsubst %.h,includes/%.h,$(BHEADERS))
 # uniq -- dont-verify-checksums ? is that a bpf option?
 # -Q direction in?
 
-$(DOBJS): $(HEADERS) $(SRCS)
+$(DOBJS): $(HEADERS) $(SRCS) includes/version.h
 
 # Will this bit of crazyness work?
 # BUILDS = $(shell $(make) -C $(C) CC=$(C))
@@ -99,10 +100,10 @@ show: # $(HEADERS)
 	echo $(OBJS)
 	echo $(HEADERS)
 
-tabeld: $(HEADERS) $(SRCS)
+tabeld: $(HEADERS) $(SRCS) includes/version.h
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $(LDFLAGS) -o $@
 
-tabeld-whole.c: $(HEADERS) $(SRCS)
+tabeld-whole.c: $(HEADERS) $(SRCS) 
 	cat $(SRCS) > $@
 
 tabeld-whole.s: tabeld-whole.c
