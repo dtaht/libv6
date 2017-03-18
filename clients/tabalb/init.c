@@ -14,11 +14,26 @@
 #include "io.h"
 #include "traps.h"
 
+#if !(defined(SYSTEM_SMALL) | defined(SYSTEM_BIG) )
+#define SYSTEM_SMALL
+#endif
+
 // Reasonable defaults for a small system
 
+#ifdef SYSTEM_SMALL
 #define BASE 64
 #define NUM_ROUTERS 4
 #define NUM_INTERFACES 4
+#endif
+
+// 16 thousand routes is the biggest babel-ish network I know of
+// and 2k is where babeld falls over today. So... hit it with a hammer
+
+#ifdef SYSTEM_BIG
+#define BASE (1024*16)
+#define NUM_ROUTERS 64
+#define NUM_INTERFACES 32
+#endif
 
 // Meh. We should just keep the one and keep things to powers of two
 // Why waste four bytes? :).
@@ -77,20 +92,21 @@ bool fill_tables(void *mem) {
 	t[addrdatas.idx++] = temp;
 
 // For conveinence, the first router id in the routerid table is me
-
+// wish I could just set the flags register and squeeze out a test
 	return true;
 }
 
 #ifdef DEBUG_MODULE
-#define MYMEM "/tabeld-test"
+#define MYMEM "/tabeld-test2"
 
 int main() {
 	int fd;
 	TRAP_LT((fd = shm_open(MYMEM, O_CREAT|O_RDWR, 0)), 0, "Couldn't open shared memory");
+	// hmm. if it exists we fail?
         void *mem = place_tables(fd);
         load_tables(mem);
         fill_tables(mem);
-        TRAP_LT(shm_unlink(MYMEM), 0,"Couldn't close shared memory");
+        TRAP_ERR(shm_unlink(MYMEM), "Couldn't close shared memory");
 	printf("success!\n");
 }
 #endif
