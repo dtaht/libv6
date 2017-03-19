@@ -748,3 +748,25 @@ float my_float SECTION("heap_dram"); //section at 0x8f800000
 * __COUNTER__
 
  could maybe be used to generate trap numbers
+
+* SOURCE_DATE_EPOCH
+
+can be used instead of __DATE__ for repeatable builds
+
+* Token pasting and preprocessing
+
+For all I know I'll end up preprocessing things twice in some cases
+
+#define xstr(s) str(s)
+#define str(s) #s
+#define foo 4
+
+
+str (foo)
+     → "foo"
+xstr (foo)
+     → xstr (4)
+     → str (4)
+     → "4"
+
+
