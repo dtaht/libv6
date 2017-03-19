@@ -1,4 +1,4 @@
-PROGS = tabeld
+PROGS = germ
 
 SRCS  = command_line.c commands.c init.c input.c io.c logger.c
 SRCS += packet.c parser.c popvec.c random_bytes.c interfaces.c
@@ -101,8 +101,20 @@ show: # $(HEADERS)
 	echo $(OBJS)
 	echo $(HEADERS)
 
+# local shared memory command line client
+
+germ: germ.c erm_client.o commands.o
+	$(CC) -Iincludes $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $< $(LDFLAGS) -o $@
+
+# noize version
+
+berm: berm.c erm_client.o commands.o
+	$(CC) -Iincludes $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $< $(LDFLAGS) -o $@
+
+# daemons
+
 tabeld: $(HEADERS) $(SRCS) includes/version.h
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $(LDFLAGS) -o $@
+	$(CC) -Iincludes $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $(LDFLAGS) -o $@
 
 tabeld-whole.c: $(HEADERS) $(SRCS) 
 	cat $(SRCS) > $@
@@ -120,6 +132,8 @@ tabeld-$(ARCH): $(HEADERS) $(SRCS)
 
 arch.c: includes/arch_detect.h
 	$(CC) -E $< -o $@
+
+# This must run using the local cc
 
 extract_keys: commands.c includes/commands.h
 	 cc -Iincludes -DCMD_DUMP $< -o extract_keys
@@ -143,7 +157,7 @@ TAGS: $(HEADERS) $(SRCS)
 	etags $(HEADERS) $(SRCS)
 
 clean:
-	rm -f *.o tabeld *.dbg extract_keys
+	rm -f *.o $(PROGS) *.dbg extract_keys
 
 reallyclean: clean
 	rm -f *~ *.out *.prof tags TAGS
