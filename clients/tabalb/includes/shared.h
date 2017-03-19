@@ -36,6 +36,7 @@
 #include <net/if_arp.h>
 #include <netinet/in.h>
 
+#include "preprocessor.h"
 #include "tabeld.h"
 #include "globals.h"
 #include "simd.h"

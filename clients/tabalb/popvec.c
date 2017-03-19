@@ -5,7 +5,8 @@
  * 2017-03-12
  */
 
-#include "popvec.h"
+#include "shared.h"
+#include "debug.h"
 
 static uint8_t asizes[128]; // current size of the table must be a power of two
 static uint16_t atable[128]; // offsets? ptrs? to starting points?
@@ -19,8 +20,9 @@ index << 5; ? use index + offset + ?
 
 ubase_t popsorted[128];
 
-/* in all these functions 0 is failed */
+// in all these functions 0 is failed
 
+/* 
 basetype init(table,offset,value);
 basetype insert(table,offset,value);
 delete (table,offset,value);
@@ -31,6 +33,9 @@ lookup_plen(table,value)
 lookup_addr(table,value)
 return_set()
 
+*/
+
+/*
 we can improve the basic search time by leveraging that the max(pop)
 is relative to the min(plen)
 
@@ -104,3 +109,8 @@ start:	for (i, i < size % MAX_TABLE, i++)	{
 }
 
 search
+*/
+
+#ifdef DEBUG_MODULE
+MFIXME
+#endif

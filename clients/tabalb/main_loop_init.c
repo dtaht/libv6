@@ -40,3 +40,6 @@ void main_loop_init() {
 	if(stagger_wait(a,10000*num_live_interfaces * 4) < 0) crashlog(thread_crash);
 	exec_main_loop(); // chaining
 }
+#ifdef DEBUG_MODULE
+MFIXME
+#endif

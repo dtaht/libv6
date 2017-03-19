@@ -115,7 +115,8 @@ int main(void) {
 	}
 	mem[8] = 0;
         TRAP_WERR(munmap(mem,tsize), "Couldn't unmap shared memory");
-err:    TRAP_WERR(shm_unlink(MYMEM), "Couldn't close shared memory");
+// err:
+        TRAP_WERR(shm_unlink(MYMEM), "Couldn't close shared memory");
 	printf("exiting\n");
 }
 #endif

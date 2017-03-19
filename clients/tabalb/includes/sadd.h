@@ -22,15 +22,6 @@ static inline uint16_t sadd16(uint16_t a, uint16_t b)
 
 // Saturating arithmetic courtesy of:
 // http://stackoverflow.com/questions/121240/how-to-do-saturating-addition-in-c
-
-#if 1   // icc avoids cmov with these in msalters' version
-#define likely(x)       __builtin_expect(!!(x), 1)
-#define unlikely(x)     __builtin_expect(!!(x), 0)
-#else
-#define likely(x)       x
-#define unlikely(x)     x
-#endif
-
 // Sorted in order of least bad on x86, with gcc5
 
 uint16_t adds16_msalters(uint16_t a, uint16_t b) {

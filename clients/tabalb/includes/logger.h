@@ -7,7 +7,6 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 #define tlogger(a,b,...) tlog(a,b,__LINE__,__func__, ...)
-#define DONOTHING do { } while 0
 
 extern int tprint(int dest, ...);
 extern int tlog(int errlevel, int err, int line, char *file, char *func, ...);

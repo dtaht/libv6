@@ -10,6 +10,16 @@
 #include <unistd.h>
 #include "debug.h"
 
+void mignore(const char *msg) {
+	printf("ignored: %s\n", msg);
+	exit(0);
+}
+
+void unfinished(const char *msg) {
+	printf("unfinished: %s\n", msg);
+	exit(-1);
+}
+
 #define BT_BUF_SIZE 100
 
 int debug_backtrace(char *msg) {
@@ -35,3 +45,6 @@ int debug_backtrace(char *msg) {
      free(strings);
      return -1;
 }
+#ifdef DEBUG_MODULE
+MFIXME
+#endif

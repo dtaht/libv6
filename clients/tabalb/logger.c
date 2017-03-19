@@ -30,7 +30,7 @@ int v4mapped_str(char * a) { return 0; }
         default: v4mapped_vec			      \
 		)(X)
 
-#ifdef TEST
+#ifdef DEBUG_MODULE
 #define TPREFIX1 "fd80::1"
 #define TPREFIX2 "fd80::2"
 

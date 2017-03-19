@@ -50,6 +50,7 @@ char *hints(const char *buf, int *color, int *bold) {
     return NULL;
 }
 
+#ifdef DEBUG_MODULE
 int main(int argc, char **argv) {
     char *line;
     char *prgname = argv[0];
@@ -102,3 +103,4 @@ int main(int argc, char **argv) {
     }
     return 0;
 }
+#endif

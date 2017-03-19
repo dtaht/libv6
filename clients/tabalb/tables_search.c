@@ -7,9 +7,6 @@
 #include <stdint.h>
 #include <sched.h>
 
-#define YIELD sched_yield()
-//#define tbl_a uint16_t
-//#define tbl_b uint16_t
 #define tbl_a uint16_t
 #define tbl_b uint16_t
 
@@ -21,7 +18,5 @@
 #include "tables_search.h"
 
 #ifdef DEBUG_MODULE
-int main() {
-	return 0;
-}
+MIGNORE
 #endif

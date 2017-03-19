@@ -7,6 +7,9 @@
 
 #include "shared.h"
 #include "input.h"
+#include "debug.h"
+
+extern const unsigned char v4prefixstr[];
 
 int
 parse_address(const char *address, unsigned char *addr_r, int *af_r)
@@ -17,7 +20,7 @@ parse_address(const char *address, unsigned char *addr_r, int *af_r)
 
     rc = inet_pton(AF_INET, address, &ina);
     if(rc > 0) {
-        memcpy(addr_r, v4prefix, 12);
+        memcpy(addr_r, v4prefixstr, 12);
         memcpy(addr_r + 12, &ina, 4);
         if(af_r) *af_r = AF_INET;
         return 0;
@@ -32,3 +35,11 @@ parse_address(const char *address, unsigned char *addr_r, int *af_r)
 
     return -1;
 }
+
+#ifdef DEBUG_MODULE
+const unsigned char v4prefixstr[] = { 0, 0, 0, 0,
+				      0, 0, 0, 0,
+				      0, 0, 0xff, 0xff,
+				      1, 1, 1, 1 };
+MFIXME
+#endif

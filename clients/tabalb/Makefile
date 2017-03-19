@@ -1,14 +1,21 @@
-PROGS = germ
+PROGS = germ werm tabelb sqerm berm
 
 SRCS  = command_line.c commands.c init.c input.c io.c logger.c
-SRCS += packet.c parser.c popvec.c random_bytes.c interfaces.c
+SRCS += parser.c popvec.c random_bytes.c interfaces.c
 SRCS += erm_client.c
 SRCS += arch.c
+SRCS += traps.c
+SRCS += print_global_t.c
+
+# SRCS += packet.c // unfinished
+
+DLIB  = debug.o traps.o
+DSRCS = debug.c traps.c
 
 BHEADERS = align.h c11.h command_line.h globals.h interfaces.h kernel.h \
 	  logger.h resend.h simd.h traps.h arch_detect.h c11threads.h \
 	  config.h init.h io.h kernel_input.h neighbor.h shared.h \
-	  tabeld.h util.h random_bytes.h traps.h
+	  tabeld.h util.h random_bytes.h traps.h preprocessor.h
 
 CFLAGS  = -std=gnu11 -O3 -Wall -I../../lib -Iincludes
 LDFLAGS = -lrt
@@ -44,11 +51,11 @@ endif
 
 # Custom rules to produce debuggable code, gperf hash table, & bpf
 
-%.prof: %.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g -pg $< debug.c $(LDFLAGS) -o $@
+%.prof: %.c $(DLIB)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g -pg $< $(DLIB) $(LDFLAGS) -o $@
 
-%.dbg: %.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< debug.c $(LDFLAGS) -o $@
+%.dbg: %.c $(DLIB)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< $(DLIB) $(LDFLAGS) -o $@
 
 %.c: %.gp
 	gperf -m 16 -s 4 -c -C $< > $@
@@ -63,7 +70,18 @@ endif
 
 OBJS += $(patsubst %.c,%.o,$(SRCS))
 
-DOBJS += $(patsubst %.c,%.dbg,$(SRCS))
+DOBJS2 += $(patsubst %.c,%.dbg,$(SRCS))
+
+# We can't link core lib .dbg objects to themselves
+
+traps.dbg: traps.c debug.o
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< debug.o $(LDFLAGS) -o $@
+
+# arch is a generated file, no point in debugging it. Phony? It would actually be
+# handy to have it as a program to use later...
+
+arch.dbg: arch.c
+	echo ""
 
 HEADERS += $(patsubst %.h,includes/%.h,$(BHEADERS))
 
@@ -97,24 +115,30 @@ $(TOBJS): | $(OBJDIR)
 $(OBJDIR):
 	mkdir $(OBJDIR)
 
-show: # $(HEADERS)
-	echo $(OBJS)
-	echo $(HEADERS)
-
 # local shared memory command line client
 
 germ: germ.c erm_client.o commands.o
-	$(CC) -Iincludes $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $< $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $< $(LDFLAGS) -o $@
 
 # noize version
 
 berm: berm.c erm_client.o commands.o
-	$(CC) -Iincludes $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $< $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $< $(LDFLAGS) -o $@
+
+# Stress Tester
+
+sqerm: sqerm.c erm_client.o commands.o
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $< $(LDFLAGS) -o $@
+
+# Warnings and monitoring tool
+
+werm: werm.c erm_client.o commands.o
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $< $(LDFLAGS) -o $@
 
 # daemons
 
 tabeld: $(HEADERS) $(SRCS) includes/version.h
-	$(CC) -Iincludes $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $(LDFLAGS) -o $@
 
 tabeld-whole.c: $(HEADERS) $(SRCS) 
 	cat $(SRCS) > $@
@@ -128,7 +152,7 @@ tabeld-whole: tabeld-whole.c
 tabeld-$(ARCH): $(HEADERS) $(SRCS)
 	$(CROSSCC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) -o $@
 
-# Some preprocessed magic to get an arch string, keys, etc
+# Some preprocessed magic to get an arch string, endian, keys, etc
 
 arch.c: includes/arch_detect.h
 	$(CC) -E $< -o $@
@@ -149,6 +173,21 @@ includes/version.h: $(SRCS) $(HEADERS)
 	./generate-version.sh > includes/version.h
 
 # Helper tools
+
+# FIXME: enable full warnings (need to shut printf up)
+
+plugins:
+	$(MAKE) -C plugins
+
+.PHONY: full_warnings debug_modules clean reallyclean show
+
+show:
+	echo $(OBJS)
+	echo $(HEADERS)
+
+full_warnings: $(DOBJS)
+
+debug_modules: $(DOBJS2)
 
 tags: $(HEADERS) $(SRCS)
 	ctags $(HEADERS) $(SRCS)

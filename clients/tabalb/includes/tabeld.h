@@ -19,8 +19,6 @@
 
 #define CACHELINE_ALIGN
 
-#define MIN(a,b) (a > b ? a : b)
-
 /*
   24 = sizeof (filter_result)
  112 = sizeof (filter)

@@ -57,3 +57,6 @@ format_thousands(unsigned int value)
     return buf;
 }
 
+#ifdef DEBUG_MODULE
+MFIXME
+#endif

@@ -52,11 +52,6 @@ typedef struct {
 } interface_conf_t;
 
 typedef struct {
-	int ifindex;
-	char name[IF_NAMESIZE]; // AGGHH
-} ifnames_t;
-
-typedef struct {
     ttime_t hello_timeout; // are these absolute or relative?
     ttime_t update_timeout; // Can we just garbage collect these
     ttime_t flush_timeout;
