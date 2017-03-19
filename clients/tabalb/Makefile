@@ -121,9 +121,6 @@ tabeld-$(ARCH): $(HEADERS) $(SRCS)
 arch.c: includes/arch_detect.h
 	$(CC) -E $< -o $@
 
-endian.c: includes/endian_detect.h
-	$(CC) -E $< -o $@
-
 extract_keys: commands.c includes/commands.h
 	 cc -Iincludes -DCMD_DUMP $< -o extract_keys
 
