@@ -9,3 +9,8 @@ cmds.c
 version.h
 extract_keys
 arch.c
+germ
+werm
+sqerm
+sperm
+berm
