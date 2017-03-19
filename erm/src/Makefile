@@ -134,8 +134,10 @@ $(OBJDIR):
 
 # local shared memory command line client
 
-germ: germ.c erm_client.o commands.o
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $< $(LDFLAGS) -o $@
+CLIENTDEPS = erm_client.o commands.o debug.o traps.o
+
+germ: germ.c $(CLIENTDEPS)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< $(CLIENTDEPS) $(LDFLAGS) -o $@
 
 # noize version
 
@@ -233,6 +235,8 @@ parallella:
 
 par:
 	$(MAKE) CC=e-gcc $(filter-out par,$@)
+
+# Basic helpers
 
 tags: $(HEADERS) $(SRCS)
 	ctags $(HEADERS) $(SRCS)
