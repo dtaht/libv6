@@ -16,9 +16,10 @@
 
 extern int load();
 
-int main(char *argv, int argc) {
-	load(INITGLOBALS);
-	load(COMMANDLINE);
-	load(CONFIG);
-	load(RUN);
+int main(char* argv, int argc)
+{
+  load(INITGLOBALS);
+  load(COMMANDLINE);
+  load(CONFIG);
+  load(RUN);
 }

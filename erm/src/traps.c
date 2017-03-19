@@ -6,8 +6,8 @@
  */
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "preprocessor.h"
 #include "traps.h"
@@ -21,13 +21,13 @@
 
 #ifdef TRAP_BASIC
 
-noreturn void errcmd(const char *msg) {
-     perror(msg); exit(-1);
+noreturn void errcmd(const char* msg)
+{
+  perror(msg);
+  exit(-1);
 }
 
-void wrncmd(const char *msg) {
-     perror(msg);
-}
+void wrncmd(const char* msg) { perror(msg); }
 
 #endif
 
@@ -36,41 +36,45 @@ void wrncmd(const char *msg) {
 // right way to get this right.
 
 #ifdef TRAP_BIG
-void errcmd(const char *msg, const char *f) {
-        const char * str = "fail: %s in %s()";
-        int len = strlen(msg);
-        int lenf = strlen(f);
-	char buf[lenf + len + sizeof(str)+8]; // FIXME: grab as fixed mem from elsewhere.
-	sprintf(buf,str,msg,f);
-/*      it is not too early to stop using sprintf
-	strncpy(buf,msg,len);
-        buf[len++] = ':';
-        buf[len++] = ' ';
-	strncpy(&buf[len],f,strlen(f));
-        buf[len++] = '(';
-        buf[len++] = ')';
-        buf[len++] = 0;
-*/
-	perror(buf); // where's my errno?
-	exit(-1);
+void errcmd(const char* msg, const char* f)
+{
+  const char* str = "fail: %s in %s()";
+  int len = strlen(msg);
+  int lenf = strlen(f);
+  char buf[lenf + len + sizeof(str) + 8]; // FIXME: grab as fixed mem from
+                                          // elsewhere.
+  sprintf(buf, str, msg, f);
+  /*      it is not too early to stop using sprintf
+          strncpy(buf,msg,len);
+          buf[len++] = ':';
+          buf[len++] = ' ';
+          strncpy(&buf[len],f,strlen(f));
+          buf[len++] = '(';
+          buf[len++] = ')';
+          buf[len++] = 0;
+  */
+  perror(buf); // where's my errno?
+  exit(-1);
 }
 
-void wrncmd(const char *msg, const char *f) {
-        int len = strlen(msg);
-        int lenf = strlen(f);
-	char buf[lenf + len + 8];
-// FIXME: grab as fixed mem from elsewhere and this is not really an inline
-	sprintf(buf,"warning: %s in %s()",msg,f);
-	perror(buf); // where's my errno?
+void wrncmd(const char* msg, const char* f)
+{
+  int len = strlen(msg);
+  int lenf = strlen(f);
+  char buf[lenf + len + 8];
+  // FIXME: grab as fixed mem from elsewhere and this is not really an inline
+  sprintf(buf, "warning: %s in %s()", msg, f);
+  perror(buf); // where's my errno?
 }
 
 #endif
 
 #ifdef DEBUG_MODULE
-int main(void) {
-	printf("Let's trap some stuff!\n");
-	// install signal handler, have fun
-	printf("unfinished.\n");
-	return -1;
+int main(void)
+{
+  printf("Let's trap some stuff!\n");
+  // install signal handler, have fun
+  printf("unfinished.\n");
+  return -1;
 }
 #endif
