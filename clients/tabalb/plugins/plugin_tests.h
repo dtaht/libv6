@@ -20,10 +20,11 @@
 #endif
 
 extern int yield_current(int r);
-extern int yield_current2(int r,tbl_b *ptr);
+extern int yield_current2(int r, tbl_b *ptr);
 
 #define YIELDR(r) yield_current(r)
 #define YIELDR2(r,v) yield_current2(r,v)
+
 // FIXME: token pasting from hell and doesn't expand correctly yet.
 
 #define PPASTE(t1,t2,v) t1##_##t2##_##v
@@ -165,62 +166,57 @@ extern int yield_current2(int r,tbl_b *ptr);
 // Anyway this is closer the real routine hopefully, and we constrain the loop
 // to no more than 15 searches
 
- SOMETIMES_INLINE int PO(roar_real_unrolled_match)(tbl_a *a,tbl_b *b, unsigned int c) {
+ SOMETIMES_INLINE tbl_b * PO(roar_real_unrolled_match)(tbl_a *a,tbl_b *b, unsigned int c) {
         unsigned int r = -1;
 	tbl_a match = *a;
 	while(1) {
 	         while(c++ & 15) r += match == *b++ ;
-	         YIELDR2(r,b);
-		 r = -1;
+	         r = YIELDR2(r,b);
 		 match = *a++;
 	}
-	return 0;
+	return --b;
 }
 
-// in this case we don't need to pass r
 
-SOMETIMES_INLINE int PO(roar_real_match)(tbl_a *a,tbl_b *b, unsigned int c) {
+SOMETIMES_INLINE tbl_b * PO(roar_real_match)(tbl_a *a,tbl_b *b, unsigned int c) {
         unsigned int r = -1;
 	tbl_a match = *a;
-	while(1) {
+	while(r) {
 	         while (c++ & 15 & r) r += match == *b++ ;
-	         YIELDR2(r,b);
-		 r = -1;
-		 match = *a++;
+	         r = YIELDR(b);
+//		 match = *a++;
 	}
-	return 0;
+	return --b;
 }
 
 // or in this case, 255
 
-SOMETIMES_INLINE int PO(roar_real_match_freerun)(tbl_a *a,tbl_b *b, unsigned int c) {
+SOMETIMES_INLINE tbl_b *PO(roar_real_match_freerun)(tbl_a *a,tbl_b *b, unsigned int c) {
 	unsigned char d = c & 255;
         unsigned char r = -1;
 	tbl_a match = *a;
-	while(1) {
+	while(r) {
 	         while (d++) r += match == *b++ ;
-	         YIELDR2(r,b);
-		 r = -1;
-		 match = *a++;
+	         r = YIELDR2(r,b);
+//		 match = *a++;
 	}
-	return 0;
+	return --b;
 }
 
 // or first hit. For all I know I should switch to pre-inc.
 // in this case, we don't need to pass r
 // I have tried r as an int too. Need to look closer
 
-SOMETIMES_INLINE int PO(roar_real_match_freerun_firsthit)(tbl_a *a,tbl_b *b, unsigned int c) {
+SOMETIMES_INLINE tabl_b *PO(roar_real_match_freerun_firsthit)(tbl_a *a,tbl_b *b, unsigned int c) {
 	unsigned char d = c & 255;
         unsigned char r = -1;
 	tbl_a match = *a;
-	while(1) {
+	while(r) {
 	         while (d++ & r) r += match == *b++ ;
-	         YIELDR2(r,b);
-		 r = -1;
-		 match = *a++;
+	         r = YIELDR(b); // -1 if not actually a match
+//		 match = *a++; // if we were doing a merge, we'd do this
 	}
-	return 0;
+	return --b;
 }
 
 // FIXME: Add CRC and memory error checks and so forth

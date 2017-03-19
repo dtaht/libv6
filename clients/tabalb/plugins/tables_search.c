@@ -10,8 +10,8 @@
 #define YIELD sched_yield()
 //#define tbl_a uint16_t
 //#define tbl_b uint16_t
-#define tbl_a uint32_t
-#define tbl_b uint32_t
+#define tbl_a uint16_t
+#define tbl_b uint16_t
 
 // FIXME: token pasting from hell and doesn't expand correctly yet.
 

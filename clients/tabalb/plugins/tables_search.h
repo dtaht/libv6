@@ -72,6 +72,38 @@ SOMETIMES_INLINE tbl_b PO(roar_match)(tbl_a *a, tbl_b *b, unsigned int c) {
 	return *b;
 }
 
+SOMETIMES_INLINE tbl_b PO(roar_match_vector)(tbl_a *a, tbl_b *b) {
+        unsigned int r = -1;
+	unsigned int c = 0;
+	tbl_a match = *a;
+	--b;
+	do {
+		while(c++ < RUNAHEAD + 1)
+			r |= match == *++b;
+	} while(r = RESULT(r,a,b));
+
+	return *b;
+}
+
+#if RUNAHEAD == 7
+SOMETIMES_INLINE tbl_b PO(roar_match_unroll)(tbl_a *a, tbl_b *b) {
+        unsigned int r = 0;
+	tbl_a match = *a;
+	do {
+			r += match == *b;
+			r += match == *++b;
+			r += match == *++b;
+			r += match == *++b;
+			r += match == *++b;
+			r += match == *++b;
+			r += match == *++b;
+			r += match == *++b;
+	} while(r = RESULT(r,a,b));
+
+	return *b;
+}
+#endif
+
 SOMETIMES_INLINE tbl_b PO(roar_match_freerun)(tbl_a *a, tbl_b *b, unsigned int c) {
 	unsigned char d = c & 255;
         unsigned char r = -1;
@@ -91,6 +123,19 @@ SOMETIMES_INLINE tbl_b PO(roar_match_firsthit)(tbl_a *a,tbl_b *b, unsigned int c
 	--b;
 	while(r) {
 	         while (c++ & RUNAHEAD & r)
+			 r += match == *++b ;
+	} while(r = RESULT(r,a,b));
+
+	return *b;
+}
+
+SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vector)(tbl_a *a,tbl_b *b) {
+        unsigned int r = -1;
+	unsigned char c = 0;
+	tbl_a match = *a;
+	--b;
+	while(r) {
+	         while (++c & RUNAHEAD & r)
 			 r += match == *++b ;
 	} while(r = RESULT(r,a,b));
 
