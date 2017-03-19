@@ -92,15 +92,14 @@ bool fill_tables(void* mem)
 #define babel_group 84
 static int default_perms = (MAP_SHARED | MAP_HUGETLB);
 
-int main(void) __attribute__((cold));
-
-int main(void)
+int main(int argc, char **argv)
 {
+  char * shmem = argc == 2 ? argv[1] : MYMEM;
   int fd;
   int tsize = BASE * 16;
   uint32_t* mem = NULL;
   unsigned char* tables = NULL;
-  TRAP_LT((fd = shm_open(MYMEM, O_CREAT | O_RDWR, 0)), 0,
+  TRAP_LT((fd = shm_open(shmem, O_CREAT | O_RDWR, 0)), 0,
           "Couldn't open shared memory - aborting");
   TRAP_WERR((fchmod(fd, S_IRUSR | S_IWUSR | S_IRGRP)),
             "Couldn't change shared memory mode"); // rw root, r group
@@ -129,7 +128,7 @@ int main(void)
   mem[8] = 0;
   TRAP_WERR(munmap(mem, tsize), "Couldn't unmap shared memory");
   // err:
-  TRAP_WERR(shm_unlink(MYMEM), "Couldn't close shared memory");
+  TRAP_WERR(shm_unlink(shmem), "Couldn't close shared memory");
   printf("exiting\n");
 }
 #endif

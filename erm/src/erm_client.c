@@ -8,12 +8,15 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "preprocessor.h"
 #include "c11threads.h"
 #include "defaults.h"
+#include "tabeld.h"
 #include "erm_client.h"
 #include "init.h"
 #include "io.h"

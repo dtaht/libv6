@@ -24,9 +24,11 @@
 // In order to get registers may have to declare these
 // even earlier than this
 
-#include "command_line.h"
+#include "preprocessor.h"
+#include "tabeld.h"
 #include "shared.h"
 #include "version.h"
+#include "command_line.h"
 
 typedef struct {
   const int id;

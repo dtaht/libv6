@@ -5,8 +5,9 @@
  * 2017-03-13
  */
 
+#include <stdint.h>
+#include <time.h>
 #include "commands.h"
-
 #include "init.h"
 #include "io.h"
 #include "shared.h"

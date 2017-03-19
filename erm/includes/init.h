@@ -7,6 +7,9 @@
 
 #ifndef INIT_H
 #define INIT_H
+#include <stdint.h>
+#include "preprocessor.h"
+#include "tabeld.h"
 
 typedef struct {
   void* data;

@@ -6,25 +6,21 @@
  * 2017-03-17
  */
 
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
 #include <assert.h>
 #include <errno.h>
 #include <getopt.h>
 #include <iconv.h>
 #include <locale.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <fcntl.h>
-#include <fcntl.h>
-#include <stdlib.h>
 #include <sys/mman.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
 #include <sys/stat.h> /* For mode constants */
-#include <unistd.h>
 
 #include "c11threads.h"
 #include "defaults.h"
@@ -79,7 +75,7 @@ GermCommandLineOpts_t process_options(int argc, char** argv, GermCommandLineOpts
     case 'V':
       printf("germ-%s\n", GERM_VERSION);
       break;
-    case 'm':
+    case 'a':
       o.attach = optarg;
       break;
     case '?':
@@ -90,6 +86,7 @@ GermCommandLineOpts_t process_options(int argc, char** argv, GermCommandLineOpts
       break;
     }
   }
+  return o;
 }
 
 int main(int argc, char** argv)

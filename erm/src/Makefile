@@ -141,18 +141,18 @@ germ: germ.c $(CLIENTDEPS)
 
 # noize version
 
-berm: berm.c erm_client.o commands.o
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $< $(LDFLAGS) -o $@
+berm: berm.c $(CLIENTDEPS)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< $(CLIENTDEPS) $(LDFLAGS) -o $@
 
 # Stress Tester
 
-sqerm: sqerm.c erm_client.o commands.o
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $< $(LDFLAGS) -o $@
+sqerm: sqerm.c $(CLIENTDEPS)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< $(CLIENTDEPS) $(LDFLAGS) -o $@
 
 # Warnings and monitoring tool
 
-werm: werm.c erm_client.o commands.o
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $< $(LDFLAGS) -o $@
+werm: werm.c $(CLIENTDEPS)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< $(CLIENTDEPS) $(LDFLAGS) -o $@
 
 # daemons
 
