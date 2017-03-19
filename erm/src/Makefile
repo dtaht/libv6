@@ -206,16 +206,19 @@ full_warnings: $(DOBJS)
 
 debug_modules: $(DOBJS2)
 
-.PHONY: mips arm aarch64 icc gcc
+.PHONY: mips arm aarch64 icc gcc clang
 
 mips:
 	$(MAKE) CC=mipsel-openwrt-linux-gcc $(filter-out aarch64,$@)
 
+clang:
+	$(MAKE) CC=clang $(filter-out clang,$@)
+
 icc:
-	$(MAKE) CC=icc
+	$(MAKE) CC=icc $(filter-out icc,$@)
 
 gcc:
-	$(MAKE) CC=gcc
+	$(MAKE) CC=gcc $(filter-out gcc,$@)
 
 aarch64:
 	$(MAKE) CC=aarch64-linux-gnu-gcc-5 $(filter-out aarch64,$@)
