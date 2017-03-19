@@ -6,6 +6,7 @@
  */
 
 #include "shared.h"
+#include "debug.h"
 #include "io.h"
 #include "init.h"
 

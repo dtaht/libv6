@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include "debug.h"
 #include "tabeld.h"
 
 // In other abuses of printf, I wonder if I can abuse it to
