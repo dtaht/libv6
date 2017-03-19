@@ -20,9 +20,11 @@
 
 // FIXME: discuss DEBUG & NDEBUG and assert usage
 
-// There are a multitude of TRAP handlers in the virtual machine and a multitude
+// There are a multitude of TRAP handlers in the virtual machine and a
+// multitude
 // of ways to run them - ranging from a FPGA system with its own opcode and
-// register to handle it - to a full blown operating system. The default is full
+// register to handle it - to a full blown operating system. The default is
+// full
 // logging, with line numbers of functions.
 
 #ifndef TRAP_MODEL
@@ -62,9 +64,11 @@
 // DONOTHING
 // I really wish C had standardized on a means to do nothing
 
-#define DONOTHING do {} while (0)
-#define MIN(a,b) (a > b ? a : b)
-#define MAX(a,b) (a < b ? a : b)
+#define DONOTHING                                                            \
+  do {                                                                       \
+  } while(0)
+#define MIN(a, b) (a > b ? a : b)
+#define MAX(a, b) (a < b ? a : b)
 
 // FIXME: actually I think returning something other than one
 // makes sense to find obscure bugs in people's error handling.
@@ -75,14 +79,14 @@ static inline int donothing_false() { return 0; }
 
 // Standard hints to the compiler for the likelihood of a branch
 
-#define likely(x)       __builtin_expect(!!(x),1)
-#define unlikely(x)     __builtin_expect(!!(x),0)
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
 
 // Common additional function attributes in GCC and LLVM
 
 #define CONST __attribute__((const))
 #define PURE __attribute__((pure))
-#define HOT  __attribute__((hot))
+#define HOT __attribute__((hot))
 #define COLD __attribute__((cold))
 #define NORETURN __attribute__((noreturn))
 #define INTERRUPT __attribute__((interrupt))
@@ -98,8 +102,8 @@ static inline int donothing_false() { return 0; }
 
 #ifndef NO_PREFETCH
 
-#define RPREFETCH(v) __builtin_prefetch(0,v)
-#define WPREFETCH(v) __builtin_prefetch(1,v)
+#define RPREFETCH(v) __builtin_prefetch(0, v)
+#define WPREFETCH(v) __builtin_prefetch(1, v)
 #define PREFETCH(v) RPREFETCH(v)
 
 #else

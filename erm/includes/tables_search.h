@@ -37,7 +37,7 @@
 // #define OP(bpointer,next)
 
 //#define OP(b, match = *a++;)
-//#define OP2(r, b, match = *a++;) if((r = 
+//#define OP2(r, b, match = *a++;) if((r =
 
 //		 match = *a++;
 
@@ -52,7 +52,7 @@
 
 #ifndef RESULT
 extern tbl_b my_result(tbl_a a, tbl_b b, int r);
-#define RESULT(r,a,b) my_result(*a,*b, r)
+#define RESULT(r, a, b) my_result(*a, *b, r)
 #endif
 
 // I don't want to return pointers here but structures in the right regs
@@ -60,97 +60,102 @@ extern tbl_b my_result(tbl_a a, tbl_b b, int r);
 // parallella - will that get picked up?
 // and I want the compiler to consider both as non-overlapping
 
-SOMETIMES_INLINE tbl_b PO(roar_match)(tbl_a *a, tbl_b *b, unsigned int c) {
-        unsigned int r = -1;
-	tbl_a match = *a;
-	--b;
-	do {
-		while(c++ & RUNAHEAD)
-			r += match == *++b;
-	} while(r = RESULT(r,a,b));
+SOMETIMES_INLINE tbl_b PO(roar_match)(tbl_a* a, tbl_b* b, unsigned int c)
+{
+  unsigned int r = -1;
+  tbl_a match = *a;
+  --b;
+  do {
+    while(c++ & RUNAHEAD) r += match == *++b;
+  } while(r = RESULT(r, a, b));
 
-	return *b;
+  return *b;
 }
 
-SOMETIMES_INLINE tbl_b PO(roar_match_vector)(tbl_a *a, tbl_b *b) {
-        unsigned int r = -1;
-	unsigned int c = 0;
-	tbl_a match = *a;
-	--b;
-	do {
-		while(c++ < RUNAHEAD + 1)
-			r |= match == *++b;
-	} while(r = RESULT(r,a,b));
+SOMETIMES_INLINE tbl_b PO(roar_match_vector)(tbl_a* a, tbl_b* b)
+{
+  unsigned int r = -1;
+  unsigned int c = 0;
+  tbl_a match = *a;
+  --b;
+  do {
+    while(c++ < RUNAHEAD + 1) r |= match == *++b;
+  } while(r = RESULT(r, a, b));
 
-	return *b;
+  return *b;
 }
 
 #if RUNAHEAD == 7
-SOMETIMES_INLINE tbl_b PO(roar_match_unroll)(tbl_a *a, tbl_b *b) {
-        unsigned int r = 0;
-	tbl_a match = *a;
-	do {
-			r += match == *b;
-			r += match == *++b;
-			r += match == *++b;
-			r += match == *++b;
-			r += match == *++b;
-			r += match == *++b;
-			r += match == *++b;
-			r += match == *++b;
-	} while(r = RESULT(r,a,b));
+SOMETIMES_INLINE tbl_b PO(roar_match_unroll)(tbl_a* a, tbl_b* b)
+{
+  unsigned int r = 0;
+  tbl_a match = *a;
+  do {
+    r += match == *b;
+    r += match == *++b;
+    r += match == *++b;
+    r += match == *++b;
+    r += match == *++b;
+    r += match == *++b;
+    r += match == *++b;
+    r += match == *++b;
+  } while(r = RESULT(r, a, b));
 
-	return *b;
+  return *b;
 }
 #endif
 
-SOMETIMES_INLINE tbl_b PO(roar_match_freerun)(tbl_a *a, tbl_b *b, unsigned int c) {
-	unsigned char d = c & 255;
-        unsigned char r = -1;
-	tbl_a match = *a;
-	--b;
-	do {
-		while (d++)
-			r += match == *++b ;
-	} while(r = RESULT(r,a,b));
+SOMETIMES_INLINE tbl_b PO(roar_match_freerun)(tbl_a* a, tbl_b* b, unsigned int c)
+{
+  unsigned char d = c & 255;
+  unsigned char r = -1;
+  tbl_a match = *a;
+  --b;
+  do {
+    while(d++) r += match == *++b;
+  } while(r = RESULT(r, a, b));
 
-	return *b;
+  return *b;
 }
 
-SOMETIMES_INLINE tbl_b PO(roar_match_firsthit)(tbl_a *a,tbl_b *b, unsigned int c) {
-        unsigned int r = -1;
-	tbl_a match = *a;
-	--b;
-	while(r) {
-	         while (c++ & RUNAHEAD & r)
-			 r += match == *++b ;
-	} while(r = RESULT(r,a,b));
+SOMETIMES_INLINE tbl_b PO(roar_match_firsthit)(tbl_a* a, tbl_b* b, unsigned int c)
+{
+  unsigned int r = -1;
+  tbl_a match = *a;
+  --b;
+  while(r) {
+    while(c++ & RUNAHEAD & r) r += match == *++b;
+  }
+  while(r = RESULT(r, a, b))
+    ;
 
-	return *b;
+  return *b;
 }
 
-SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vector)(tbl_a *a,tbl_b *b) {
-        unsigned int r = -1;
-	unsigned char c = 0;
-	tbl_a match = *a;
-	--b;
-	while(r) {
-	         while (++c & RUNAHEAD & r)
-			 r += match == *++b ;
-	} while(r = RESULT(r,a,b));
+SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vector)(tbl_a* a, tbl_b* b)
+{
+  unsigned int r = -1;
+  unsigned char c = 0;
+  tbl_a match = *a;
+  --b;
+  while(r) {
+    while(++c & RUNAHEAD & r) r += match == *++b;
+  }
+  while(r = RESULT(r, a, b))
+    ;
 
-	return *b;
+  return *b;
 }
 
-SOMETIMES_INLINE tbl_b PO(roar_match_freerun_firsthit)(tbl_a *a,tbl_b *b, unsigned int c) {
-	unsigned char d = c & 255;
-        unsigned char r = -1;
-	tbl_a match = *a;
-	--b;
-	do {
-	         while (d++ & r)
-			 r += match == *++b ;
-	} while(r = RESULT(r,a,b));
+SOMETIMES_INLINE tbl_b PO(roar_match_freerun_firsthit)(tbl_a* a, tbl_b* b, unsigned int c)
+{
+  unsigned char d = c & 255;
+  unsigned char r = -1;
+  tbl_a match = *a;
+  --b;
+  do {
+    while(d++ & r) r += match == *++b;
+  } while(r = RESULT(r, a, b));
 
-	return *b;
+  return *b;
 }

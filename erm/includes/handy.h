@@ -8,7 +8,8 @@
 #ifndef HANDY_H
 #define HANDY_H
 
-// If this looks like asssembly that's because they are some basic abstractions of the virtual machine
+// If this looks like asssembly that's because they are some basic
+// abstractions of the virtual machine
 
 #define PUNT
 #define PAUSE

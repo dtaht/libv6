@@ -3,23 +3,23 @@
 
 #include <stdint.h>
 
-#if !defined(NO_CYCLES) && \
-	(defined (__x86_64__) | defined (__arm__) | defined (__epiphany__))
+#if !defined(NO_CYCLES) &&                                                   \
+(defined(__x86_64__) | defined(__arm__) | defined(__epiphany__))
 
 // haven't decided on this API YET
 // if doing anything with start or end
 // title ? doonething do aother should compile out
 
-#define GET_CYCLES_INIT(title,name,start,end) \
-	static char *__cyclestitle = name;    \
-	cycles_t start; cycles_t end;
+#define GET_CYCLES_INIT(title, name, start, end)                             \
+  static char* __cyclestitle = name;                                         \
+  cycles_t start;                                                            \
+  cycles_t end;
 
-#define GET_CYCLES_START(title,start,end)
-#define GET_CYCLES_STOP(title,start,end)
-#define GET_CYCLES_RESUME(title,start,end)
-#define GET_CYCLES_CHECK(title,start,end)
-#define GET_CYCLES_CLEAN(title,start,end)
-
+#define GET_CYCLES_START(title, start, end)
+#define GET_CYCLES_STOP(title, start, end)
+#define GET_CYCLES_RESUME(title, start, end)
+#define GET_CYCLES_CHECK(title, start, end)
+#define GET_CYCLES_CLEAN(title, start, end)
 
 
 #ifdef __x86_64__
@@ -31,16 +31,16 @@ static inline int init_get_cycles() { return 0; } // Always works on this arch
 /** Get CPU timestep counter */
 __attribute__((always_inline)) static inline cycles_t get_cycles()
 {
-        uint64_t tsc;
-        /** @todo not recommended to use rdtsc on old multicore machines */
-        __asm__ ("rdtsc;"
-                 "shl $32, %%rdx;"
-                 "or %%rdx,%%rax"
-                : "=a" (tsc)
-                :
-                : "%rcx", "%rdx", "memory");
+  uint64_t tsc;
+  /** @todo not recommended to use rdtsc on old multicore machines */
+  __asm__("rdtsc;"
+          "shl $32, %%rdx;"
+          "or %%rdx,%%rax"
+          : "=a"(tsc)
+          :
+          : "%rcx", "%rdx", "memory");
 
-        return tsc;
+  return tsc;
 }
 #endif
 /** Get CPU timestep counter */
@@ -56,9 +56,9 @@ static inline int init_get_cycles() { return 0; }
 
 __attribute__((always_inline)) static inline cycles_t get_cycles(void)
 {
-	u32 val;
-	__asm__ __volatile__ ("mrc p15, 0, %0, c15, c12, 1" : "=r" (val));
-	return val;
+  u32 val;
+  __asm__ __volatile__("mrc p15, 0, %0, c15, c12, 1" : "=r"(val));
+  return val;
 }
 #endif
 
@@ -78,17 +78,19 @@ typedef uint32_t cycles_t;
 
 // I want to compile this out even harder than this
 
-static inline int init_get_cycles() { return 0; } 
+static inline int init_get_cycles() { return 0; }
 static inline cycles_t get_cycles() { return 0L; }
 
 #else
 #warning no sane get_cycles on this arch so benchmarking is impossible
 #define CYCLES_FMT "%u"
 typedef uint32_t cycles_t;
-static inline int init_get_cycles() { return -1; } // Always fails on this arch
+static inline int init_get_cycles()
+{
+  return -1;
+} // Always fails on this arch
 static inline cycles_t get_cycles() { return 0L; }
 #endif
 #endif
 
 #endif
-

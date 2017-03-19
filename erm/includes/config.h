@@ -8,12 +8,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-typedef struct
-{
-  char *filename;
+typedef struct {
+  char* filename;
   int fd;
   off_t size;
-  void *map;
+  void* map;
 } fmap;
 
 extern fmap get_file(fmap f);
@@ -23,20 +22,20 @@ extern fmap close_file(fmap f);
 // Can't I just write the thing directly?
 
 struct interface_conf {
-    unsigned hello_interval;
-    unsigned update_interval;
-    unsigned short cost;
-    char type;
-    char split_horizon;
-    char lq;
-    char faraway;
-    int channel;
-    int enable_timestamps;
-    unsigned int rtt_decay;
-    unsigned int rtt_min;
-    unsigned int rtt_max;
-    unsigned int max_rtt_penalty;
-    char ifname[IF_NAMESIZE];
+  unsigned hello_interval;
+  unsigned update_interval;
+  unsigned short cost;
+  char type;
+  char split_horizon;
+  char lq;
+  char faraway;
+  int channel;
+  int enable_timestamps;
+  unsigned int rtt_decay;
+  unsigned int rtt_min;
+  unsigned int rtt_max;
+  unsigned int max_rtt_penalty;
+  char ifname[IF_NAMESIZE];
 };
 
 

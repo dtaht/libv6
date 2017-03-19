@@ -15,19 +15,9 @@
 #define FEC
 #aggregation
 #define CAPABILITIES
-uptime
-cpu
-arch
-rttprobe
-location
-name
-nat
+uptime cpu arch rttprobe location name nat
 
-connections
-network diameter discovery - use the hopcount
-slowdown
-CRC
-encrypted or not - flowflags
-sendmmsg
-colliding router id
+connections network diameter discovery -
+use the hopcount slowdown CRC encrypted or
+not - flowflags sendmmsg colliding router id
 #endif

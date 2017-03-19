@@ -9,13 +9,13 @@
 #define INIT_H
 
 typedef struct {
-	void *  data;
-	ubase_t idx;
-	ubase_t size;
+  void* data;
+  ubase_t idx;
+  ubase_t size;
 } v6table;
 
-extern v6addr_t *addresses;
-extern addrflags_t *addrdata;
+extern v6addr_t* addresses;
+extern addrflags_t* addrdata;
 
 extern v6table routers;
 

@@ -8,7 +8,7 @@
 #ifndef DEFAULTS_H
 #define DEFAULTS_H
 
-#if !(defined(SYSTEM_SMALL) | defined(SYSTEM_BIG) )
+#if !(defined(SYSTEM_SMALL) | defined(SYSTEM_BIG))
 #define SYSTEM_SMALL
 #endif
 
@@ -24,7 +24,7 @@
 // and 2k is where babeld falls over today. So... hit it with a hammer
 
 #ifdef SYSTEM_BIG
-#define BASE (1024*16)
+#define BASE (1024 * 16)
 #define NUM_ROUTERS 64
 #define NUM_INTERFACES 32
 #endif
