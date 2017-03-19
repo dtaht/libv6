@@ -17,7 +17,13 @@ BHEADERS = align.h c11.h command_line.h globals.h interfaces.h kernel.h \
 	  config.h init.h io.h kernel_input.h neighbor.h shared.h \
 	  tabeld.h util.h random_bytes.h traps.h preprocessor.h
 
-CFLAGS  = -std=gnu11 -O3 -Wall -I../../lib -Iincludes
+TOOLS = ../tools
+INC = ../includes
+VERSION = version.h
+INCLUDES = -I$(INC)
+GENVERSION = $(TOOLS)/generate_version.sh
+
+CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES) 
 LDFLAGS = -lrt
 
 # Arch specific things - still rather fragile
@@ -88,7 +94,7 @@ HEADERS += $(patsubst %.h,includes/%.h,$(BHEADERS))
 # uniq -- dont-verify-checksums ? is that a bpf option?
 # -Q direction in?
 
-$(DOBJS): $(HEADERS) $(SRCS) includes/version.h
+$(DOBJS): $(HEADERS) $(SRCS) $(VERSION)
 
 # Will this bit of crazyness work?
 # BUILDS = $(shell $(make) -C $(C) CC=$(C))
@@ -137,7 +143,7 @@ werm: werm.c erm_client.o commands.o
 
 # daemons
 
-tabeld: $(HEADERS) $(SRCS) includes/version.h
+tabeld: $(HEADERS) $(SRCS) $(VERSION)
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $(LDFLAGS) -o $@
 
 tabeld-whole.c: $(HEADERS) $(SRCS) 
@@ -154,7 +160,7 @@ tabeld-$(ARCH): $(HEADERS) $(SRCS)
 
 # Some preprocessed magic to get an arch string, endian, keys, etc
 
-arch.c: includes/arch_detect.h
+arch.c: $(INC)/arch_detect.h
 	$(CC) -E $< -o $@
 
 # This must run using the local cc
@@ -169,8 +175,8 @@ cmds.c: cmds.gp
 
 babel.bpf: babel.filter
 
-includes/version.h: $(SRCS) $(HEADERS)
-	./generate-version.sh > includes/version.h
+version.h: $(SRCS) $(HEADERS)
+	$(GENVERSION) > version.h
 
 # Helper tools
 
