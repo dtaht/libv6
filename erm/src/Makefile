@@ -11,6 +11,7 @@ SRCS += print_global_t.c
 
 DLIB  = debug.o traps.o
 DSRCS = debug.c traps.c
+FORMAT = clang-format
 
 BHEADERS = align.h c11.h command_line.h globals.h interfaces.h kernel.h \
 	  logger.h resend.h simd.h traps.h arch_detect.h c11threads.h \
@@ -66,7 +67,7 @@ endif
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< $(DLIB) $(LDFLAGS) -o $@
 
 %.c: %.gp
-	gperf -m 16 -s 4 -c -C $< > $@
+	gperf -m 16 -s 4 -c -C $< | $(FORMAT) > $@
 
 %.bpf: $(FILT)/%.filter
 	tcpdump -r $(FILT)/wtf.cap -dd -F $< > $@
