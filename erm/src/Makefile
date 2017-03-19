@@ -208,7 +208,7 @@ debug_modules: $(DOBJS2)
 
 # Architectures and compilers I build for
 
-.PHONY: mips arm aarch64 icc gcc clang parallella
+.PHONY: mips arm aarch64 icc gcc clang parallella par
 
 mips:
 	$(MAKE) CC=mipsel-openwrt-linux-gcc $(filter-out aarch64,$@)
@@ -230,6 +230,9 @@ arm:
 
 parallella:
 	$(MAKE) CC=e-gcc $(filter-out parallella,$@)
+
+par:
+	$(MAKE) CC=e-gcc $(filter-out par,$@)
 
 tags: $(HEADERS) $(SRCS)
 	ctags $(HEADERS) $(SRCS)
