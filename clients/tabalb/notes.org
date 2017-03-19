@@ -1,3 +1,7 @@
+* For casual readers
+This started off good, and I am appending my notes as I go along. I should
+probably timestamp them...
+
 * There are ~10 global variables
 * Everything is optimized for vector processing
 ** aligned to natural boundaries
@@ -8,6 +12,7 @@
 * C bitfields are used where appropriate, masks elsewhere
 ** Very small values everywhere - think hardware or 16 bit microcontroller
 * Code sharing is maximized
+but certain things MAY be precompiled for certain strides.
 * Internationalization will be enabled
 ** But string sharing across modules is hard
 * C11 features like structure return are used extensively
@@ -660,3 +665,76 @@ Now, it is likely that this as written will stall a lot, but, we'll see.
 
 H/T to mel, the programmer for this old trick, I think. Maybe I'll use cmov,
 I dunno.
+
+* llvm does something closer to the "right thing"
+
+it even does a loop unroll. But I still don't get it.
+
+Anyway. 8 ins for the real search routine, 14 bytes on regular arm
+
+.LBB11_4:                               @   Parent Loop BB11_2 Depth=1
+                                        @ =>  This Inner Loop Header: Depth=2
+        ldr     r6, [r2], #4
+        tst     r0, #255
+        eor     r6, r6, r1
+        add     r5, r6, r5
+        add     r6, r0, #1
+        mov     r0, r6
+        bne     .LBB11_4
+
+
+        ldr     r1, [r5], #4
+        cmp     r0, r1
+        addeq   r6, r6, #1
+        and     r1, r4, r6
+        add     r4, r4, #1
+        tst     r1, #15
+        bne     .LBB13_3
+
+.LBB12_3:                               @ %.lr.ph
+                                        @   Parent Loop BB12_2 Depth=1
+                                        @ =>  This Inner Loop Header: Depth=2
+        ldr     r1, [r4], #4
+        cmp     r0, r1
+        add     r1, r7, #1
+        addeq   r5, r5, #1
+        tst     r7, #15
+        mov     r7, r1
+        bne     .LBB12_3
+
+* The preamble got bigger. No like
+
+And I didn't get the pre-increment addressing out of the parallela either.
+
+I did get it out of llvm on the arm, but that is not generating thumb
+Maybe either mode is exclusive of thumb?
+
+* Getting rid of the count variable helps
+
+* And an unrolled version may be the winner for small values
+
+Could NOT get the darn thing to vectorize...
+
+addition shouldn't have a dependency that the compiler sees. Adding 1 for
+equality comparison
+should never overflow... grump
+maybe less than rather than and? Definately generates different code
+
+maybe use |?
+
+Maybe load shift | ?
+
+load 64 bits split it apart?
+
+If these core routines were not so important I'd have given up by now.
+
+I think I will just have to write this stuff in pure assembly.
+
+After I get the ability to load up a lot of stuff.
+
+and STILL I want structure return a,b = pointer, result
+in registers.
+
+dang it.
+
+
