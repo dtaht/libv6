@@ -8,3 +8,5 @@ cmds.c
 *.dbg
 version.h
 extract_keys
+arch.c
+endian.c

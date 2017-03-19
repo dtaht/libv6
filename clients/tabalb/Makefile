@@ -3,6 +3,7 @@ PROGS = tabeld
 SRCS  = command_line.c commands.c init.c input.c io.c logger.c
 SRCS += packet.c parser.c popvec.c random_bytes.c interfaces.c
 SRCS += erm_client.c
+SRCS += arch.c
 
 BHEADERS = align.h c11.h command_line.h globals.h interfaces.h kernel.h \
 	  logger.h resend.h simd.h traps.h arch_detect.h c11threads.h \
@@ -117,8 +118,11 @@ tabeld-$(ARCH): $(HEADERS) $(SRCS)
 
 # Some preprocessed magic to get an arch string, keys, etc
 
-arch.h: detect_arch.c
-	$(CC) -P $< -o $@
+arch.c: includes/arch_detect.h
+	$(CC) -E $< -o $@
+
+endian.c: includes/endian_detect.h
+	$(CC) -E $< -o $@
 
 extract_keys: commands.c includes/commands.h
 	 cc -Iincludes -DCMD_DUMP $< -o extract_keys
