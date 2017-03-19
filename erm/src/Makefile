@@ -19,9 +19,11 @@ BHEADERS = align.h c11.h command_line.h globals.h interfaces.h kernel.h \
 
 TOOLS = ../tools
 INC = ../includes
+FILT = ../filters/
+
 VERSION = version.h
 INCLUDES = -I$(INC)
-GENVERSION = $(TOOLS)/generate_version.sh
+GENVERSION = $(TOOLS)/generate-version.sh
 
 CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES) 
 LDFLAGS = -lrt
@@ -67,7 +69,7 @@ endif
 	gperf -m 16 -s 4 -c -C $< > $@
 
 %.bpf: %.filter
-	tcpdump -r wtf.cap -dd -F $< > $@
+	tcpdump -r ../filters/wtf.cap -dd -F $< > $@
 
 %.s: %.c
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -fverbose-asm -S $< -o $@
@@ -89,7 +91,7 @@ traps.dbg: traps.c debug.o
 arch.dbg: arch.c
 	echo ""
 
-HEADERS += $(patsubst %.h,includes/%.h,$(BHEADERS))
+HEADERS += $(patsubst %.h,$(INC)/%.h,$(BHEADERS))
 
 # uniq -- dont-verify-checksums ? is that a bpf option?
 # -Q direction in?
@@ -173,7 +175,7 @@ cmds.gp: commands.c extract_keys
 
 cmds.c: cmds.gp
 
-babel.bpf: babel.filter
+babel.bpf: $(FILT)babel.filter
 
 version.h: $(SRCS) $(HEADERS)
 	$(GENVERSION) > version.h
