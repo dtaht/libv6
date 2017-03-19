@@ -120,11 +120,11 @@ tabeld-$(ARCH): $(HEADERS) $(SRCS)
 arch.h: detect_arch.c
 	$(CC) -P $< -o $@
 
-extract_keys: commands.c
-	 cc -DCMD_DUMP $< -o extract_keys
+extract_keys: commands.c includes/commands.h
+	 cc -Iincludes -DCMD_DUMP $< -o extract_keys
 
 cmds.gp: commands.c extract_keys
-	 extract_keys > cmds.gp
+	 ./extract_keys > cmds.gp
 
 cmds.c: cmds.gp
 

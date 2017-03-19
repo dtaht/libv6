@@ -11,25 +11,8 @@
 #include "io.h"
 #include "init.h"
 
-#define ROUTER_FILT_ME 1
-#define ROUTER_FILT_DEAD 2
-#define ROUTER_FILT_LAG 4
 
-#define ROUTER_FILT_ALL (ROUTER_FILT_ME | ROUTER_FILT_DEAD | ROUTER_FILT_LAG)
-
-enum router_filt {
-	none = 0,
-	me = 1,
-	dead = 2,
-	lagging = 4,
-	// wireless? wired? imported?
-	all = 15,
-	MAX_router_filt
-};
-
-typedef void (*event_cb_t)(int arg1, int arg2);
-struct cb { char *cmd, *event_cb_t cb, int arg1, int arg2} ;
-void dump_routers(router_filt filt, int arg, int arg2);
+typedef struct { char *cmd; event_cb_t c; router_filt_t arg1; int arg2; } cb_t;
 
 // This started getting ambitious on me - as in being able to specify
 // a neighbor, interface or router. Also enabling/disabling logging.
@@ -39,64 +22,142 @@ void dump_routers(router_filt filt, int arg, int arg2);
 // json output, text, logging... the config itself... memory usage...
 // Aggghhhhh
 
-const cb callbacks[] = {
-	{ "dump", dump_routers, ROUTER_FILT_ALL, 0 },
-	{ "dump routers", dump_routers, ROUTER_FILT_ALL, 0 },
-	{ "dump neighbours", dump_routers, ROUTER_FILT_ALL, 0 },
-	{ "dump routes", dump_routers, ROUTER_FILT_ALL, 0 },
-	{ "dump xroutes", dump_routers, ROUTER_FILT_ALL, 0 },
-	{ "dump interfaces", dump_routers, ROUTER_FILT_ALL, 0 },
+// The R/W aspects need to be thought about carefully
 
-	{ "monitor", monitor, 15 , 0 },
-	{ "monitor routers", monitor, 1 ,0 },
-	{ "monitor routes", monitor, 2, 0 },
-	{ "monitor xroutes", monitor, 4, 0 },
-	{ "monitor interfaces", monitor, 8, 0 },
+const cb_t callbacks[] = {
+	{ "dump", command_dump, ROUTER_FILT_ALL, 1 },
+	{ "dump routers", command_dump, ROUTER_FILT_ROUTERS, 1 },
+	{ "dump neighbours", command_dump, ROUTER_FILT_ROUTERS, 1 },
+	{ "dump routes", command_dump, ROUTER_FILT_ROUTES, 1 },
+	{ "dump xroutes", command_dump, ROUTER_FILT_XROUTES, 1 },
+	{ "dump interfaces", command_dump, ROUTER_FILT_INTERFACES, 1 },
 
-	{ "unmonitor", unmonitor, 15, 0  },
-	{ "umonitor routers", unmonitor, 1, 0 },
-	{ "unmonitor routes", unmonitor, 2, 0 },
-	{ "unmonitor xroutes", unmonitor, 4, 0 },
-	{ "unmonitor interfaces", unmonitor, 8, 0 },
+	{ "monitor", command_monitor, 15 , 1 },
+	{ "monitor routers", command_monitor, 1 , 1 },
+	{ "monitor routes", command_monitor, 2, 1 },
+	{ "monitor xroutes", command_monitor, 4, 1 },
+	{ "monitor interfaces", command_monitor, 8, 1 },
 
+	{ "unmonitor", command_unmonitor, 15, 1 },
+	{ "umonitor routers", command_unmonitor, 1, 1 },
+	{ "unmonitor routes", command_unmonitor, 2, 1 },
+	{ "unmonitor xroutes", command_unmonitor, 4, 1 },
+	{ "unmonitor interfaces", command_unmonitor, 8, 1 },
+
+	{ "stats", command_dump, ROUTER_FILT_ALL, 1 },
+	{ "stats routers", command_dump, ROUTER_FILT_ROUTERS, 1 },
+	{ "stats neighbours", command_dump, ROUTER_FILT_ROUTERS, 1 },
+	{ "stats routes", command_dump, ROUTER_FILT_ROUTES, 1 },
+	{ "stats xroutes", command_dump, ROUTER_FILT_XROUTES, 1 },
+	{ "stats interfaces", command_dump, ROUTER_FILT_INTERFACES, 1 },
+
+	{ "restart", command_reload, 0, 0 },
 	{ "reload", command_reload, 0, 0 },
-	{ "quit", command_quit, 0, 0 },
+
+	{ "quit", command_quit, 0, 1 },
+
+	// Erm specific commands
+
+	{ "open the pod bay doors", command_open_pod_bay_doors, 0, 1 },
+
+	{ "erm", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm memory", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm cpu", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm arch", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm version", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm clients", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm uptime", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm credits", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm config", command_erm_dump, ROUTER_FILT_INTERFACES, 0 },
+
+	{ "erm log", command_erm_dump, ROUTER_FILT_INTERFACES, 0 },
+	{ "erm log on", command_erm_dump, ROUTER_FILT_INTERFACES, 0 },
+	{ "erm log off", command_erm_dump, ROUTER_FILT_INTERFACES, 0 },
+
+	{ "erm monitor lag", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm monitor cpu", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm monitor ermcpu", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm monitor bandwidth", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm unmonitor", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+
+	{ "erm output", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm output text", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm output json", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+
+	{ "erm output raw", command_erm_dump, ROUTER_FILT_INTERFACES, 0 },
+
+	{ "erm flush", command_erm_dump, ROUTER_FILT_INTERFACES, 0 },
+	{ "erm split", command_erm_dump, ROUTER_FILT_INTERFACES, 0 },
+	{ "erm join", command_erm_dump, ROUTER_FILT_INTERFACES, 0 },
+	{ "erm clone", command_erm_dump, ROUTER_FILT_INTERFACES, 0 },
+	{ "erm radiate", command_erm_dump, ROUTER_FILT_INTERFACES, 0 },
+	{ "erm kickstart", command_erm_dump, ROUTER_FILT_INTERFACES, 0 },
+	{ "erm gc", command_erm_dump, ROUTER_FILT_INTERFACES, 0 },
+
+	{ "erm snapshot", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+	{ "erm consistency", command_erm_dump, ROUTER_FILT_INTERFACES, 1 },
+
 	{ NULL, NULL, 0 }
 };
 
-// Use duff's device?
+void command_open_pod_bay_doors(router_filt_t filt, int arg1) {
+	printf("I'm sorry dave, I can't do that.\n");
+}
 
-void dump_routers(router_filt filt, int arg, int arg2) {
-	int c = 0;
+void command_monitor(router_filt_t filt, int arg1) {
+}
+
+void command_unmonitor(router_filt_t filt, int arg1) {
+}
+
+void command_reload(router_filt_t filt, int arg1) {
+}
+
+void command_quit(router_filt_t filt, int arg1) {
+//	erm_detach(); (atexit should just do it for us?)
+// exit(0);
+}
+
+void command_dump(router_filt_t filt, int arg1) {
+/*	int c = 0;
 	for (int i = 0; i < routers.size; i++) {
 		if(routers[i].flags & filt) {
 		c++;
-		print("%s\n",
+		printf("%s\n",
 			format_eui64(routers.a[i]));
 		}
 	}
 	return c;
+*/
 }
 
-int dump_routes(routes_filt filt) {
-	int c = 0;
+
+void command_erm_dump(router_filt_t filt, int arg1) {
+/*	int c = 0;
 	for (int i = 0; i < routes.size; i++) {
 		if(routes[i].flags & filt) {
 		c++;
-		print("%s\n",
+		printf("%s\n",
 			format_eui64(routers.a[i]));
 		}
 	}
 	return c;
+*/
 }
 
 // Used to quickly dump the command strings to a file
 
 #ifdef CMD_DUMP
 int main() {
-   for(int i = 0; cmds[i].string != NULL; i++) printf("%s\n");
+	for(int i = 0; callbacks[i].cmd != NULL; i++) printf("%s\n", callbacks[i].cmd);
    return 0;
 }
 #endif
+
 #ifdef MODULE_TEST
+int main() {
+   open_pod_bay_doors(0,0);
+   printf("success! (otherwise)\n");
+   return 0;
+}
 #endif

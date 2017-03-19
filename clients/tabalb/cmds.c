@@ -1,6 +1,6 @@
 /* C code produced by gperf version 3.0.4 */
 /* Command-line: gperf -m 16 -s 4 -c -C cmds.gp  */
-/* Computed positions: -k'1,11' */
+/* Computed positions: -k'1,9,$' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
       && ('%' == 37) && ('&' == 38) && ('\'' == 39) && ('(' == 40) \
@@ -30,12 +30,12 @@ error "gperf generated tables don't work with this execution character set. Plea
 #endif
 
 
-#define TOTAL_KEYWORDS 19
-#define MIN_WORD_LENGTH 4
+#define TOTAL_KEYWORDS 56
+#define MIN_WORD_LENGTH 3
 #define MAX_WORD_LENGTH 22
-#define MIN_HASH_VALUE 4
-#define MAX_HASH_VALUE 30
-/* maximum key range = 27, duplicates = 0 */
+#define MIN_HASH_VALUE 13
+#define MAX_HASH_VALUE 78
+/* maximum key range = 66, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -51,42 +51,40 @@ hash (str, len)
 {
   static const unsigned char asso_values[] =
     {
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31,  8, 31,
-       0,  1,  7, 31, 31,  1, 31, 31, 31,  0,
-      31,  4, 31,  1,  0,  0,  2,  0, 31, 31,
-       2, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-      31, 31, 31, 31, 31, 31
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 38, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 51,
+      12,  4,  5,  6, 10, 34, 41, 32, 79, 20,
+       8,  8, 19, 46, 42,  4,  4,  4, 22, 13,
+      79, 12, 19, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79, 79, 79,
+      79, 79, 79, 79, 79, 79, 79, 79
     };
   register int hval = len;
 
   switch (hval)
     {
       default:
-        hval += asso_values[(unsigned char)str[10]];
+        hval += asso_values[(unsigned char)str[8]+2];
       /*FALLTHROUGH*/
-      case 10:
-      case 9:
       case 8:
       case 7:
       case 6:
@@ -98,7 +96,7 @@ hash (str, len)
         hval += asso_values[(unsigned char)str[0]];
         break;
     }
-  return hval;
+  return hval + asso_values[(unsigned char)str[len - 1]];
 }
 
 #ifdef __GNUC__
@@ -114,29 +112,71 @@ in_word_set (str, len)
 {
   static const char * const wordlist[] =
     {
+      "", "", "", "", "", "", "", "", "",
       "", "", "", "",
+      "stats",
+      "",
+      "erm cpu",
+      "",
+      "erm log",
+      "", "",
+      "erm join",
+      "",
+      "erm arch",
+      "erm clone",
+      "erm snapshot",
+      "erm kickstart",
+      "erm uptime",
+      "erm",
+      "unmonitor routes",
+      "unmonitor xroutes",
+      "erm memory",
+      "erm output",
+      "unmonitor interfaces",
+      "stats routes",
+      "stats routers",
       "dump",
-      "quit",
-      "reload",
-      "monitor",
-      "",
-      "unmonitor",
-      "",
-      "dump routes",
-      "dump routers",
+      "erm output text",
+      "dump interfaces",
+      "erm clients",
+      "erm split",
+      "erm output json",
       "dump xroutes",
       "monitor routes",
       "monitor routers",
-      "unmonitor routes",
-      "unmonitor routers",
-      "monitor xrouts",
-      "unmonitor xroutes",
-      "monitor interfaces",
-      "unmonitor interfaces",
-      "dump interfaces",
+      "erm output raw",
+      "erm monitor cpu",
+      "stats interfaces",
+      "erm monitor lag",
+      "erm monitor ermcpu",
+      "dump routes",
+      "dump routers",
+      "erm credits",
+      "erm config",
+      "restart",
+      "quit",
+      "erm version",
+      "stats neighbours",
+      "erm monitor bandwidth",
+      "monitor xroutes",
+      "unmonitor",
+      "reload",
+      "erm gc",
+      "umonitor routers",
+      "erm consistency",
+      "erm flush",
       "dump neighbours",
-      "", "", "", "", "", "",
-      "open the pod bay doors"
+      "erm log off",
+      "stats xroutes",
+      "erm log on",
+      "monitor",
+      "erm radiate",
+      "",
+      "open the pod bay doors",
+      "",
+      "monitor interfaces",
+      "", "", "",
+      "erm unmonitor"
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
