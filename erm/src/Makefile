@@ -206,7 +206,9 @@ full_warnings: $(DOBJS)
 
 debug_modules: $(DOBJS2)
 
-.PHONY: mips arm aarch64 icc gcc clang
+# Architectures and compilers I build for
+
+.PHONY: mips arm aarch64 icc gcc clang parallella
 
 mips:
 	$(MAKE) CC=mipsel-openwrt-linux-gcc $(filter-out aarch64,$@)
@@ -227,7 +229,7 @@ arm:
 	$(MAKE) CC=arm-linux-gnueabihf-gcc $(filter-out arm,$@)
 
 parallella:
-	$(MAKE) CC=e-gcc
+	$(MAKE) CC=e-gcc $(filter-out parallella,$@)
 
 tags: $(HEADERS) $(SRCS)
 	ctags $(HEADERS) $(SRCS)
