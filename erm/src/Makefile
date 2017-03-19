@@ -19,13 +19,13 @@ BHEADERS = align.h c11.h command_line.h globals.h interfaces.h kernel.h \
 
 TOOLS = ../tools
 INC = ../includes
-FILT = ../filters/
+FILT = ../filters
 
 VERSION = version.h
 INCLUDES = -I$(INC)
 GENVERSION = $(TOOLS)/generate-version.sh
 
-CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES) 
+CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES)
 LDFLAGS = -lrt
 
 # Arch specific things - still rather fragile
@@ -59,7 +59,7 @@ endif
 
 # Custom rules to produce debuggable code, gperf hash table, & bpf
 
-%.prof: %.c $(DLIB)
+%.profile: %.c $(DLIB)
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g -pg $< $(DLIB) $(LDFLAGS) -o $@
 
 %.dbg: %.c $(DLIB)
@@ -68,8 +68,11 @@ endif
 %.c: %.gp
 	gperf -m 16 -s 4 -c -C $< > $@
 
-%.bpf: %.filter
-	tcpdump -r ../filters/wtf.cap -dd -F $< > $@
+%.bpf: $(FILT)/%.filter
+	tcpdump -r $(FILT)/wtf.cap -dd -F $< > $@
+
+#babel.bpf: $(FILT)/babel.filter
+#	tcpdump -r $(FILT)/wtf.cap -dd -F $< > $@
 
 %.s: %.c
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -fverbose-asm -S $< -o $@
@@ -175,7 +178,7 @@ cmds.gp: commands.c extract_keys
 
 cmds.c: cmds.gp
 
-babel.bpf: $(FILT)babel.filter
+babel.bpf: babel.filter
 
 version.h: $(SRCS) $(HEADERS)
 	$(GENVERSION) > version.h
