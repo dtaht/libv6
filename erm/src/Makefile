@@ -29,6 +29,11 @@ GENVERSION = $(TOOLS)/generate-version.sh
 CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES)
 LDFLAGS = -lrt
 
+OBJDIR_DEBUG = $(CC)
+
+#$(OBJ_DEBUG): $(OBJDIR_DEBUG)/%.o: %.c
+#	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c $< -o $@
+
 # Arch specific things - still rather fragile
 
 # FIXME if CROSSCC is defined, reinvoke self with that as we do all the work with CC
@@ -200,6 +205,26 @@ show:
 full_warnings: $(DOBJS)
 
 debug_modules: $(DOBJS2)
+
+.PHONY: mips arm aarch64 icc gcc
+
+mips:
+	$(MAKE) CC=mipsel-openwrt-linux-gcc $(filter-out aarch64,$@)
+
+icc:
+	$(MAKE) CC=icc
+
+gcc:
+	$(MAKE) CC=gcc
+
+aarch64:
+	$(MAKE) CC=aarch64-linux-gnu-gcc-5 $(filter-out aarch64,$@)
+
+arm:
+	$(MAKE) CC=arm-linux-gnueabihf-gcc $(filter-out arm,$@)
+
+parallella:
+	$(MAKE) CC=e-gcc
 
 tags: $(HEADERS) $(SRCS)
 	ctags $(HEADERS) $(SRCS)
