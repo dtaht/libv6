@@ -1,7 +1,6 @@
-/**
+**
  * arch_detect.h
  *
- * Toke Høiland-Jørgensen
  * 2017-03-08
  */
 
@@ -17,8 +16,23 @@
 #define P(a)    typedef struct a a ##_t; \
 		printf("%4ld = sizeof (%s)\n", sizeof(a ## _t), #a)
 
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	const char endian[] = "little";
+#else
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	const char endian[] = "big";
+#else
+#if __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
+	const char endian[] = "pdp - you are kidding me, right?";
+#else
+	const char endian[] = "unknown";
+#endif
+#endif
+#endif
+
 #if !(defined(__arm__) || defined(__aarch64__) || defined(__x86_64__) \
-	|| defined(__i386__) || defined(__mips__))
+	|| defined(__i386__) || defined(__mips__) || defined(__epiphany__))
 	const char arch[] = "unknown";
 #else
 #if defined(__arm__) || defined(__aarch64__)
@@ -33,7 +47,8 @@
 #endif
 #endif
 #endif /* end of arm detection. Fixme - need to find neon regs */
-#else
+#endif
+
 #if defined(__x86_64__)
 	const char arch[] = "x86_64";
 #endif
@@ -46,6 +61,8 @@ const char arch[] = "x86";
 const char arch[] = "MIPS";
 #endif
 
+#if defined(__epiphany__)
+const char arch[] = "MIPS";
 #endif
 
 #endif

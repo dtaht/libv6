@@ -744,3 +744,7 @@ char *my_other_char = (char*)0x6000; //hardcoding addresses
 //External memory using section labels
 int my_integer SECTION("shared_dram"); //section at 0x8f000000
 float my_float SECTION("heap_dram"); //section at 0x8f800000
+
+* __COUNTER__
+
+ could maybe be used to generate trap numbers
