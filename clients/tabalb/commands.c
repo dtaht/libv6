@@ -154,9 +154,9 @@ int main() {
 }
 #endif
 
-#ifdef MODULE_TEST
+#ifdef DEBUG_MODULE
 int main() {
-   open_pod_bay_doors(0,0);
+   command_open_pod_bay_doors(0,0);
    printf("success! (otherwise)\n");
    return 0;
 }
