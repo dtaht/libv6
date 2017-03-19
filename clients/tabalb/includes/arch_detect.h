@@ -62,7 +62,7 @@ const char arch[] = "MIPS";
 #endif
 
 #if defined(__epiphany__)
-const char arch[] = "MIPS";
+const char arch[] = "epiphany";
 #endif
 
 #endif
