@@ -142,7 +142,7 @@ TAGS: $(HEADERS) $(SRCS)
 	etags $(HEADERS) $(SRCS)
 
 clean:
-	rm -f *.o tabeld *.dbg
+	rm -f *.o tabeld *.dbg extract_keys
 
 reallyclean: clean
 	rm -f *~ *.out *.prof tags TAGS

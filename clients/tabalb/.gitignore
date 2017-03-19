@@ -7,3 +7,4 @@ cmds.c
 *.prof
 *.dbg
 version.h
+extract_keys
