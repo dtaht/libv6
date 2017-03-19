@@ -770,3 +770,76 @@ xstr (foo)
      → "4"
 
 
+* noize vs ssh
+Originally I was all hot on using the noize framework but as I've
+not found much more than specs, that is cooling. What is so wrong
+with ssh?
+
+** Negatives
+- need "users" on the remote machine in the right group
+- still need to do separate key management to some extent
+- faster to announce your public key via some means
+- I'd thought to actually use a client-server binary protocol
+- have to fork/open a pipe to ssh for input/output
+- I'd intended the command parser to run locally and just send
+commands (mapped to numbers) over the link.
+- Not sure how to make it work with mosh
+- binary transport is VERY doable but I get less insight into the transaction
+  (tcp) that I wanted. Hmm... after the fact via a netlink filter?
+** Postives
+- Crypto is someone elses problem
+- somewhat more ideally you'd want your own dedic
+- much smaller - just ship the shared memory client and quit
+
+** Massive positives
+It just works. Fired up init.dbg /testinstance on the other side
+
+ssh germ@172.26.16.16
+
+d@dancer:~/git/libv6/erm/src$ ssh germ@172.26.16.16
+warning: Couldn't mmap shared huge page memory in erm_attach_client(): Invalid argument
+Deregistering erm instance
+warning: Couldn't unmap shared memory in erm_close(): Invalid argument
+erm instance detached
+
+I merely slammed a script that called up the instance:
+
+command="/usr/bin/grm.sh",no-port-forwarding,no-X11-forwarding,no-agent-forwarding ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDuXeMnLWmyup6V6Hls63yx/nbg/CrPGMCxtBZriYgAnZ9LZyKuBlKo0l6TppQzouO50qYQQv9pu0eoF4sZeIX7STepDX/9EH96Hsd/8ThQt7BrzteSJVqaIE41pon/wXN/oNcVNscYHcb0YwqY3Q+/4NkkXu/QYOrDhafw8eJb7LAdyKupaGiXmN6SkSQHFS2hHcuCl+ZaRAJCUBG+1eNd+w23C6A6Q7/OUppoS1EeSpA1bdnkUDeTTQ6JA72dvoBxDSsVVfva8Zvszz7qz5E7NiLWP+tH6IYahl9FA04oQoOxjbtl+eRI9vqyTxVAwUNkx4Wrazl6AgKmv+l4n3AJ d@dancer
+
+Am not sure if I can get away with no controlling pty. Can dropbear accept this syntax?
+
+Put that user in the erm group... (currently 84). and boom. Good stuff. Others
+are denied.
+
+baduser@par:~/.ssh$ germ -a /testinstance
+fail: Couldn't open shared memory - aborting in erm_attach_client(): Permission denied
+baduser@par:~/.ssh$ germ -a /testinstance
+
+* what was so wrong with everything as a file?
+
+I was asking myself just this past week. While abusing mmap.
+
+/erm/arch
+/erm/machine
+/erm/self/command (pid?)
+/erm/self/response (pid?)
+/erm/regs
+/erm/v6table
+/erm/v4table
+/erm/interfaces/
+/erm/flags
+/erm/proc
+/erm/cpu/1
+/erm/cpu/2
+
+/erm/whatever
+/erm/stats
+/erm/daemon/tabled
+/erm/daemon/odhcpd/dhcp.leases
+/erm/daemon/dnsmasq/hosts
+
+I could just layer rsync over it, too. A file changes, you use inotify.
+write, delete, mv
+
+/erm/lookup/myaddress ?
+
