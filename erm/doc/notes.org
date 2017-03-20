@@ -987,3 +987,4 @@ __m128, __m128i, __m128d
 
 __attribute__((regcall)) foo (int I, int j); 
 
+-regcall if you want it on always

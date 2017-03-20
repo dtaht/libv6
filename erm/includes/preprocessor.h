@@ -119,6 +119,14 @@ static inline int donothing_false() { return 0; }
 
 #define VECTOR(width) __attribute__((vector_size(width)))
 
+// Intel compiler specific extension used in function declarations
+
+#ifdef __ICC__
+#define REGCALL __attribute__((regcall))
+#else
+#define REGCALL
+#endif
+
 // PREFETCH - is generally a lose nowadays. Except when going backwards.
 // I can never remember the direction of read or write, but do remember the
 // locality argument ranges from 0 to 3. Never know which of those to use

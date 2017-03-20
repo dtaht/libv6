@@ -238,7 +238,7 @@ md: debug_modules
 .PHONY: mips arm aarch64 icc gcc clang parallella par vector
 
 vector:
-	$(MAKE) CC=icc EXTRA_DEFINES=-vec-report=7
+	$(MAKE) CC=icc EXTRA_DEFINES="-qopt-report-phase=vec -simd  -diag-enable=vec -qopt-report=5" # " -qopt-report-file=stdout"
 
 mips:
 	$(MAKE) CC=mipsel-openwrt-linux-gcc $(filter-out aarch64,$@)

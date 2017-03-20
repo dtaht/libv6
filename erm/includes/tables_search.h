@@ -131,18 +131,18 @@ SOMETIMES_INLINE tbl_b PO(roar_match_firsthit)(tbl_a* a, tbl_b* b, unsigned int 
 
   return *b;
 }
+// restrict?
 
-SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vector)(tbl_a* a, tbl_b* b)
+SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvector)(tbl_a* restrict a, tbl_b* restrict b)
 {
+   a = __builtin_assume_aligned (a, 16);
+   b = __builtin_assume_aligned (b, 16);
   unsigned int r = -1;
-  unsigned char c = 0;
   tbl_a match = *a;
-  --b;
-  while(r) {
-    while(++c & RUNAHEAD & r) r += match == *++b;
+  for(int c = 0; c < (RUNAHEAD+1)*2; c++) {
+    r += match == b[c];
   }
-  while(r = RESULT(r, a, b))
-    ;
+  while(r = RESULT(r, a, b)) ;
 
   return *b;
 }
