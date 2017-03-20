@@ -100,7 +100,7 @@ socket_defaults_t babel_defaults[] = {
   { 0, 0, 0, 0 },
 };
 
-int tabeld_socket(sockaddr_in6_t* sin6, int size, int family, int conn, int port, int protocol, socket_defaults_t* o)
+int erm_socket(sockaddr_in6_t* sin6, int size, int family, int conn, int port, int protocol, socket_defaults_t* o)
 {
   int s, rc;
   if((s = socket(family, conn, protocol)) < 0) return -1;
@@ -137,8 +137,8 @@ int tcp_server_socket(int local, int port)
   if(local)
     if((rc = inet_pton(AF_INET6, "::1", &sin6.sin6_addr)) < 0) return fail(s);
 
-  if((s = tabeld_socket(&sin6, sizeof(sockaddr_in6_t), AF_INET6, SOCK_STREAM,
-                        6696, IPPROTO_TCP, tcp_defaults)) < 0)
+  if((s = erm_socket(&sin6, sizeof(sockaddr_in6_t), AF_INET6, SOCK_STREAM,
+                        port, IPPROTO_TCP, tcp_defaults)) < 0)
     return fail(s);
 
   if((rc = listen(s, 2)) < 0) return fail(s);
@@ -158,8 +158,8 @@ int unix_server_socket(const char* path)
 
   strncpy(sun.sun_path, path, sizeof(sun.sun_path));
 
-  if((s = tabeld_socket((sockaddr_in6_t*)&sun, sizeof(sun.sun_path), AF_UNIX,
-                        SOCK_STREAM, 6696, IPPROTO_TCP, unix_defaults)) < 0)
+  if((s = erm_socket((sockaddr_in6_t*)&sun, sizeof(sun.sun_path), AF_UNIX,
+                        SOCK_STREAM, 0, IPPROTO_TCP, unix_defaults)) < 0)
     return fail(s);
 
   if((rc = listen(s, 2)) < 0) goto fail_unlink;
@@ -185,9 +185,9 @@ int main()
   tcp.sin6_family = sin61.sin6_family = sin60.sin6_family = AF_INET6;
   tcp.sin6_port = sin61.sin6_port = sin60.sin6_port = htons(TEST_PORT);
 
-  fds[0] = tabeld_socket(&sin60, sizeof(sockaddr_in6_t), AF_INET6, SOCK_DGRAM,
+  fds[0] = erm_socket(&sin60, sizeof(sockaddr_in6_t), AF_INET6, SOCK_DGRAM,
                          TEST_PORT, IPPROTO_UDP, babel_defaults);
-  fds[1] = tabeld_socket(&sin61, sizeof(sockaddr_in6_t), AF_INET6, SOCK_DGRAM,
+  fds[1] = erm_socket(&sin61, sizeof(sockaddr_in6_t), AF_INET6, SOCK_DGRAM,
                          TEST_PORT, IPPROTO_UDPLITE, babel_defaults);
   fds[2] = unix_server_socket("/tmp/testtabeld.soc");
   fds[3] = tcp_server_socket(1, TEST_PORT);
