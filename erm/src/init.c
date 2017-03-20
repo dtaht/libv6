@@ -119,7 +119,7 @@ int create_files(char* base, dirs_t* p)
   int fd;
   while(p->name != NULL) {
     sprintf(buf, "%s/%s", base, p->name);
-    TRAP_LT((fd = open(buf, O_CREAT, p->mode)), 0, buf);
+    TRAP_WEQ((fd = open(buf, O_CREAT, p->mode)), -1, buf);
     p++;
     close(fd);
   }
@@ -131,8 +131,9 @@ int create_dirs(char* base, dirs_t* p)
   char buf[255];
   while(p->name != NULL) {
     sprintf(buf, "%s/%s", base, p->name);
-    TRAP_LT(mkdir(p->name, p->mode), 0, buf);
+    TRAP_WEQ(mkdir(buf, p->mode),-1, buf);
     p++;
+//    if(errno && errno != EEXIST)
   }
   return 0;
 }
@@ -142,8 +143,9 @@ int create_dirnum(char* base, dirs_t* files, int mode, int count)
   char buf[16];
   while(--count > -1) {
     sprintf(buf, "%s/%d", base, count);
-    TRAP_LT(mkdir(buf, mode), 0, buf);
-    create_files(buf, topfiles);
+    TRAP_WEQ(mkdir(buf, mode), -1, buf);
+    if(errno && errno != EEXIST)
+       create_files(buf, topfiles);
   }
   return 0;
 }
@@ -153,14 +155,18 @@ int create_default_dirs(char* instance)
 {
   char buf[255];
   TRAP_LT(mkdir(instance, perms), 0, instance);
+  printf("got here\n");
   create_dirs(instance, default_dirs);
+  printf("got here\n");
   create_files(instance, topfiles);
+  printf("got here\n");
   sprintf(buf, "%s/cpu", instance);
   create_dirnum(buf, topfiles, perms, 16);
   sprintf(buf, "%s/daemons", instance);
   create_dirs(buf, ddirs);
   sprintf(buf, "%s/routes", instance);
   create_dirs(buf, ddirs);
+  return 0;
 }
 
 #ifdef DEBUG_MODULE
