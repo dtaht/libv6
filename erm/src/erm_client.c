@@ -47,7 +47,7 @@ int erm_close(erm_t erm)
   return 0;
 }
 
-void bye(void) { erm_close(mem); }
+static void bye(void) { erm_close(mem); }
 
 erm_t erm_attach_client(char* instance)
 {
@@ -69,8 +69,8 @@ erm_t erm_attach_client(char* instance)
   return mem;
 }
 
+erm_t erm_open(char *instance) { return erm_attach_client(instance); }
 uint32_t erm_status(erm_t erm) { return mem[8]; }
-
 erm_t* erm_query(erm_t erm, uint32_t* buf, int size) { return &mem[9]; }
 
 #ifdef DEBUG_MODULE
