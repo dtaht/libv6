@@ -1,0 +1,43 @@
+* Experiments
+
+I am pushing my own knowledge much further than I have in years.
+I am also pushing a variety of c compilers into places they could not
+go a decade ago. As such, I keep writing experimental, junky code,
+in order to see what works best.
+
+This is a less embarrassing place to keep those.
+
+The last time I did this (early 90s) I ended up tossing the entire C
+standard ABI, which got painful, quickly. I'd like to avoid that...
+
+* Table search code generation tests
+
+The biggest winner (by eyeball) of the table lookup code appeared to be
+the linearly unrolled version. This did not come as a surprise. What did
+come as a surprise was that gcc didn't use cmov or post incremented auto
+indexing. Turns out there are bugs filed on it.
+
+I really begrudge those two missing instructions - the inner loops would
+be 20% shorter with those.
+
+Ah, well, icc and clang seem to do that more right.
+
+Anyway, still to come is trying a few vectorized in the neon and SSE
+searches with overruns, and I really need working code and real data first.
+
+* Structure (mis)handling
+
+structpassing.c
+
+** structure assignment
+
+This basically works, but what happens for complex structures?
+
+** structure passing
+** structure return
+
+In multiple cases there are "flags" and "128 bits of data", and ideally,
+I want those two to end up in the integer and co-processor regs, and only
+have to express that as a single struct.
+
+
