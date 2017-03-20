@@ -819,27 +819,102 @@ baduser@par:~/.ssh$ germ -a /testinstance
 
 I was asking myself just this past week. While abusing mmap.
 
-/erm/arch
-/erm/machine
-/erm/self/command (pid?)
-/erm/self/response (pid?)
-/erm/regs
-/erm/v6table
-/erm/v4table
-/erm/interfaces/
-/erm/flags
-/erm/proc
-/erm/cpu/1
-/erm/cpu/2
-
-/erm/whatever
-/erm/stats
-/erm/daemon/tabled
-/erm/daemon/odhcpd/dhcp.leases
-/erm/daemon/dnsmasq/hosts
+d@dancer:/dev/shm/erma$ find . -print
+.
+./memory
+./arch
+./mach
+./flags
+./machine
+./ocpu
+./ocpu/0
+./ocpu/1
+./ocpu/2
+./ocpu/3
+./ocpu/4
+./ocpu/5
+./ocpu/6
+./ocpu/7
+./ocpu/8
+./ocpu/9
+./ocpu/10
+./ocpu/11
+./ocpu/12
+./ocpu/13
+./ocpu/14
+./ocpu/15
+./formats
+./stats
+./daemons
+./daemons/hnet
+./daemons/udhcp6c
+./daemons/udhcp
+./daemons/dnsmasq
+./daemons/odhcpd
+./daemons/tabeld
+./daemons/kernel
+./daemons/boot
+./daemons/static
+./addresses
+./routes
+./routes/hnet
+./routes/udhcp6c
+./routes/udhcp
+./routes/dnsmasq
+./routes/odhcpd
+./routes/tabeld
+./routes/kernel
+./routes/boot
+./routes/static
+./interfaces
+./rules
+./self
+./cpu
+./cpu/0
+./cpu/1
+./cpu/2
+./cpu/3
 
 I could just layer rsync over it, too. A file changes, you use inotify.
-write, delete, mv
+write, delete, mv.
 
 /erm/lookup/myaddress ?
 
+* For that matter what was wrong with rsync?
+
+Can that be used to transfer route tables (sorted by pop | plen and compressed
+to 16 bit indexes)? effeciently?
+
+* icc does have a 30 day eval
+
+And does generate my desired cmove instruction.
+
+ 330:   44 8d 1c 4a             lea    (%rdx,%rcx,2),%r11d
+ 334:   44 0f 44 ce             cmove  %esi,%r9d
+ 338:   45 8d 53 06             lea    0x6(%r11),%r10d
+ 33c:   45 03 c1                add    %r9d,%r8d
+ 33f:   41 83 e2 07             and    $0x7,%r10d
+ 343:   41 8d 43 ff             lea    -0x1(%r11),%eax
+ 347:   41 89 c1                mov    %eax,%r9d
+ 34a:   45 85 d0                test   %r10d,%r8d
+ 34d:   74 20                   je     36f <tbl_a_tbl_b_roar_match_firsthit+0x7f>
+
+and the unrolled version looks like a winner across the board on intel.
+Admittedly on a very inefficient load of a 16 bit value.
+
+ 19f:   45 0f b7 5e 04          movzwl 0x4(%r14),%r11d
+ 1a4:   45 0f 44 d7             cmove  %r15d,%r10d
+ 1a8:   45 33 c9                xor    %r9d,%r9d
+ 1ab:   33 d2                   xor    %edx,%edx
+ 1ad:   45 3b e3                cmp    %r11d,%r12d
+ 1b0:   41 0f b7 5e 06          movzwl 0x6(%r14),%ebx
+ 1b5:   45 0f 44 cf             cmove  %r15d,%r9d
+ 1b9:   44 3b e3                cmp    %ebx,%r12d
+ 1bc:   bb 00 00 00 00          mov    $0x0,%ebx
+ 1c1:   41 0f 44 df             cmove  %r15d,%ebx
+ 1c5:   41 03 ca                add    %r10d,%ecx
+ 1c8:   44 03 cb                add    %ebx,%r9d
+ 1cb:   45 33 d2                xor    %r10d,%r10d
+ 1ce:   41 0f b7 5e 08          movzwl 0x8(%r14),%ebx
+
+benchmarks await!
