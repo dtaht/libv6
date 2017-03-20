@@ -61,11 +61,13 @@ R int check_addr(v6addr_t a) {
 
 #define TESTS1(n,a,b,result) result = fool_compiler##n(a,b); check_flags(r.f)
 #define TESTS2(n,g,g1,k,k1,result) result = fool_compiler##n(g.f,g1.a,k.f,k1.a); check_flags(r.f)
+#define TESTS3(n,g,g1,k,k1,result) result = fool_compiler##n(g.f,g1,k.f,k1.a); check_flags(r.f)
 
 int main() {
 	compound_struct_t c = {0};
 	compound_struct_t d = {0};
 	compound_struct_t r;
+	v6addr_t l = d.a;
 	c.f.flags = 1;
 	d.f.flags = 2;
 	TESTS1(1,c,d,r); // does not generate SSE instructions
@@ -76,6 +78,11 @@ int main() {
 	TESTS2(3,c,c,d,d,r.a); // does generate SSE instructions
 	TESTS2(4,c,c,d,d,r.f); // does generate SSE instructions
 	TESTS2(4,c,c,d,d,r.f); // does generate SSE instructions
-	TESTS2(5,c,c,d,d,r.a); // does generate SSE instructions
+	asm("nop; /* keep registration */");
+// can we fool the compiler harder?
+	TESTS3(5,c,l,d,d,r.a); // does generate SSE instructions
+// can we fool the compiler harder or will it spill l?
+	TESTS3(5,c,l,d,d,r.a); // does generate SSE instructions
+
 	return 0;
 }
