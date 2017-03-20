@@ -87,19 +87,102 @@ bool fill_tables(void* mem)
 // MAP_POPULATE - zeros in the memory, I guess
 // ftruncate?
 
+#define perms (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH)
+
+typedef struct {
+  char* name;
+  int mode;
+} dirs_t;
+
+dirs_t default_dirs[] = {
+  { "cpu", perms },     { "self", perms },
+  { "rules", perms },   { "interfaces", perms },
+  { "routes", perms },  { "addresses", perms },
+  { "daemons", perms }, { "stats", perms },
+  { "formats", perms }, { NULL, 0 },
+};
+
+dirs_t topfiles[] = {
+  { "flags", perms }, { "regs", perms }, { "machine", perms },
+  { "arch", perms },  { "regs", perms }, { "memory", perms },
+};
+
+dirs_t ddirs[] = {
+  { "static", perms }, { "boot", perms },    { "kernel", perms },
+  { "tabeld", perms }, { "odhcpd", perms },  { "dnsmasq", perms },
+  { "udhcp", perms },  { "udhcp6c", perms }, { "hnet", perms },
+};
+
+int create_files(char* base, dirs_t* p)
+{
+  char buf[255];
+  int fd;
+  while(p->name != NULL) {
+    sprintf(buf, "%s/%s", base, p->name);
+    TRAP_LT((fd = open(buf, O_CREAT, p->mode)), 0, buf);
+    p++;
+    close(fd);
+  }
+  return 0;
+}
+
+int create_dirs(char* base, dirs_t* p)
+{
+  char buf[255];
+  while(p->name != NULL) {
+    sprintf(buf, "%s/%s", base, p->name);
+    TRAP_LT(mkdir(p->name, p->mode), 0, buf);
+    p++;
+  }
+  return 0;
+}
+
+int create_dirnum(char* base, dirs_t* files, int mode, int count)
+{
+  char buf[16];
+  while(--count > -1) {
+    sprintf(buf, "%s/%d", base, count);
+    TRAP_LT(mkdir(buf, mode), 0, buf);
+    create_files(buf, topfiles);
+  }
+  return 0;
+}
+
+
+int create_default_dirs(char* instance)
+{
+  char buf[255];
+  TRAP_LT(mkdir(instance, perms), 0, instance);
+  create_dirs(instance, default_dirs);
+  create_files(instance, topfiles);
+  sprintf(buf, "%s/cpu", instance);
+  create_dirnum(buf, topfiles, perms, 16);
+  sprintf(buf, "%s/daemons", instance);
+  create_dirs(buf, ddirs);
+  sprintf(buf, "%s/routes", instance);
+  create_dirs(buf, ddirs);
+}
+
 #ifdef DEBUG_MODULE
 #define MYMEM "/tabeld-test3"
 #define babel_group 84
 static int default_perms = (MAP_SHARED | MAP_HUGETLB);
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-  char * shmem = argc == 2 ? argv[1] : MYMEM;
+  char* shmem = argc == 2 ? argv[1] : MYMEM;
   int fd;
   int tsize = BASE * 16;
   uint32_t* mem = NULL;
   unsigned char* tables = NULL;
-  TRAP_LT((fd = shm_open(shmem, O_CREAT | O_RDWR, 0)), 0,
+  char buf[255];
+  sprintf(buf, "/dev/shm%s", shmem);
+  create_default_dirs(buf);
+  sleep(30);
+
+  sprintf(buf, "/dev/shm/%s/regs", shmem);
+  // Now attach the virtual machine to that bit of shared mem
+  TRAP_LT((fd = shm_open(buf, O_CREAT | O_RDWR, 0)), 0,
           "Couldn't open shared memory - aborting");
   TRAP_WERR((fchmod(fd, S_IRUSR | S_IWUSR | S_IRGRP)),
             "Couldn't change shared memory mode"); // rw root, r group
@@ -128,7 +211,7 @@ int main(int argc, char **argv)
   mem[8] = 0;
   TRAP_WERR(munmap(mem, tsize), "Couldn't unmap shared memory");
   // err:
-  TRAP_WERR(shm_unlink(shmem), "Couldn't close shared memory");
+  TRAP_WERR(shm_unlink(buf), "Couldn't close shared memory");
   printf("exiting\n");
 }
 #endif
