@@ -139,6 +139,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvector)(tbl_a* restrict a, tbl_b*
    b = __builtin_assume_aligned (b, 16);
   unsigned int r = -1;
   tbl_a match = *a;
+#pragma simd
   for(int c = 0; c < (RUNAHEAD+1)*2; c++) {
     r += match == b[c];
   }
