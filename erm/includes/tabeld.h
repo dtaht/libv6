@@ -245,11 +245,11 @@ typedef struct {
   metric_t m;
   neigh_t neigh; //
   ubase_t nexthop_idx;
-  time_t time;
+  ttime_t time;
   int expires;
   ubase_t hold_time;       /* in seconds */
   ubase_t smoothed_metric; /* for route selection */
-  time_t smoothed_metric_time;
+  ttime_t smoothed_metric_time;
   short installed;
   short channels_len;
   unsigned char* channels;

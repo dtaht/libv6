@@ -6,7 +6,6 @@
  */
 
 #include <stdint.h>
-#include <time.h>
 #include "commands.h"
 #include "init.h"
 #include "io.h"

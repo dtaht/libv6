@@ -8,7 +8,6 @@
 #include "debug.h"
 #include "tabeld.h"
 #include <stdio.h>
-#include <time.h>
 
 // In other abuses of printf, I wonder if I can abuse it to
 // let me use captn proto or protobufs? a
