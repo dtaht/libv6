@@ -88,11 +88,20 @@ static inline int donothing_false() { return 0; }
 #define PURE __attribute__((pure))
 #define HOT __attribute__((hot))
 #define COLD __attribute__((cold))
-#define NORETURN __attribute__((noreturn))
-#define INTERRUPT __attribute__((interrupt))
 
 // FIXME: We occasionally have to do linker magic with SECTIONS
-//
+// My attempt at a notation for this is presently thinking I'd
+// mark stuff as hot with a section. SOMETIMES_HOT?
+// For now, just:
+
+#define WARM
+#define VERYHOT __attribute__((hot))
+#define VERYCOLD __attribute__((cold))
+
+// FIXME: It turns out you don't use this this way
+
+#define NORETURN __attribute__((noreturn))
+#define INTERRUPT __attribute__((interrupt))
 
 // PREFETCH - is generally a lose nowadays. Except when going backwards.
 // I can never remember the direction of read or write, but do remember the
