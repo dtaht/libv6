@@ -148,6 +148,21 @@ SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvector)(tbl_a* restrict a, tbl_b*
   return *b;
 }
 
+SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvvector)(tbl_a* restrict a, tbl_b* restrict b)
+{
+   b = __builtin_assume_aligned (b, 16);
+  unsigned int r = -1;
+  tbl_a match = *a;
+#pragma simd
+  for(int c = 0; c < (RUNAHEAD+1); c++) {
+    r += match == b[c];
+  }
+  while(r = RESULT(r, a, b)) ;
+
+  return *b;
+}
+
+
 SOMETIMES_INLINE tbl_b PO(roar_match_freerun_firsthit)(tbl_a* a, tbl_b* b, unsigned int c)
 {
   unsigned char d = c & 255;

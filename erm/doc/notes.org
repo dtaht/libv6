@@ -1007,8 +1007,7 @@ But Still think the code generated is suboptimal.
  3d2:   f3 41 0f 7e 4c 24 08    movq   0x8(%r12),%xmm1
  3d9:   66 0f 6e c7             movd   %edi,%xmm0
  3dd:   66 0f 70 e0 00          pshufd $0x0,%xmm0,%xmm4
- 3e2:   66 0f 61 d7             punpcklwd %xmm7,%xmm2
- 3e6:   66 0f 61 cf             punpcklwd %xmm7,%xmm1
+ 3e2:   66 0f 61 d7             punpcklwd 61 cf             punpcklwd %xmm7,%xmm1
  3ea:   66 0f 76 d4             pcmpeqd %xmm4,%xmm2
  3ee:   66 0f 76 e1             pcmpeqd %xmm1,%xmm4
  3f2:   66 0f db d3             pand   %xmm3,%xmm2
@@ -1062,7 +1061,7 @@ https://computing.llnl.gov/?set=code&page=intel_vector
  3fa:   66 0f db e3             pand   %xmm3,%xmm4
  3fe:   66 0f fe fc             paddd  %xmm4,%xmm7
  402:   66 0f 6f ef             movdqa %xmm7,%xmm5
- 406:   66 0f 73 dd 08          psrldq $0x8,%xmm5
+ 406:   66 0f 73 dd 08          psrldqpsrldq $0x8,%xmm5
  40b:   66 0f fe fd             paddd  %xmm5,%xmm7
  40f:   66 0f 6f f7             movdqa %xmm7,%xmm6
  413:   66 0f 73 d6 20          psrlq  $0x20,%xmm6
@@ -1073,4 +1072,26 @@ https://computing.llnl.gov/?set=code&page=intel_vector
 
 **  It seems likely that I am still smarter than the compiler.
 
-Except that I'm not able to outsmart it.
+Except that I'm not able to outsmart it. I can do the damn job in
+*2* registers. Not 7. And in 11ins. Admitted phadd is 
+pretty slow, but...
+
+movq match reg1
+mov 01 into reg2
+(can't I just put them all in at the same time)?
+splay match (might stash it somewhere in a more optimized version
+splay 01 reg2
+PCMPEQW reg1, tbl b* # destroying reg1
+pandw reg2, reg1 # destroying reg2
+
+* horizontal add reg2, reg2 # with itself:
+PHADDW xmm1, xmm1 gives me 4 arrays of 16
+PHADD xmm1, xmm1 gives me 2 vecs arrays of 32
+shuffle
+phadd xmm1 xmm1
+grab the result
+
+I can even do this 256 bytes wide now with avx.
+
+there's probably another way to do this.
+
