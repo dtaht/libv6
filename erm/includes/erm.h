@@ -17,7 +17,8 @@
 // Pointers? Who needs pointers when you can make virtual
 // memory do everything you want? (famous last words)
 
-extern erm_t erm_open(char *instance) COLD;
+extern erm_t erm_create(char *instance, int perms) COLD;
+extern erm_t erm_open(char *instance, int perms) COLD;
 extern erm_t erm_close(erm_t handle) COLD;
 extern erm_t erm_stat(erm_t handle) COLD;
 extern erm_t erm_poll(erm_t handle) HOT;
