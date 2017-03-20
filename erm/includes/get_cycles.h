@@ -6,9 +6,8 @@
 #if !defined(NO_CYCLES) &&                                                   \
 (defined(__x86_64__) | defined(__arm__) | defined(__epiphany__))
 
-// haven't decided on this API YET
-// if doing anything with start or end
-// title ? doonething do aother should compile out
+// haven't decided on this API YET. if doing anything with start or end title ?
+// doonething do aother should compile out.
 
 #define GET_CYCLES_INIT(title, name, start, end)                             \
   static char* __cyclestitle = name;                                         \
@@ -21,7 +20,6 @@
 #define GET_CYCLES_CHECK(title, start, end)
 #define GET_CYCLES_CLEAN(title, start, end)
 
-
 #ifdef __x86_64__
 
 typedef uint64_t cycles_t;
@@ -29,7 +27,7 @@ typedef uint64_t cycles_t;
 static inline int init_get_cycles() { return 0; } // Always works on this arch
 
 /** Get CPU timestep counter */
-__attribute__((always_inline)) static inline cycles_t get_cycles()
+ALWAYS_INLINE static inline cycles_t get_cycles()
 {
   uint64_t tsc;
   /** @todo not recommended to use rdtsc on old multicore machines */
@@ -54,7 +52,7 @@ typedef cycles_t uint32_t;
 static inline int init_get_cycles() { return 0; }
 #define CYCLES_FMT "%u"
 
-__attribute__((always_inline)) static inline cycles_t get_cycles(void)
+ALWAYS_INLINE static inline cycles_t get_cycles(void)
 {
   u32 val;
   __asm__ __volatile__("mrc p15, 0, %0, c15, c12, 1" : "=r"(val));

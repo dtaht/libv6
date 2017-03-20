@@ -10,9 +10,9 @@
 #ifndef PREPROCESSOR_H
 #define PREPROCESSOR_H
 
-// I will probably end up wrapping sched_yield to do more stuff
-// and force callers to check status. "Why am I back here?"
-// sched_yield always returns 0 on linux.
+// I will probably end up wrapping sched_yield to do more stuff and force
+// callers to check status. "Why am I back here?" sched_yield always returns 0
+// on linux.
 
 #ifndef YIELD
 #define YIELD(mask) sched_yield()
@@ -20,11 +20,9 @@
 
 // FIXME: discuss DEBUG & NDEBUG and assert usage
 
-// There are a multitude of TRAP handlers in the virtual machine and a
-// multitude
+// There are a multitude of TRAP handlers in the virtual machine and a multitude
 // of ways to run them - ranging from a FPGA system with its own opcode and
-// register to handle it - to a full blown operating system. The default is
-// full
+// register to handle it - to a full blown operating system. The default is full
 // logging, with line numbers of functions.
 
 #ifndef TRAP_MODEL
@@ -67,6 +65,7 @@
 #define DONOTHING                                                            \
   do {                                                                       \
   } while(0)
+
 #define MIN(a, b) (a > b ? a : b)
 #define MAX(a, b) (a < b ? a : b)
 
@@ -98,10 +97,15 @@ static inline int donothing_false() { return 0; }
 #define VERYHOT __attribute__((hot))
 #define VERYCOLD __attribute__((cold))
 
-// FIXME: It turns out you don't use this this way
+// NOTE: These occur during the declaration of the function not after
 
 #define NORETURN __attribute__((noreturn))
 #define INTERRUPT __attribute__((interrupt))
+#define ALWAYS_INLINE __attribute__((always_inline))
+
+// Hmm... maybe move to simd header directly
+
+#define VECTOR(width) __attribute__((vector_size(width)))
 
 // PREFETCH - is generally a lose nowadays. Except when going backwards.
 // I can never remember the direction of read or write, but do remember the

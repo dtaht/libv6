@@ -47,13 +47,12 @@ but applied everywhere.
 
 // All addresses are kept as vector types to start with
 
-typedef uint8_t v6addr_t __attribute__((vector_size(16))); // v6 addresses
-typedef uint8_t r6addr_t __attribute__((vector_size(8)));  // Router ID
-typedef uint8_t emacaddr_t
-__attribute__((vector_size(8))); // We waste 2 bytes on macs
+typedef uint8_t v6addr_t VECTOR(16); // v6 addresses
+typedef uint8_t r6addr_t VECTOR(8); // Router ID
+typedef uint8_t emacaddr_t VECTOR(8); // We waste 2 bytes on macs
 
 // I would like to vectorize ipv4 but am not sure how to express it cleanly
-// typedef uint8_t v4addr_t __attribute__ ((vector_size(4))); // v6 addresses
+// typedef uint8_t v4addr_t VECTOR(4); // v6 addresses
 
 typedef uint32_t v4addr_t;
 
