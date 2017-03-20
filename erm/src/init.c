@@ -84,10 +84,11 @@ bool fill_tables(void* mem)
 // probably should use MAP_HUGETLB
 // /sys/kernel/mm/hugepages has a list of other page sizes
 // MAP_LOCKED + mlock are correct ways to keep this in core
-// MAP_POPULATE - zeros in the memory, I guess
+// MAP_POPULATE - zeros in the memory, I guess 
 // ftruncate?
 
 #define perms (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH)
+#define dperms (perms | S_IRWXG | S_IXUSR | S_IRWXO)
 
 typedef struct {
   char* name;
@@ -95,22 +96,26 @@ typedef struct {
 } dirs_t;
 
 dirs_t default_dirs[] = {
-  { "cpu", perms },     { "self", perms },
-  { "rules", perms },   { "interfaces", perms },
-  { "routes", perms },  { "addresses", perms },
-  { "daemons", perms }, { "stats", perms },
-  { "formats", perms }, { NULL, 0 },
+  { "cpu", dperms },     { "self", dperms },
+  { "rules", dperms },   { "interfaces", dperms },
+  { "routes", dperms },  { "addresses", dperms },
+  { "daemons", dperms }, { "stats", dperms },
+  { "formats", dperms }, { "ocpu", dperms },
+  { "machine", dperms },  { NULL, 0 },
 };
 
 dirs_t topfiles[] = {
-  { "flags", perms }, { "regs", perms }, { "machine", perms },
-  { "arch", perms },  { "regs", perms }, { "memory", perms },
+  { "flags", perms },
+  { "mach", dperms },
+  { "arch", perms }, { "memory", perms },
+  { NULL, 0 },
 };
 
 dirs_t ddirs[] = {
-  { "static", perms }, { "boot", perms },    { "kernel", perms },
-  { "tabeld", perms }, { "odhcpd", perms },  { "dnsmasq", perms },
-  { "udhcp", perms },  { "udhcp6c", perms }, { "hnet", perms },
+  { "static", dperms }, { "boot", dperms },    { "kernel", dperms },
+  { "tabeld", dperms }, { "odhcpd", dperms },  { "dnsmasq", dperms },
+  { "udhcp", dperms },  { "udhcp6c", dperms }, { "hnet", dperms },
+  { NULL, 0 },
 };
 
 int create_files(char* base, dirs_t* p)
@@ -120,6 +125,7 @@ int create_files(char* base, dirs_t* p)
   while(p->name != NULL) {
     sprintf(buf, "%s/%s", base, p->name);
     TRAP_WEQ((fd = open(buf, O_CREAT, p->mode)), -1, buf);
+//    fchgrp(fd,babel_group);
     p++;
     close(fd);
   }
@@ -140,7 +146,7 @@ int create_dirs(char* base, dirs_t* p)
 
 int create_dirnum(char* base, dirs_t* files, int mode, int count)
 {
-  char buf[16];
+  char buf[255];
   while(--count > -1) {
     sprintf(buf, "%s/%d", base, count);
     TRAP_WEQ(mkdir(buf, mode), -1, buf);
@@ -153,18 +159,23 @@ int create_dirnum(char* base, dirs_t* files, int mode, int count)
 
 int create_default_dirs(char* instance)
 {
-  char buf[255];
-  TRAP_LT(mkdir(instance, perms), 0, instance);
+  char buf[1024];
+  TRAP_WEQ(mkdir(instance, dperms), -1, instance);
   printf("got here\n");
   create_dirs(instance, default_dirs);
   printf("got here\n");
   create_files(instance, topfiles);
-  printf("got here\n");
   sprintf(buf, "%s/cpu", instance);
+  printf("creating cpu %s\n", buf);
+  create_dirnum(buf, topfiles, perms, 4);
+  sprintf(buf, "%s/ocpu", instance);
+  printf("creating ocpu %s\n", buf);
   create_dirnum(buf, topfiles, perms, 16);
   sprintf(buf, "%s/daemons", instance);
+  printf("creating daemons %s\n", buf);
   create_dirs(buf, ddirs);
   sprintf(buf, "%s/routes", instance);
+  printf("creating routes %s\n", buf);
   create_dirs(buf, ddirs);
   return 0;
 }
@@ -183,13 +194,20 @@ int main(int argc, char** argv)
   unsigned char* tables = NULL;
   char buf[255];
   sprintf(buf, "/dev/shm%s", shmem);
+  TRAP_WERR(setgid(babel_group),"Can't switch to erm group");
   create_default_dirs(buf);
-  sleep(30);
 
-  sprintf(buf, "/dev/shm/%s/regs", shmem);
+  sprintf(buf, "%s-machine", shmem); // Works
+//  sprintf(buf, "%s/mach", shmem); // doesnt. use symlink?
   // Now attach the virtual machine to that bit of shared mem
-  TRAP_LT((fd = shm_open(buf, O_CREAT | O_RDWR, 0)), 0,
-          "Couldn't open shared memory - aborting");
+  printf("Attach machine: %s\n", buf);
+  fd = shm_open(buf, O_CREAT | O_RDWR, 0);
+  if(fd < 0) {
+	  if((fd = shm_open(buf, O_RDWR, 0)) == -1) {
+		  perror("Couldn't attach shared memory");
+		  goto err;
+	  }
+  }
   TRAP_WERR((fchmod(fd, S_IRUSR | S_IWUSR | S_IRGRP)),
             "Couldn't change shared memory mode"); // rw root, r group
   TRAP_WERR((fchown(fd, -1, babel_group)),
@@ -217,7 +235,7 @@ int main(int argc, char** argv)
   mem[8] = 0;
   TRAP_WERR(munmap(mem, tsize), "Couldn't unmap shared memory");
   // err:
-  TRAP_WERR(shm_unlink(buf), "Couldn't close shared memory");
+err:  TRAP_WERR(shm_unlink(buf), "Couldn't close shared memory");
   printf("exiting\n");
 }
 #endif
