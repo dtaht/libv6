@@ -198,7 +198,7 @@ version.h: $(SRCS) $(HEADERS)
 plugins:
 	$(MAKE) -C plugins
 
-.PHONY: full_warnings debug_modules clean reallyclean show
+.PHONY: full_warnings debug_modules clean reallyclean show dm md
 
 show:
 	echo $(OBJS)
@@ -207,6 +207,10 @@ show:
 full_warnings: $(DOBJS)
 
 debug_modules: $(DOBJS2)
+
+dm: debug_modules
+
+md: debug_modules
 
 # Architectures and compilers I build for
 
