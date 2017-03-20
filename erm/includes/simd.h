@@ -43,7 +43,7 @@ typedef unsigned int usimd VECTOR(16);
 extern global_flags_t tflags;
 static inline void push_regs() {}
 static inline void pop_regs() {}
-typedef unsigned int usimd VECTOR(16)
+typedef unsigned int usimd VECTOR(16);
 #endif
 
 typedef union Vec4 {

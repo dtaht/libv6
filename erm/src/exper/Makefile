@@ -207,7 +207,10 @@ md: debug_modules
 
 # Architectures and compilers I build for
 
-.PHONY: mips arm aarch64 icc gcc clang parallella par
+.PHONY: mips arm aarch64 icc gcc clang parallella par vector
+
+vector:
+	$(MAKE) CC=icc EXTRA_DEFINES=-vec-report=7 $(filter-out vector,$@)
 
 mips:
 	$(MAKE) CC=mipsel-openwrt-linux-gcc $(filter-out aarch64,$@)

@@ -66,8 +66,20 @@
   do {                                                                       \
   } while(0)
 
-#define MIN(a, b) (a > b ? a : b)
-#define MAX(a, b) (a < b ? a : b)
+// Mildly safer max and min - GCC specific
+
+#define MAX(a,b) \
+  ({ __auto_type _a = (a); \
+      __auto_type _b = (b); \
+    _a > _b ? _a : _b; })
+
+#define MIN(a,b) \
+  ({ __auto_type _a = (a); \
+      __auto_type _b = (b); \
+    _a < _b ? _a : _b; })
+
+// #define MIN(a, b) (a > b ? a : b)
+// #define MAX(a, b) (a < b ? a : b)
 
 // FIXME: actually I think returning something other than one
 // makes sense to find obscure bugs in people's error handling.

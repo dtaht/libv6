@@ -27,20 +27,36 @@ typedef struct {
 
 // These should do the right thing.
 
-extern compound_struct_t fool_compiler1(compound_struct_t a, compound_struct_t b);
-extern compound_struct_t fool_compiler2(flags_t af, v6addr_t av, 
+#define REGCALL __attribute__((regcall))
+
+#define R REGCALL
+
+// __m128, __m128i, __m128d
+
+extern compound_struct_t R fool_compiler1(compound_struct_t a, compound_struct_t b);
+extern compound_struct_t R fool_compiler2(flags_t af, v6addr_t av,
 				        flags_t bf, v6addr_t bv);
 
-extern v6addr_t fool_compiler3(flags_t af, v6addr_t av, 
+extern v6addr_t R fool_compiler3(flags_t af, v6addr_t av,
 			       flags_t bf, v6addr_t bv);
 
-extern flags_t fool_compiler4(flags_t af, v6addr_t av, 
+extern flags_t R fool_compiler4(flags_t af, v6addr_t av,
 			      flags_t bf, v6addr_t bv);
+
+extern v6addr_t R fool_compiler5(flags_t af, v6addr_t av,
+			       flags_t bf, v6addr_t bv);
+
+extern compound_struct_t fool_compiler_compound_struct;
+extern v6addr_t fool_compiler_addr;
 
 int check_flags(flags_t f) {
 	if(f.flags | 1) printf("Got 1\n");
-	if(f.flags | 1) printf("Got 1\n");
 	return f.flags;
+}
+
+R int check_addr(v6addr_t a) {
+	printf("hooked %Q", a);
+	return 1;
 }
 
 #define TESTS1(n,a,b,result) result = fool_compiler##n(a,b); check_flags(r.f)
@@ -60,5 +76,6 @@ int main() {
 	TESTS2(3,c,c,d,d,r.a); // does generate SSE instructions
 	TESTS2(4,c,c,d,d,r.f); // does generate SSE instructions
 	TESTS2(4,c,c,d,d,r.f); // does generate SSE instructions
+	TESTS2(5,c,c,d,d,r.a); // does generate SSE instructions
 	return 0;
 }

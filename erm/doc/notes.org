@@ -918,3 +918,72 @@ Admittedly on a very inefficient load of a 16 bit value.
  1ce:   41 0f b7 5e 08          movzwl 0x8(%r14),%ebx
 
 benchmarks await!
+
+* SSE return sucks. Maybe I can stick the args in local regs?
+
+	call	fool_compiler2	#
+	movl	$.LC0, %edi	#,
+	call	puts	#
+	movl	48(%rsp), %edx	# d.f,
+	movl	16(%rsp), %esi	# c.f,
+	leaq	64(%rsp), %rdi	#, tmp131
+	movdqa	32(%rsp), %xmm1	# d.a,
+	movdqa	(%rsp), %xmm0	# c.a,
+	call	fool_compiler2	#
+	movl	$.LC0, %edi	#,
+	call	puts	#
+	movl	48(%rsp), %esi	# d.f,
+	movl	16(%rsp), %edi	# c.f,
+	movdqa	32(%rsp), %xmm1	# d.a,
+	movdqa	(%rsp), %xmm0	# c.a,
+	call	fool_compiler3	#
+
+in the typical case I inline the core stuff here but
+
+* Back to vectorization
+
+Last time I did this I used icc to pry apart what I needed.
+
+https://software.intel.com/sites/default/files/m/4/8/8/2/a/31848-CompilerAutovectorizationGuide.pdf
+
+An elemental function is a regular function, which can be invoked either on scalar
+arguments or on array elements in parallel. You define an elemental function by adding
+“__declspec(vector)” (on Windows*) and “__attribute__((vector))” (on Linux*)
+before 
+
+You need to declare it BEFORE the function signature...
+
+need to get good about restrict also.
+
+>icl /c /Qvec-report2 vectorFunc.cpp
+
+and the magic was:
+
+icl /c /Qguide gap.cpp
+
+whic no longer exists...
+
+
+% ifort -vec-report3 atest.f
+
+There is an Intel compiler option '-vec-report=<n>', to generate a diagnostic
+report about vectorization. Use it to see why the compiler vectorizes certain
+loops and doesn't vectorize others. The report level can be selected by setting
+the flag to any number from 0 to 7. See the ifort, icc or icpc man page for
+details. This is an example of the report:
+
+#pragma omp simd [clause...]
+
+e safelen cl
+
+y
+http://www.nersc.gov/users/computational-systems/edison/programming/vectorization/
+
+
+* regcall: https://software.intel.com/en-us/node/522787
+
+__m128, __m128i, __m128d
+
+
+__attribute__((regcall)) foo (int I, int j); 
+

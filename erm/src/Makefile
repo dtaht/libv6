@@ -34,18 +34,39 @@ OBJDIR_DEBUG = $(CC)
 #$(OBJ_DEBUG): $(OBJDIR_DEBUG)/%.o: %.c
 #	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c $< -o $@
 
+# GCC Notes:
+
+# Computed gotos for readonly static code:
+# https://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html#Labels-as-Values
+# static const int array[] = { &&foo - &&foo, &&bar - &&foo,
+#                              &&hack - &&foo };
+# goto *(&&foo + array[i]);
+
 # Arch specific things - still rather fragile
 
 # FIXME if CROSSCC is defined, reinvoke self with that as we do all the work with CC
 # Worse, these methods break down when using lede's cross compiler regardless
 
 ifeq ($(CC),e-gcc)          # adapteva compiler
-	CFLAGS +=-m1reg-r63 # use reg -63 for negative constants
+	CFLAGS +=-m1reg-r63 # use reg -63 for negative 1. r43 is also allowed
 	CFLAGS +=-falign-loops=8
 	CFLAGS +=-falign-functions=8
+	CFLAGS +=-mcmove
+	# CFLAGS +=-mnovect-double
+	# CFLAGS +=-mshort-calls
+	# CFLAGS +=-msmall16
 endif
 
+# Arm notes:
+# per function code generation __attribute__((target("+crc+nocrypto")))
+# backtrace better on arm: -mpoke-function-name
+# use neon more on aarch64: -mneon-for-64bits
+# -mcmse - compile in secure mode: 
+# http://infocenter.arm.com/help/topic/com.arm.doc.ecm0359818/ECM0359818_armv8m_security_extensions_reqs_on_dev_tools_1_0.pdf
+
+# https://software.intel.com/sites/default/files/m/4/8/8/2/a/31848-CompilerAutovectorizationGuide.pdf
 # Intel - use cpuid? have patch at run time?
+# __assume_aligned(x,16)
 # CFLAGS += -msse4.2
 # SRCS += knetlink.c
 
@@ -214,7 +235,10 @@ md: debug_modules
 
 # Architectures and compilers I build for
 
-.PHONY: mips arm aarch64 icc gcc clang parallella par
+.PHONY: mips arm aarch64 icc gcc clang parallella par vector
+
+vector:
+	$(MAKE) CC=icc EXTRA_DEFINES=-vec-report=7
 
 mips:
 	$(MAKE) CC=mipsel-openwrt-linux-gcc $(filter-out aarch64,$@)
