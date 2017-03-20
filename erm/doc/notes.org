@@ -1095,3 +1095,88 @@ I can even do this 256 bytes wide now with avx.
 
 there's probably another way to do this.
 
+* I can get away from the mask and do a lookup
+in cases where I will have 1 and only 1 match
+
+movq match reg1
+splay reg1
+stash reg3 reg1 ; keep a copy
+loop: PCMPEQW reg1, tbl b* # destroying reg1
+padd4 ; darn, can overflow if I have more matches - but I wont in most cases
+this is used
+; 64 bits I got now adays!
+shuffle the two vectors into 64 bits
+mov to ecx
+** 6 sse ins!
+; lookup the result - if it has any ones we had a hit and have to backtrack
+test
+beq have_hit
+; otherwise we motor on...
+inc tablb b + 16; can get interleaved elsewhere (after the padd)
+mov reg1 reg3; can get interleaved elsewhere (with the padd)
+goto loop:
+
+have_hit:
+; if I interleave, we need to backtrack 32, not 16
+to turn the result in a lookuptable... - let's see...
+
+* mov fix
+
+shufle reg1, match 
+
+* aarch Neon version
+vld  reg2 *tbl a; load all lanes with lowest value
+vld; reg0 copy the lowest 16 bits
+loop: vld; reg1 tblb
+cmp: reg1, reg1, reg0
+padd4 reg1, reg1, reg1 - padd the result - again: can overflow, bad
+shufl - get result into one reg? (maybe can skip)
+store to main unit
+test
+beq have_hit
+vld reg1 tblb preindexed
+goto loop: 
+
+* Overflow is scary
+
+I think the and version is just safer. overflows make me nervous,
+and we get a value from 0,1,2,4, | the same shifted << 32
+
+so the backtracker just has to pull the high value from the
+unit if there's a miss in the early dword.
+
+* And gcc doesn't like the pragma
+
+BUT does successfully vectorize and use a load and only 3 regs.
+
+Yea!
+
+ 30d:   66 0f 61 c9             punpcklwd %xmm1,%xmm1
+ 311:   66 0f 70 c9 00          pshufd $0x0,%xmm1,%xmm1
+ 316:   66 0f 75 0e             pcmpeqw (%rsi),%xmm1
+ 31a:   66 0f db 0d 00 00 00    pand   0x0(%rip),%xmm1        # 322 <tbl_a_tbl_b_roar_match_firsthit_vvvector+0x32>
+ 321:   00 
+ 322:   66 0f 6f c1             movdqa %xmm1,%xmm0
+ 326:   66 0f 61 ca             punpcklwd %xmm2,%xmm1
+ 32a:   66 0f 69 c2             punpckhwd %xmm2,%xmm0
+ 32e:   66 0f fe c8             paddd  %xmm0,%xmm1
+ 332:   66 0f 6f d1             movdqa %xmm1,%xmm2
+ 336:   66 0f 6f c1             movdqa %xmm1,%xmm0
+ 33a:   66 0f 73 da 08          psrldq $0x8,%xmm2
+ 33f:   66 0f fe c2             paddd  %xmm2,%xmm0
+ 343:   66 0f 6f c8             movdqa %xmm0,%xmm1
+ 347:   66 0f 73 d9 04          psrldq $0x4,%xmm1
+ 34c:   66 0f fe c1             paddd  %xmm1,%xmm0
+ 350:   66 0f 7e c2             movd   %xmm0,%edx
+ 354:   83 ea 01                sub    $0x1,%edx
+ 357:   eb 0b                   jmp    364 <tbl_a_tbl_b_roar_match_firsthit_vvvector+0x74>
+
+* Future Notes for auto vectorization
+
+Loops should not be pointers, but array indexes.
+There needs to be a clear "for" component with a fixed
+termination.
+
+It is totally feasible to use my & and freerunning tricks but the compiler
+doesn't like it.
+

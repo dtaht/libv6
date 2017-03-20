@@ -55,13 +55,18 @@ extern tbl_b my_result(tbl_a a, tbl_b b, int r);
 #define RESULT(r, a, b) my_result(*a, *b, r)
 #endif
 
+#ifdef  B_ALIGNED_YES
+#define B_ALIGNED restrict
+#endif
+
 // I don't want to return pointers here but structures in the right regs
 // also I have a reg already defined with -1 in it on the
 // parallella - will that get picked up?
 // and I want the compiler to consider both as non-overlapping
 
-SOMETIMES_INLINE tbl_b PO(roar_match)(tbl_a* a, tbl_b* b, unsigned int c)
+SOMETIMES_INLINE tbl_b PO(roar_match)(tbl_a* a, tbl_b* B_ALIGNED b, unsigned int c)
 {
+  b = __builtin_assume_aligned (b, 16);
   unsigned int r = -1;
   tbl_a match = *a;
   --b;
@@ -72,8 +77,9 @@ SOMETIMES_INLINE tbl_b PO(roar_match)(tbl_a* a, tbl_b* b, unsigned int c)
   return *b;
 }
 
-SOMETIMES_INLINE tbl_b PO(roar_match_vector)(tbl_a* a, tbl_b* b)
+SOMETIMES_INLINE tbl_b PO(roar_match_vector)(tbl_a* a, tbl_b* B_ALIGNED b)
 {
+  b = __builtin_assume_aligned (b, 16);
   unsigned int r = -1;
   unsigned int c = 0;
   tbl_a match = *a;
@@ -86,8 +92,9 @@ SOMETIMES_INLINE tbl_b PO(roar_match_vector)(tbl_a* a, tbl_b* b)
 }
 
 #if RUNAHEAD == 7
-SOMETIMES_INLINE tbl_b PO(roar_match_unroll)(tbl_a* a, tbl_b* b)
+SOMETIMES_INLINE tbl_b PO(roar_match_unroll)(tbl_a* a, tbl_b* B_ALIGNED b)
 {
+  b = __builtin_assume_aligned (b, 16);
   unsigned int r = 0;
   tbl_a match = *a;
   do {
@@ -105,8 +112,9 @@ SOMETIMES_INLINE tbl_b PO(roar_match_unroll)(tbl_a* a, tbl_b* b)
 }
 #endif
 
-SOMETIMES_INLINE tbl_b PO(roar_match_freerun)(tbl_a* a, tbl_b* b, unsigned int c)
+SOMETIMES_INLINE tbl_b PO(roar_match_freerun)(tbl_a* a, tbl_b* B_ALIGNED b, unsigned int c)
 {
+  b = __builtin_assume_aligned (b, 16);
   unsigned char d = c & 255;
   unsigned char r = -1;
   tbl_a match = *a;
@@ -118,8 +126,9 @@ SOMETIMES_INLINE tbl_b PO(roar_match_freerun)(tbl_a* a, tbl_b* b, unsigned int c
   return *b;
 }
 
-SOMETIMES_INLINE tbl_b PO(roar_match_firsthit)(tbl_a* a, tbl_b* b, unsigned int c)
+SOMETIMES_INLINE tbl_b PO(roar_match_firsthit)(tbl_a* a, tbl_b* B_ALIGNED b, unsigned int c)
 {
+  b = __builtin_assume_aligned (b, 16);
   unsigned int r = -1;
   tbl_a match = *a;
   --b;
@@ -131,24 +140,9 @@ SOMETIMES_INLINE tbl_b PO(roar_match_firsthit)(tbl_a* a, tbl_b* b, unsigned int 
 
   return *b;
 }
-// restrict?
+// B_ALIGNED?
 
-SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvector)(tbl_a* restrict a, tbl_b* restrict b)
-{
-   a = __builtin_assume_aligned (a, 16);
-   b = __builtin_assume_aligned (b, 16);
-  unsigned int r = -1;
-  tbl_a match = *a;
-#pragma simd
-  for(int c = 0; c < (RUNAHEAD+1); c++) {
-    r += match == b[c];
-  }
-  while(r = RESULT(r, a, b)) ;
-
-  return *b;
-}
-
-SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvvector)(tbl_a* restrict a, tbl_b* restrict b)
+SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvector)(tbl_a* a, tbl_b* B_ALIGNED b)
 {
    b = __builtin_assume_aligned (b, 16);
   unsigned int r = -1;
@@ -162,9 +156,24 @@ SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvvector)(tbl_a* restrict a, tbl_b
   return *b;
 }
 
-
-SOMETIMES_INLINE tbl_b PO(roar_match_freerun_firsthit)(tbl_a* a, tbl_b* b, unsigned int c)
+SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvvector)(tbl_a* a, tbl_b* B_ALIGNED b)
 {
+   b = __builtin_assume_aligned (b, 16);
+  unsigned int r = -1;
+  tbl_a match = *a;
+#pragma simd
+  for(int c = 0; c < (RUNAHEAD+1); c++) {
+	  r += (match == b[c]);
+  }
+  while(r = RESULT(r, a, b)) ;
+
+  return *b;
+}
+
+
+SOMETIMES_INLINE tbl_b PO(roar_match_freerun_firsthit)(tbl_a* a, tbl_b* B_ALIGNED b, unsigned int c)
+{
+  b = __builtin_assume_aligned (b, 16);
   unsigned char d = c & 255;
   unsigned char r = -1;
   tbl_a match = *a;
