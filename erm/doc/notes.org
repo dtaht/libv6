@@ -988,3 +988,89 @@ __m128, __m128i, __m128d
 __attribute__((regcall)) foo (int I, int j); 
 
 -regcall if you want it on always
+
+* Well, I succeeded. 
+
+But Still think the code generated is suboptimal.
+
+00000000000003b0 <tbl_a_tbl_b_roar_match_firsthit_vvector>:
+ 3b0:   41 54                   push   %r12
+ 3b2:   41 55                   push   %r13
+ 3b4:   56                      push   %rsi
+ 3b5:   49 89 fd                mov    %rdi,%r13
+ 3b8:   49 89 f4                mov    %rsi,%r12
+ 3bb:   66 0f ef ff             pxor   %xmm7,%xmm7
+ 3bf:   f3 0f 6f 1d 00 00 00    movdqu 0x0(%rip),%xmm3        # 3c7 <tbl_a_tbl_b_roar_match_firsthit_vvector+0x17>
+ 3c6:   00 
+ 3c7:   41 0f b7 7d 00          movzwl 0x0(%r13),%edi
+ 3cc:   f3 41 0f 7e 14 24       movq   (%r12),%xmm2
+ 3d2:   f3 41 0f 7e 4c 24 08    movq   0x8(%r12),%xmm1
+ 3d9:   66 0f 6e c7             movd   %edi,%xmm0
+ 3dd:   66 0f 70 e0 00          pshufd $0x0,%xmm0,%xmm4
+ 3e2:   66 0f 61 d7             punpcklwd %xmm7,%xmm2
+ 3e6:   66 0f 61 cf             punpcklwd %xmm7,%xmm1
+ 3ea:   66 0f 76 d4             pcmpeqd %xmm4,%xmm2
+ 3ee:   66 0f 76 e1             pcmpeqd %xmm1,%xmm4
+ 3f2:   66 0f db d3             pand   %xmm3,%xmm2
+ 3f6:   66 0f fe fa             paddd  %xmm2,%xmm7
+ 3fa:   66 0f db e3             pand   %xmm3,%xmm4
+ 3fe:   66 0f fe fc             paddd  %xmm4,%xmm7
+ 402:   66 0f 6f ef             movdqa %xmm7,%xmm5
+ 406:   66 0f 73 dd 08          psrldq $0x8,%xmm5
+ 40b:   66 0f fe fd             paddd  %xmm5,%xmm7
+ 40f:   66 0f 6f f7             movdqa %xmm7,%xmm6
+ 413:   66 0f 73 d6 20          psrlq  $0x20,%xmm6
+ 418:   66 0f fe fe             paddd  %xmm6,%xmm7
+ 41c:   66 0f 7e fa             movd   %xmm7,%edx
+ 420:   ff ca                   dec    %edx
+
+
+what should happen is we splay the match value into one 8 reg
+the "to be matched" into another...
+the and into another.
+then you mask out 0x1 in each for the comparsons
+Then you do a horizontal add of everything
+and bring it back into the main register.
+
+
+Maybe that's sse3 only and I didn't enable it?
+
+_mm_hadd_epi16
+
+_mm_hadds_pi16
+
+** Guided Auto Parallelization
+
+The Intel compiler includes a Guided Auto Parallelization (GAP) feature that can help analyze source code and generate advice on how to obtain better performance. In particular, GAP will suggest code changes or compiler options that will lead to better vectorized code. GAP may optionally allow the user to take advantage of the auto-parallelization capability that can generate multithreaded code for independent loop iterations; however, developers are encouraged to use explicit thread parallelism through mechanisms like OpenMP.
+
+The GAP feature can be accessed by adding the -guide option, which takes an optional =# parameter, where # can be a number between 1 and 4 with 1 being the lowest level of guidance and 4 (the default) being the most advanced level of guidance.  The compiler will print a GAP report to stderr or it can be redirected to a file with the -guide-file=filename option, which will send the output to the file name filename, or the -guide-file-append=filename option, which will append to the specified file.  The GAP analysis can be targeted to a specific file, function, or source line with the -guide-opt=specification option. Refer to the compiler man pages or documentation for details on this option.
+
+https://computing.llnl.gov/?set=code&page=intel_vector
+
+**  3c6:   00 
+ 3c7:   41 0f b7 7d 00          movzwl 0x0(%r13),%edi
+ 3cc:   f3 41 0f 7e 14 24       movq   (%r12),%xmm2
+ 3d2:   f3 41 0f 7e 4c 24 08    movq   0x8(%r12),%xmm1
+ 3d9:   66 0f 6e c7             movd   %edi,%xmm0
+ 3dd:   66 0f 70 e0 00          pshufd $0x0,%xmm0,%xmm4
+ 3e2:   66 0f 61 d7             punpcklwd %xmm7,%xmm2
+ 3e6:   66 0f 61 cf             punpcklwd %xmm7,%xmm1
+ 3ea:   66 0f 76 d4             pcmpeqd %xmm4,%xmm2
+ 3ee:   66 0f 76 e1             pcmpeqd %xmm1,%xmm4
+ 3f2:   66 0f db d3             pand   %xmm3,%xmm2
+ 3f6:   66 0f fe fa             paddd  %xmm2,%xmm7
+ 3fa:   66 0f db e3             pand   %xmm3,%xmm4
+ 3fe:   66 0f fe fc             paddd  %xmm4,%xmm7
+ 402:   66 0f 6f ef             movdqa %xmm7,%xmm5
+ 406:   66 0f 73 dd 08          psrldq $0x8,%xmm5
+ 40b:   66 0f fe fd             paddd  %xmm5,%xmm7
+ 40f:   66 0f 6f f7             movdqa %xmm7,%xmm6
+ 413:   66 0f 73 d6 20          psrlq  $0x20,%xmm6
+ 418:   66 0f fe fe             paddd  %xmm6,%xmm7
+ 41c:   66 0f 7e fa             movd   %xmm7,%edx
+ 420:   ff ca                   dec    %edx
+ 422:   41 0f b7 34 24          movzwl (%r12),%esi
+
+**  It seems likely that I am still smarter than the compiler.
+
+Except that I'm not able to outsmart it.
