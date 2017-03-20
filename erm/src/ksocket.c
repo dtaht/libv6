@@ -52,8 +52,7 @@ kernel_sockets_t kernel_setup_socket(int setup)
 /* Since we have a socket for v4 and v6, we are less complicated, but we still
  * share code */
 
-static int parse_kernel_route_rta4(struct rtmsg* rtm, int len,
-				   struct kernel_route* route)
+static int parse_kernel_route_rta4(struct rtmsg* rtm, int len, struct kernel_route* route)
 {
   int table = rtm->rtm_table;
   struct rtattr* rta = RTM_RTA(rtm);

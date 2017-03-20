@@ -6,21 +6,21 @@
  */
 
 #include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "preprocessor.h"
 #include "c11threads.h"
 #include "defaults.h"
-#include "tabeld.h"
 #include "erm_client.h"
 #include "init.h"
 #include "io.h"
+#include "preprocessor.h"
 #include "shared.h"
+#include "tabeld.h"
 #include "traps.h"
 
 // yea, global memory. Shoot me
@@ -51,7 +51,9 @@ void bye(void) { erm_close(mem); }
 
 erm_t erm_attach_client(char* instance)
 {
-  TRAP_LT((fd = shm_open(instance, O_RDONLY, 0)), 0,
+  char buf[255];
+  sprintf(buf, ERM_SHARED_MEM_PATTERN, instance);
+  TRAP_LT((fd = shm_open(buf, O_RDONLY, 0)), 0,
           "Couldn't open shared memory - aborting");
   // struct stats_t;
   // Hmm. Can we get the size from stat?
@@ -72,7 +74,7 @@ uint32_t erm_status(erm_t erm) { return mem[8]; }
 erm_t* erm_query(erm_t erm, uint32_t* buf, int size) { return &mem[9]; }
 
 #ifdef DEBUG_MODULE
-#define MYMEM "/tabeld-test3"
+#define MYMEM "/erm-test"
 int main()
 {
   erm_t e;

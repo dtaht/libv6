@@ -84,7 +84,7 @@ bool fill_tables(void* mem)
 // probably should use MAP_HUGETLB
 // /sys/kernel/mm/hugepages has a list of other page sizes
 // MAP_LOCKED + mlock are correct ways to keep this in core
-// MAP_POPULATE - zeros in the memory, I guess 
+// MAP_POPULATE - zeros in the memory, I guess
 // ftruncate?
 
 #define perms (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH)
@@ -96,19 +96,15 @@ typedef struct {
 } dirs_t;
 
 dirs_t default_dirs[] = {
-  { "cpu", dperms },     { "self", dperms },
-  { "rules", dperms },   { "interfaces", dperms },
-  { "routes", dperms },  { "addresses", dperms },
-  { "daemons", dperms }, { "stats", dperms },
-  { "formats", dperms }, { "ocpu", dperms },
-  { "machine", dperms },  { NULL, 0 },
+  { "cpu", dperms },        { "self", dperms },    { "rules", dperms },
+  { "interfaces", dperms }, { "routes", dperms },  { "addresses", dperms },
+  { "daemons", dperms },    { "stats", dperms },   { "formats", dperms },
+  { "ocpu", dperms },       { "machine", dperms }, { NULL, 0 },
 };
 
 dirs_t topfiles[] = {
-  { "flags", perms },
-  { "mach", dperms },
-  { "arch", perms }, { "memory", perms },
-  { NULL, 0 },
+  { "flags", perms },  { "mach", dperms }, { "arch", perms },
+  { "memory", perms }, { NULL, 0 },
 };
 
 dirs_t ddirs[] = {
@@ -125,7 +121,7 @@ int create_files(char* base, dirs_t* p)
   while(p->name != NULL) {
     sprintf(buf, "%s/%s", base, p->name);
     TRAP_WEQ((fd = open(buf, O_CREAT, p->mode)), -1, buf);
-//    fchgrp(fd,babel_group);
+    //    fchgrp(fd,babel_group);
     p++;
     close(fd);
   }
@@ -137,9 +133,9 @@ int create_dirs(char* base, dirs_t* p)
   char buf[255];
   while(p->name != NULL) {
     sprintf(buf, "%s/%s", base, p->name);
-    TRAP_WEQ(mkdir(buf, p->mode),-1, buf);
+    TRAP_WEQ(mkdir(buf, p->mode), -1, buf);
     p++;
-//    if(errno && errno != EEXIST)
+    //    if(errno && errno != EEXIST)
   }
   return 0;
 }
@@ -150,8 +146,7 @@ int create_dirnum(char* base, dirs_t* files, int mode, int count)
   while(--count > -1) {
     sprintf(buf, "%s/%d", base, count);
     TRAP_WEQ(mkdir(buf, mode), -1, buf);
-    if(errno && errno != EEXIST)
-       create_files(buf, topfiles);
+    if(errno && errno != EEXIST) create_files(buf, topfiles);
   }
   return 0;
 }
@@ -161,9 +156,7 @@ int create_default_dirs(char* instance)
 {
   char buf[1024];
   TRAP_WEQ(mkdir(instance, dperms), -1, instance);
-  printf("got here\n");
   create_dirs(instance, default_dirs);
-  printf("got here\n");
   create_files(instance, topfiles);
   sprintf(buf, "%s/cpu", instance);
   printf("creating cpu %s\n", buf);
@@ -193,20 +186,20 @@ int main(int argc, char** argv)
   uint32_t* mem = NULL;
   unsigned char* tables = NULL;
   char buf[255];
-  sprintf(buf, "/dev/shm%s", shmem);
-  TRAP_WERR(setgid(babel_group),"Can't switch to erm group");
+  sprintf(buf, ERM_SHARED_DIR_PATTERN, shmem);
+  TRAP_WERR(setgid(babel_group), "Can't switch to erm group");
   create_default_dirs(buf);
 
-  sprintf(buf, "%s-machine", shmem); // Works
-//  sprintf(buf, "%s/mach", shmem); // doesnt. use symlink?
+  sprintf(buf, ERM_SHARED_MEM_PATTERN, shmem); // Works
+  //  sprintf(buf, "%s/mach", shmem); // doesnt. use symlink?
   // Now attach the virtual machine to that bit of shared mem
   printf("Attach machine: %s\n", buf);
   fd = shm_open(buf, O_CREAT | O_RDWR, 0);
   if(fd < 0) {
-	  if((fd = shm_open(buf, O_RDWR, 0)) == -1) {
-		  perror("Couldn't attach shared memory");
-		  goto err;
-	  }
+    if((fd = shm_open(buf, O_RDWR, 0)) == -1) {
+      perror("Couldn't attach shared memory");
+      goto err;
+    }
   }
   TRAP_WERR((fchmod(fd, S_IRUSR | S_IWUSR | S_IRGRP)),
             "Couldn't change shared memory mode"); // rw root, r group
@@ -234,8 +227,9 @@ int main(int argc, char** argv)
   }
   mem[8] = 0;
   TRAP_WERR(munmap(mem, tsize), "Couldn't unmap shared memory");
-  // err:
-err:  TRAP_WERR(shm_unlink(buf), "Couldn't close shared memory");
+// err:
+err:
+  TRAP_WERR(shm_unlink(buf), "Couldn't close shared memory");
   printf("exiting\n");
 }
 #endif
