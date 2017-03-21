@@ -7,6 +7,10 @@
 
 #include <stdint.h>
 
+// This set of queries are aligned against 16 byte boundaries
+
+#define B_ALIGNED_YES
+
 #include "preprocessor.h"
 #include "simd.h"
 
@@ -22,10 +26,6 @@
 
 #define PPASTE(t1, t2, v) t1##_##t2##_##v
 #define PO(v) PPASTE(tbl_a, tbl_b, v)
-
-// This set of queries are aligned against 16 byte boundaries
-
-#define B_ALIGNED_YES
 
 #include "tables_search.h"
 

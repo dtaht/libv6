@@ -8,7 +8,7 @@
 // we constrain the loop to no more than RUNAHEAD+1 searches
 // because we have to yield to other threads at some point
 // or fetch more memory into the cache
-// RUNAHEAD must be a power of two - 1
+// RUNAHEAD must be a power of two
 
 #ifndef RUNAHEAD
 #define RUNAHEAD 8
@@ -198,7 +198,25 @@ retry:
   for(d = 0; d < (RUNAHEAD); d++) r += (match == b[d]);
 
   if((r = RESULT(r, a, b))) return *b;
-  b = &b[RUNAHEAD + 1];
+  b = &b[d];
+  goto retry;
+
+  return *b;
+}
+
+REGCALL
+SOMETIMES_INLINE tbl_b PO(roar_match_vvectoryesWORKED)(tbl_a* a, tbl_b* B_ALIGNED b)
+{
+  b = __builtin_assume_aligned (b, 16);
+  unsigned int d;
+  unsigned char r = -1;
+  tbl_a match = *a;
+  #pragma simd
+retry: for(d = 0; d < RUNAHEAD*4 ; d++)
+	  r += (match == b[d]);
+
+  if(r = RESULT(r, a, b)) return *b;
+  b = &b[RUNAHEAD*4];
   goto retry;
 
   return *b;
