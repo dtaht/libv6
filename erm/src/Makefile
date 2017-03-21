@@ -224,6 +224,30 @@ babel.bpf: babel.filter
 version.h: $(SRCS) $(HEADERS)
 	$(GENVERSION) > version.h
 
+# Search code generation
+
+# search uint4? two? :)
+
+searches: search_uint8.o search_uint16.o search_uint32.o search_uint64.o # search_v6addr.o search_uint128.o
+
+search_uint16.o: tables_search.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=uint16_t $< -c -o $@
+
+search_uint32.o: tables_search.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=uint32_t $< -c -o $@
+
+search_uint64.o: tables_search.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=uint64_t $< -c -o $@
+
+search_uint128.o: tables_search.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=uint128_t $< -c -o $@
+
+search_v6addr.o: tables_search.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=v6addr_t $< -c -o $@
+
+search_uint8.o: tables_search.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=uint8_t $< -c -o $@
+
 # Helper tools
 
 # FIXME: enable full warnings (need to shut printf up)

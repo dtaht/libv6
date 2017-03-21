@@ -7,9 +7,15 @@
 #include <sched.h>
 #include <stdint.h>
 #include "preprocessor.h"
+#include "tabeld.h"
 
+#ifndef GEN_TYPE
 #define tbl_a uint16_t
 #define tbl_b uint16_t
+#else
+#define tbl_a GEN_TYPE
+#define tbl_b GEN_TYPE
+#endif
 
 // FIXME: token pasting from hell and doesn't expand correctly yet.
 
