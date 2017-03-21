@@ -6,6 +6,7 @@ SRCS += erm_client.c
 SRCS += arch.c
 SRCS += traps.c
 SRCS += print_global_t.c
+SRCS += send.c recv.c
 
 # SRCS += packet.c // unfinished
 
@@ -277,7 +278,7 @@ vector:
 	$(MAKE) CC=icc EXTRA_DEFINES="-msse4.2 -qopt-report-phase=vec -simd  -diag-enable=vec -qopt-report=5" # " -qopt-report-file=stdout"
 
 mips:
-	$(MAKE) CC=mipsel-openwrt-linux-gcc $(filter-out aarch64,$@)
+	$(MAKE) CC=mipsel-openwrt-linux-gcc $(filter-out mipsel-openwrt-linux-gcc,$@)
 
 clang:
 	$(MAKE) CC=clang $(filter-out clang,$@)

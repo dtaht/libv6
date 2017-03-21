@@ -33,15 +33,33 @@ quite well and in selective cases, software assistance.
 
 It also uses high end features of modern processors - popcount being the most
 obvious of these but also bitreversal and extraction techniques only available
-in the latest generation of cpus.
+in the latest generation of cpus. It also attempts (although in many cases it is
+a poor choice from a speed perspective) to use the vector unit - most of the
+point of doing so is merely to use the on-chip resource rather than the stack.
 
 Also: a goodly portion of the design is focused on taking advantage of massive
 embeddable multicores - and the limitations thereof - the Adapteva Parallella
 being an initial target.
 
+** ERM is fast
+
+I kind of hope it will be 10-1000s faster than anything that exists today for
+managing route tables and the like. But we'll see.
+
+- Hard real time is a goal throughout
+
 ** ERM is lightweight
 
+- small, tight, heavily reused code throughout the core routines
+- overlays dropping unused code
+
 ** ERM is secure
+
+At least, I hope it will be.
+
+- Posix shared memory
+- Conventional Unix three tier permissions model
+- Permissions dropped when possible
 
 ** ERM uses old coding techniques
 
@@ -54,10 +72,12 @@ being an initial target.
 ** ERM uses modern coding techniques
 
 - C11
-- librcu and BSP threades
+- librcu and BSP threads
 - Lock free data structures
 - Pure functions
 - Generational Garbage collection
+- mmap rather rather than stdio
+- Linker magic to swap in and out critical sections
 
 * Negatives
 
@@ -102,9 +122,11 @@ I've tried. I don't want to deal with it.
 
 *** ns3
 
- Suffers greatly from the object orientation disease
+ Suffers greatly from the object orientation disease.
 
 ** Other packet processing engines
+
+All these seem to be a great way to heat data centers.
 
 *** VPP
 
@@ -112,7 +134,11 @@ I've tried. I don't want to deal with it.
 
 *** DDPK
 
+** Hardware-ish languages
+
 *** P4
 
-** OpenVswitch
+I'm evaluating P4.
+
+*** OpenVswitch
 
