@@ -1358,10 +1358,45 @@ anyway, finally generating code for neon, too. Still about twice as much as I ex
  2e6:   bd38            pop     {r3, r4, r5, pc}
 
 * TODO Big stuff <2017-03-20 Mon> 
-** Decide on Timestamps.
+** Accomplishments
+*** made a dent in structure passing (see exper)
+structure return remains problematic. - need to look at that harder
+what I did last time was just violate the API.
+*** Finally vectorized stuff
+and hopefully with serious inlining I won't have to think about it much...
+BUT I think I can still write 2-3x better code than what I'm seeing
+for the core inner loops.
+*** Got a clean API emerging for erm
+If I wasn't so hung up on efficient structure passing
+* Next up:
+** Decide on time format and API.
+I'm leaning back to nanoseconds since the build date + hour
 ** Decide on librcu trial or bsp
-** Give shared mem another go
+BSP has apparent simplicity and runs on the parallella already
+RCU is smaller and tighter
+** Give shared mem on the vfs another go
 ** Work on virtual fs
-** Improve my emacs more (timestamps time logging etc - and fkeys!)
+** Think about a doxygen-like thing
+** Improve my emacs more
+*** (timestamps time logging etc - and fkeys!)
+*** win the war with org
+*** win the war with clang
 ** Rework headers and further abstract makefile
 ** Oh yea, make compile again.
+** Resolved: write one tedious function a day. In the morning.
+I might stop checking in my nightly messes. But I do like seeing the
+before/after even if nobody else does.
+*** Bit endian converter for ips
+Just a generic one. Can do SSE and NEON later no matter how 
+tempted I am.
+*** Actual working table lookups
+*** Virtual Machine start, reg placement and setup api
+*** printf hooks
+*** DONE gdb hooks for bits
+print /t $xmm1.uint128
+can't remember how to throw them in a frame
+
+
+** Try to find a decent packet parsing language
+I really want something abstract. P4? What?
+VPP?

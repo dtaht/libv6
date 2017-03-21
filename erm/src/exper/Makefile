@@ -19,7 +19,7 @@ VERSION = version.h
 INCLUDES = -I$(INC)
 GENVERSION = $(TOOLS)/generate-version.sh
 
-CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES)
+CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES) -flax-vector-conversions
 LDFLAGS = -lrt
 
 OBJDIR_DEBUG = $(CC)

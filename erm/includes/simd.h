@@ -47,6 +47,7 @@ typedef unsigned int usimd VECTOR(16);
 #endif
 
 typedef union Vec4 {
+  v6addr_t a;
   usimd p;
   float e[4];
   int32_t i[4];
