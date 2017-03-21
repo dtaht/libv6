@@ -1,0 +1,118 @@
+* Philisophy
+
+ERM is an outgrowth of my encounters with many, many other network simulation
+tools over the past decades of dealing with them. It's different from all of
+them - because how I think about the problems seems to be vastly different than
+how everyone else thinks about them. It doesn't mean I'm right!
+
+For starters I don't see any reason why the simulation should differ from the
+implementation. While you can't compile ERM down to verilog, it tries to use
+tools that do, and perhaps eventually will have a higher level language in it
+that will get you closer to "there".
+
+** ERM works from higher level mini-descriptive languages
+
+- It uses code generators for code that needs to be fast and tight
+- It uses code generators for code that needs to be 100% correct
+- It uses code generators anywhere speed is not important but clarity is
+- It is declaratively table driven and state machine based
+
+** ERM looks like hardware
+See: [[ERM_MACHINE][ERM_MACHINE.org]]
+
+- Massively parallel
+- Uses concepts like splay, scatter, stagger
+- Uses explicit state machines wherever possible
+
+** ERM takes advantage of hardware
+
+The base ERM machine can be easily mapped directly onto multiple modern intel
+and arm cores. It has functional units that can't - the cryto-er, hasher, and
+lookupr/popcountr facilities in particular - but those do map down to hardware
+quite well and in selective cases, software assistance.
+
+It also uses high end features of modern processors - popcount being the most
+obvious of these but also bitreversal and extraction techniques only available
+in the latest generation of cpus.
+
+Also: a goodly portion of the design is focused on taking advantage of massive
+embeddable multicores - and the limitations thereof - the Adapteva Parallella
+being an initial target.
+
+** ERM is lightweight
+
+** ERM is secure
+
+** ERM uses old coding techniques
+
+- abort, trap, signal
+- Everything is a file
+- Where another tool sufficies (rsync, ssh), we use that rather than reinvent
+  the universe
+- C, not C++ or anything more "modern"
+
+** ERM uses modern coding techniques
+
+- C11
+- librcu and BSP threades
+- Lock free data structures
+- Pure functions
+- Generational Garbage collection
+
+* Negatives
+
+** It is not a library
+
+Code directly for ERM MUST be compiled specially in order to work at all.
+
+Other code that merely accesses ERM can be written in anything so long as it
+follows a few simple rules for security and memory allocation.
+
+** ERM is an experiment
+
+** ERM is weird
+
+** ERM is a solo effort by an old fart
+
+* Futures
+
+** PHASE I
+Get something that works!
+
+** PHASE II
+- Develop alternate daemon infrastructure
+
+** PHASE III
+
+Add a forwarding engine and "cake"
+
+** PHASE V
+
+World Domination!
+
+** PHASE VI
+
+* Note on other methods
+** Other simulators
+*** ns2
+
+is the goto simulator for everyone, and unbelievably difficult to understand.
+
+I've tried. I don't want to deal with it.
+
+*** ns3
+
+ Suffers greatly from the object orientation disease
+
+** Other packet processing engines
+
+*** VPP
+
+*** OpenDaylight
+
+*** DDPK
+
+*** P4
+
+** OpenVswitch
+
