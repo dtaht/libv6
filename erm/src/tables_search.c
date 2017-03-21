@@ -6,6 +6,7 @@
  */
 #include <sched.h>
 #include <stdint.h>
+#include "preprocessor.h"
 
 #define tbl_a uint16_t
 #define tbl_b uint16_t

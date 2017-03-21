@@ -121,7 +121,7 @@ static inline int donothing_false() { return 0; }
 
 // Intel compiler specific extension used in function declarations
 
-#ifdef __ICC__
+#ifdef __ICC
 #define REGCALL __attribute__((regcall))
 #else
 #define REGCALL

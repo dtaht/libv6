@@ -64,7 +64,7 @@ extern tbl_b my_result(tbl_a a, tbl_b b, int r);
 // parallella - will that get picked up?
 // and I want the compiler to consider both as non-overlapping
 
-SOMETIMES_INLINE tbl_b PO(roar_match)(tbl_a* a, tbl_b* B_ALIGNED b, unsigned int c)
+REGCALL SOMETIMES_INLINE tbl_b PO(roar_match)(tbl_a* a, tbl_b* B_ALIGNED b, unsigned int c)
 {
   b = __builtin_assume_aligned (b, 16);
   unsigned int r = -1;
@@ -77,7 +77,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match)(tbl_a* a, tbl_b* B_ALIGNED b, unsigned int
   return *b;
 }
 
-SOMETIMES_INLINE tbl_b PO(roar_match_vector)(tbl_a* a, tbl_b* B_ALIGNED b)
+REGCALL SOMETIMES_INLINE tbl_b PO(roar_match_vector)(tbl_a* a, tbl_b* B_ALIGNED b)
 {
   b = __builtin_assume_aligned (b, 16);
   unsigned int r = -1;
@@ -92,7 +92,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match_vector)(tbl_a* a, tbl_b* B_ALIGNED b)
 }
 
 #if RUNAHEAD == 7
-SOMETIMES_INLINE tbl_b PO(roar_match_unroll)(tbl_a* a, tbl_b* B_ALIGNED b)
+REGCALL SOMETIMES_INLINE tbl_b PO(roar_match_unroll)(tbl_a* a, tbl_b* B_ALIGNED b)
 {
   b = __builtin_assume_aligned (b, 16);
   unsigned int r = 0;
@@ -112,7 +112,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match_unroll)(tbl_a* a, tbl_b* B_ALIGNED b)
 }
 #endif
 
-SOMETIMES_INLINE tbl_b PO(roar_match_freerun)(tbl_a* a, tbl_b* B_ALIGNED b, unsigned int c)
+REGCALL SOMETIMES_INLINE tbl_b PO(roar_match_freerun)(tbl_a* a, tbl_b* B_ALIGNED b, unsigned int c)
 {
   b = __builtin_assume_aligned (b, 16);
   unsigned char d = c & 255;
@@ -127,6 +127,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match_freerun)(tbl_a* a, tbl_b* B_ALIGNED b, unsi
 }
 
 // like so much here, this is not correct code
+REGCALL
 SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectorno)(tbl_a* a, tbl_b* B_ALIGNED b)
 {
   b = __builtin_assume_aligned (b, 16);
@@ -142,6 +143,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectorno)(tbl_a* a, tbl_b* B_ALIGN
 }
 
 // like so much here, this is not correct code
+REGCALL
 SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectorno_zoomon)(tbl_a* a, tbl_b* B_ALIGNED b)
 {
   b = __builtin_assume_aligned (b, 16);
@@ -161,6 +163,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectorno_zoomon)(tbl_a* a, tbl_b* 
 }
 
 // like so much here, this is not correct code. But at least it vectorized
+REGCALL
 SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectoryes)(tbl_a* a, tbl_b* B_ALIGNED b)
 {
   b = __builtin_assume_aligned (b, 16);
@@ -178,6 +181,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectoryes)(tbl_a* a, tbl_b* B_ALIG
 // like so much here, this is not correct code. But at least it vectorized
 // and unrolls.
 
+REGCALL
 SOMETIMES_INLINE tbl_b PO(roar_match_vvectoryesmorecorrect)(tbl_a* a, tbl_b* B_ALIGNED b)
 {
   b = __builtin_assume_aligned (b, 16);
@@ -195,6 +199,7 @@ retry: for(d = 0; d < 32 ; d++)
   return *b;
 }
 
+REGCALL
 SOMETIMES_INLINE tbl_b PO(roar_match_firsthit)(tbl_a* a, tbl_b* B_ALIGNED b, unsigned int c)
 {
   b = __builtin_assume_aligned (b, 16);
@@ -211,6 +216,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match_firsthit)(tbl_a* a, tbl_b* B_ALIGNED b, uns
 }
 // B_ALIGNED?
 
+REGCALL
 SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvector)(tbl_a* a, tbl_b* B_ALIGNED b)
 {
    b = __builtin_assume_aligned (b, 16);
@@ -225,6 +231,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvector)(tbl_a* a, tbl_b* B_ALIGNE
   return *b;
 }
 
+REGCALL
 SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvvector)(tbl_a* a, tbl_b* B_ALIGNED b)
 {
    b = __builtin_assume_aligned (b, 16);
@@ -240,6 +247,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvvector)(tbl_a* a, tbl_b* B_ALIGN
 }
 
 
+REGCALL
 SOMETIMES_INLINE tbl_b PO(roar_match_freerun_firsthit)(tbl_a* a, tbl_b* B_ALIGNED b, unsigned int c)
 {
   b = __builtin_assume_aligned (b, 16);
