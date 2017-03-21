@@ -126,6 +126,75 @@ SOMETIMES_INLINE tbl_b PO(roar_match_freerun)(tbl_a* a, tbl_b* B_ALIGNED b, unsi
   return *b;
 }
 
+// like so much here, this is not correct code
+SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectorno)(tbl_a* a, tbl_b* B_ALIGNED b)
+{
+  b = __builtin_assume_aligned (b, 16);
+  unsigned char d;
+  unsigned char r = -1;
+  tbl_a match = *a;
+  b--;
+  for(d = 1; d ; d++) // I love writing infinite looking loops even tho icc will complain
+	  r += (match == b[d]);
+  r = RESULT(r, a, b);
+
+  return *b;
+}
+
+// like so much here, this is not correct code
+SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectorno_zoomon)(tbl_a* a, tbl_b* B_ALIGNED b)
+{
+  b = __builtin_assume_aligned (b, 16);
+  unsigned char d;
+  unsigned char r = -1;
+  tbl_a match = *a;
+  b--; // not correct - b-=(255-16)?
+  d = 255 - 16;
+  // this variant - if it strikes out, will zoom on for another 255 iterations at a time
+  // which lets me tell the main cpu it's going to be busier (yield/prefetch, whatever)
+  do {
+  for(d; d & r; d++) // I love writing infinite looking loops even tho icc will complain
+	  r += (match == b[d]);
+  } while (d++ && (r = RESULT(r, a, b)));
+
+  return *b;
+}
+
+// like so much here, this is not correct code. But at least it vectorized
+SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectoryes)(tbl_a* a, tbl_b* B_ALIGNED b)
+{
+  b = __builtin_assume_aligned (b, 16);
+  unsigned int d;
+  unsigned char r = -1;
+  tbl_a match = *a;
+  #pragma simd
+  for(d = 0; d < 16 ; d++)
+	  r += (match == b[d]);
+  r = RESULT(r, a, b);
+
+  return *b;
+}
+
+// like so much here, this is not correct code. But at least it vectorized
+// and unrolls.
+
+SOMETIMES_INLINE tbl_b PO(roar_match_vvectoryesmorecorrect)(tbl_a* a, tbl_b* B_ALIGNED b)
+{
+  b = __builtin_assume_aligned (b, 16);
+  unsigned int d;
+  unsigned char r = -1;
+  tbl_a match = *a;
+  #pragma simd
+retry: for(d = 0; d < 32 ; d++)
+	  r += (match == b[d]);
+
+  if(r = RESULT(r, a, b)) return *b;
+  b = &b[32];
+  goto retry;
+
+  return *b;
+}
+
 SOMETIMES_INLINE tbl_b PO(roar_match_firsthit)(tbl_a* a, tbl_b* B_ALIGNED b, unsigned int c)
 {
   b = __builtin_assume_aligned (b, 16);

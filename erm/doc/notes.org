@@ -1180,3 +1180,139 @@ termination.
 It is totally feasible to use my & and freerunning tricks but the compiler
 doesn't like it.
 
+* In an orgy of excess
+
+still not there... 
+
+search 255 entries in a single go, not vectored
+
+ 0f     b6 c8                   movzbl %al,%ecx
+ 1f8    66 39 7c 4b fe          cmp    %di,-0x2(%rbx,%rcx,2)
+ 200:   0f 94 c1                sete   %cl
+ 203:   01 ca                   add    %ecx,%edx
+ 205:   04 01                   add    $0x1,%al
+ 207:   75 ef                   jne    1f8 <tbl_a_tbl_b_roar_match_freerun_vvectormaybe+0x18>
+ 209:   0f b7 73 fe             movzwl -0x2(%rbx),%esi
+ 20d:   0f b6 d2                movzbl %dl,%edx
+ 210:   e8 00 00 00 00          callq  215 <tbl_a_tbl_b_roar_match_freerun_vvectormaybe+0x35>
+
+
+SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectormaybe)(tbl_a* a, tbl_b* B_ALIGNED b)
+{
+  b = __builtin_assume_aligned (b, 16);
+  unsigned char d;
+  unsigned char r = -1;
+  tbl_a match = *a;
+  b--;
+  #pragma simd
+  for(d = 1; d != 0; d++) // I love writing infinite looking loops even tho icc will complain
+	  r += (match == b[d]);
+  r = RESULT(r, a, b);
+
+  return *b;
+}
+
+
+// like so much here, this is not correct code
+SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectormaybe)(tbl_a* a, tbl_b* B_ALIGNED b)
+{
+  b = __builtin_assume_aligned (b, 16);
+  unsigned char d;
+  unsigned char r = -1;
+  tbl_a match = *a;
+  b--;
+  #pragma simd
+  for(d = 1; d ; d++) // I love writing infinite looking loops even tho icc will complain
+	  r += (match == b[d]);
+  r = RESULT(r, a, b);
+
+  return *b;
+}
+
+
+00000000000001e0 <tbl_a_tbl_b_roar_match_freerun_vvectormaybe>:
+ 1e0:   53                      push   %rbx
+ 1e1:   0f b7 3f                movzwl (%rdi),%edi
+ 1e4:   48 89 f3                mov    %rsi,%rbx
+ 1e7:   ba ff ff ff ff          mov    $0xffffffff,%edx
+ 1ec:   b8 01 00 00 00          mov    $0x1,%eax
+ 1f1:   0f 1f 80 00 00 00 00    nopl   0x0(%rax)
+ 1f8:   0f b6 c8                movzbl %al,%ecx
+ 1fb:   66 39 7c 4b fe          cmp    %di,-0x2(%rbx,%rcx,2)
+ 200:   0f 94 c1                sete   %cl
+ 203:   01 ca                   add    %ecx,%edx
+ 205:   04 01                   add    $0x1,%al
+ 207:   75 ef                   jne    1f8 <tbl_a_tbl_b_roar_match_freerun_vvectormaybe+0x18>
+ 209:   0f b7 73 fe             movzwl -0x2(%rbx),%esi
+ 20d:   0f b6 d2                movzbl %dl,%edx
+ 210:   e8 00 00 00 00          callq  215 <tbl_a_tbl_b_roar_match_freerun_vvectormaybe+0x35>
+ 215:   0f b7 43 fe             movzwl -0x2(%rbx),%eax
+ 219:   5b                      pop    %rbx
+ 21a:   c3                      retq   
+ 21b:   0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+
+** But only this will vectorize
+// like so much here, this is not correct code
+SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectormaybe2)(tbl_a* a, tbl_b* B_ALIGNED b)
+{
+  b = __builtin_assume_aligned (b, 16);
+  unsigned char d;
+  unsigned char r = -1;
+  tbl_a match = *a;
+  #pragma simd
+  for(d = 0; d < 255 ; d++) // I love writing infinite looking loops even tho icc will complain
+	  r += (match == b[d]);
+  r = RESULT(r, a, b);
+
+  return *b;
+}
+
+which it does a pretty huge complete unroll on which
+is probably not what I want either
+
+// Still I like constraining my space this way:
+
+0000000000000220 <tbl_a_tbl_b_roar_match_freerun_vvectorno_firstexit>:
+ 220:   53                      push   %rbx
+ 221:   0f b7 3f                movzwl (%rdi),%edi
+ 224:   48 89 f3                mov    %rsi,%rbx
+ 227:   b8 01 00 00 00          mov    $0x1,%eax
+ 22c:   0f 1f 40 00             nopl   0x0(%rax)
+ 230:   0f b6 d0                movzbl %al,%edx
+ 233:   66 39 7c 53 fe          cmp    %di,-0x2(%rbx,%rdx,2)
+ 238:   0f 94 c2                sete   %dl
+ 23b:   83 c0 01                add    $0x1,%eax
+ 23e:   83 ea 01                sub    $0x1,%edx
+ 241:   84 c2                   test   %al,%dl
+ 243:   75 eb                   jne    230 <tbl_a_tbl_b_roar_match_freerun_vvectorno_firstexit+0x10>
+ 245:   0f b7 73 fe             movzwl -0x2(%rbx),%esi
+ 249:   0f b6 d2                movzbl %dl,%edx
+ 24c:   e8 00 00 00 00          callq  251 <tbl_a_tbl_b_roar_match_freerun_vvectorno_firstexit+0x31>
+ 251:   0f b7 43 fe             movzwl -0x2(%rbx),%eax
+ 255:   5b                      pop    %rbx
+ 256:   c3                      retq   
+ 257:   66 0f 1f 84 00 00 00    nopw   0x0(%rax,%rax,1)
+
+// like so much here, this is not correct code
+SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectorno_firstexit)(tbl_a* a, tbl_b* B_ALIGNED b)
+{
+  b = __builtin_assume_aligned (b, 16);
+  unsigned char d;
+  unsigned char r = -1;
+  tbl_a match = *a;
+  b--;
+  #pragma simd
+  for(d = 1; d & r; d++) // I love writing infinite looking loops even tho icc will complain
+	  r += (match == b[d]);
+  r = RESULT(r, a, b);
+
+  return *b;
+}
+
+and if I need a shorter search, constraining d = 256 - 16
+
+
+In file included from tables_search.c(22):
+../includes/tables_search.h(138): error: parallel loop condition operator must be one of <, <=, >, >=, or !=
+    for(d = 1; d ; d++) // I love writing infinite looking loops even tho icc will complain
+
