@@ -5,6 +5,7 @@
  * 2017-03-18
  */
 
+#include <sched.h>
 #include <stdint.h>
 
 // This set of queries are aligned against 16 byte boundaries

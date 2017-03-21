@@ -50,7 +50,7 @@
 // This - in a vector machine - can be as high as FIXME.
 
 #ifndef RUNAHEAD
-#define RUNAHEAD 4
+#define RUNAHEAD 16
 #endif
 
 // SOMETIMES_INLINE: used as a pre-pre processor macro for stuff you

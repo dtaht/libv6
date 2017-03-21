@@ -1,11 +1,11 @@
 QUAD = __uint128_t
-CC = clang
+#CC := clang
 SRCS  = tables_search.c
 FORMAT = clang-format
 CFLAGS  = -std=gnu11 -O3 -Wall -ftree-vectorize
 LDFLAGS = -lrt
 OBJS += $(patsubst %.c,%.o,$(SRCS))
-INC = tables_search.h
+INC = tables_search.h preprocessor.h simd.h
 
 searches: search_uint8.o search_uint16.o search_uint32.o search_uint64.o search_uint128.o # search_v6addr_t
 

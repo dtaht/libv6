@@ -5,7 +5,7 @@
  * 2017-03-18
  */
 
-// we constrain the loop to no more than RUNAHEAD+1 searches
+// we constrain the loop to no more than RUNAHEAD searches
 // because we have to yield to other threads at some point
 // or fetch more memory into the cache
 // RUNAHEAD must be a power of two
@@ -195,10 +195,10 @@ SOMETIMES_INLINE tbl_b PO(roar_match_vvectoryesmorecorrect)(tbl_a* a, tbl_b* B_A
   tbl_a match = *a;
 #pragma simd
 retry:
-  for(d = 0; d < (RUNAHEAD); d++) r += (match == b[d]);
+  for(d = 0; d < RUNAHEAD*8; d++) r += (match == b[d]);
 
   if((r = RESULT(r, a, b))) return *b;
-  b = &b[d];
+  b = &b[RUNAHEAD*8];
   goto retry;
 
   return *b;
@@ -215,7 +215,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match_vvectoryesWORKED)(tbl_a* a, tbl_b* B_ALIGNE
 retry: for(d = 0; d < RUNAHEAD*4 ; d++)
 	  r += (match == b[d]);
 
-  if(r = RESULT(r, a, b)) return *b;
+  if((r = RESULT(r, a, b))) return *b;
   b = &b[RUNAHEAD*4];
   goto retry;
 
