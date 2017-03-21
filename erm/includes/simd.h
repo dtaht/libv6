@@ -23,6 +23,7 @@ typedef uint32x4_t usimd VECTOR(16);
 
 #ifdef HAVE_SSE4
 register global_flags_t tflags asm("r15");
+#include <immintrin.h>
 #include <emmintrin.h>
 #include <xmmintrin.h>
 static inline void push_regs() {}
@@ -32,8 +33,7 @@ typedef unsigned int usimd VECTOR(16);
 
 #ifdef HAVE_ADAPTEVA
 register global_flags_t tflags asm("r41");
-#include <emmintrin.h>
-#include <xmmintrin.h>
+#include <bsp.h>
 static inline void push_regs() {}
 static inline void pop_regs() {}
 typedef unsigned int usimd VECTOR(16);
