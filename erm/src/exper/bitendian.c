@@ -134,7 +134,7 @@ inline unsigned int reverse_asm_const(unsigned int t)
         n >>= ((sizeof(size_t) - sizeof(unsigned int)) * 8);
         n = ((n & c1) >> 1) | ((n & c2) << 1);
         n = ((n & c3) >> 2) | ((n & c4) << 2);
-        n = ((n & c5) >> 4) | ((n & c6) << 4);
+        n = ((n & c5) >> 4) | ((n & (c5 >> 4)) << 4);
         return n;
     }
 
