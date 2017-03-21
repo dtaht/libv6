@@ -26,7 +26,7 @@ VERSION = version.h
 INCLUDES = -I$(INC)
 GENVERSION = $(TOOLS)/generate-version.sh
 
-CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES)
+CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES) -ftree-vectorize
 LDFLAGS = -lrt
 
 OBJDIR_DEBUG = $(CC)
@@ -57,6 +57,8 @@ ifeq ($(CC),e-gcc)          # adapteva compiler
 	# CFLAGS +=-msmall16
 endif
 
++ARCH = $(shell uname -m)
+
 # Arm notes:
 # per function code generation __attribute__((target("+crc+nocrypto")))
 # backtrace better on arm: -mpoke-function-name
@@ -65,22 +67,32 @@ endif
 # http://infocenter.arm.com/help/topic/com.arm.doc.ecm0359818/ECM0359818_armv8m_security_extensions_reqs_on_dev_tools_1_0.pdf
 
 # https://software.intel.com/sites/default/files/m/4/8/8/2/a/31848-CompilerAutovectorizationGuide.pdf
+
+NNATIVE = -mfpu=neon -DHAVE_NEON
+
+ifeq ($(CC),arm-linux-gnueabhf-gcc)       # arm cross compiler
+	CFLAGS += $(NNATIVE)              # tell it we have neon
+	SRCS += knetlink.c
+endif
+
+# ARMv7 gcc-arm-linux-gnueabihf
+
+ifeq ($(ARCH),armv7l)       		  # arm native compiler
+	CFLAGS += $(NNATIVE)
+	SRCS += knetlink.c
+endif
+
+ifeq ($(ARCH),aarch64)         # aarch64 native compiler
+	CFLAGS += -DHAVE_NEON  # it knows we have neon, the code doesn't.
+	SRCS += knetlink.c
+endif
+
 # Intel - use cpuid? have patch at run time?
 # __assume_aligned(x,16)
 # CFLAGS += -msse4.2
 # SRCS += knetlink.c
 
-# gcc-aarch64-
-# AARCH64
-
 # SRCS += knetlink.c
-
-# ARMv7 gcc-arm-linux-gnueabihf
-
-ifeq ($(CC),arm-linux-gnueabhf-gcc)       # arm cross compiler
-	CFLAGS += -mfpu=neon -DHAVE_NEON  # tell it we have neon
-	SRCS += knetlink.c
-endif
 
 # MIPS
 
