@@ -15,7 +15,20 @@
 #include "tabeld.h"
 #include "simd.h"
 
-#define REVERSEB(v) reverse_obvious(v)
+// What I want is to popcount and reverse bits at the same time
+// popcount doesn't care about endian. It seems silly (but benchmarking awaits)
+// to not do all this on one pass
+// pop = popcount128(result);
+// result = flip128(result);
+// vs
+// pop = popflip128(&result);
+// This is made hairy because in some cases popcount is a 20 ins call.
+// vs a single asm instruction.
+// and some cases bitreversal is also
+// and in both cases, they use a lot of magic constants
+
+//#define REVERSEB(v) reverse_obvious(v)
+#define REVERSEB(v) reverse_asm_const(v)
 
 ///typedef struct {
 // uint32_t a VECTOR(16);
@@ -41,21 +54,36 @@ unsigned int reverse_obvious(int v)
   r <<= s;
   return r;
 }
-// need my hooks for bits
 
+// FIXME: need my hooks for printf bits
 
 #define CONVERT "%9x%9x%9x%9x"
 
-
+// Native ARM instruction "rbit" can do it with 1 cpu cycle and 1 extra cpu register, impossible to beat. Can it be done right in neon?
 // just need rbit for words
 
-int32 *image;
-for (i = 0; i < size / 4; h++) {
+#ifdef __arm__
+
+return uint32_t *reverse_arm(uint32_t *image, int size) {
+
+	for (i = 0; i < size / 4; h++) {
     asm("rbit %1,%0" : "=r" (image[i]) : "r" (image[i]));
     asm("rev %1,%0" : "=r" (image[i]) : "r" (image[i]));
 }
+}
 
-size_t reverse(size_t n, unsigned int bytes)
+#endif
+
+#ifdef __x86_64__
+
+/*
+    n = reverse(n, sizeof(char));//only reverse 8 bits
+    n = reverse(n, sizeof(short));//reverse 16 bits
+    n = reverse(n, sizeof(int));//reverse 32 bits
+    n = reverse(n, sizeof(size_t));//reverse 64 bits
+*/
+
+size_t reverse_bswap_asm(size_t n, unsigned int bytes)
     {
         __asm__("BSWAP %0" : "=r"(n) : "0"(n));
         n >>= ((sizeof(size_t) - bytes) * 8);
@@ -65,38 +93,63 @@ size_t reverse(size_t n, unsigned int bytes)
         return n;
     }
 
-// Native ARM instruction "rbit" can do it with 1 cpu cycle and 1 extra cpu register, impossible to beat.
+ int c1 = 0xaaaaaaaa;
+ int c2 = 0x55555555;
+ int c3 = 0xcccccccc;
+ int c4 = 0x33333333;
+ int c5 = 0xf0f0f0f0;
+ int c6 = 0x0f0f0f0f; // it irks me that these are just basically shifted
 
+//  40088a:       81 e5 f0 f0 f0 f0       and    $0xf0f0f0f0,%ebp
+//  400890:       25 0f 0f 0f 0f          and    $0xf0f0f0f,%eax
+
+// vs the equivalent shorter instruction sequence (in bytes)
+// That I don't really want to inline, either.
 /*
-bits 64
-global bitflipbyte
+  400834:       48 0f cb                bswap  %rbx
+  400837:       48 c1 eb 20             shr    $0x20,%rbx
+  40083b:       49 89 d5                mov    %rdx,%r13
+  40083e:       48 89 d9                mov    %rbx,%rcx
+  400841:       48 21 f3                and    %rsi,%rbx
+  400844:       4d 21 c5                and    %r8,%r13
+  400847:       4c 21 c9                and    %r9,%rcx
+  40084a:       48 21 c2                and    %rax,%rdx
+  40084d:       48 01 db                add    %rbx,%rbx
+  400850:       48 d1 e9                shr    %rcx
+  400853:       48 c1 e2 04             shl    $0x4,%rdx
+  400857:       49 c1 ed 04             shr    $0x4,%r13
+  40085b:       48 09 d9                or     %rbx,%rcx
+  40085e:       49 09 d5                or     %rdx,%r13
+  400861:       48 89 ca                mov    %rcx,%rdx
+  400864:       48 21 f9                and    %rdi,%rcx
+  400867:       4c 21 e2                and    %r12,%rdx
+  40086a:       48 c1 ea 02             shr    $0x2,%rdx
+  40086e:       48 c1 e1 02             shl    $0x2,%rcx
+*/
 
-bitflipbyte:    
-        vmovdqa     ymm2, [rdx]
-        add         rdx, 20h
-        vmovdqa     ymm3, [rdx]
-        add         rdx, 20h
-        vmovdqa     ymm4, [rdx]
-bitflipp_loop:
-        vmovdqa     ymm0, [rdi] 
-        vpand       ymm1, ymm2, ymm0 
-        vpandn      ymm0, ymm2, ymm0 
-        vpsrld      ymm0, ymm0, 4h 
-        vpshufb     ymm1, ymm4, ymm1 
-        vpshufb     ymm0, ymm3, ymm0         
-        vpor        ymm0, ymm0, ymm1
-        vmovdqa     [rdi], ymm0
-        add     rdi, 20h
-        dec     rsi
-        jnz     bitflipp_loop
-        ret
-	*/
+inline unsigned int reverse_asm_const(unsigned int t)
+    {
+        size_t n = t;//store in 64 bit number for call to BSWAP
+        __asm__("BSWAP %0" : "=r"(n) : "0"(n));
+        n >>= ((sizeof(size_t) - sizeof(unsigned int)) * 8);
+        n = ((n & c1) >> 1) | ((n & c2) << 1);
+        n = ((n & c3) >> 2) | ((n & c4) << 2);
+        n = ((n & c5) >> 4) | ((n & c6) << 4);
+        return n;
+    }
 
+inline unsigned int reverse_asm(unsigned int t)
+    {
+        size_t n = t;//store in 64 bit number for call to BSWAP
+        __asm__("BSWAP %0" : "=r"(n) : "0"(n));
+        n >>= ((sizeof(size_t) - sizeof(unsigned int)) * 8);
+        n = ((n & 0xaaaaaaaa) >> 1) | ((n & 0x55555555) << 1);
+        n = ((n & 0xcccccccc) >> 2) | ((n & 0x33333333) << 2);
+        n = ((n & 0xf0f0f0f0) >> 4) | ((n & 0x0f0f0f0f) << 4);
+        return n;
+    }
 
-   n = reverse(n, sizeof(char));//only reverse 8 bits
-    n = reverse(n, sizeof(short));//reverse 16 bits
-    n = reverse(n, sizeof(int));//reverse 32 bits
-    n = reverse(n, sizeof(size_t));//reverse 64 bits
+#endif
 
 /* Classic binary partitioning algorithm */
 inline uint32_t brev_classic (uint32_t a)
@@ -119,6 +172,7 @@ uint64_t reverse_vectorized(const uint64_t n,
         return r;
 }
 
+/*
 int new_main()
 {
         const uint64_t size = 64;
@@ -130,24 +184,27 @@ int new_main()
         return 0;
 }
 
+*/
+
 /* Knuth's algorithm from http://www.hackersdelight.org/revisions.pdf. Retrieved 8/19/2015 */
+
 inline uint32_t brev_knuth (uint32_t a)
 {
     uint32_t t;
     a = (a << 15) | (a >> 17);
-    t = (a ^ (a >> 10)) & 0x003f801f; 
+    t = (a ^ (a >> 10)) & 0x003f801f;
     a = (t + (t << 10)) ^ a;
-    t = (a ^ (a >>  4)) & 0x0e038421; 
+    t = (a ^ (a >>  4)) & 0x0e038421;
     a = (t + (t <<  4)) ^ a;
-    t = (a ^ (a >>  2)) & 0x22488842; 
+    t = (a ^ (a >>  2)) & 0x22488842;
     a = (t + (t <<  2)) ^ a;
     return a;
 }
 
-unsigned int reverse_asm(unsigned int t)
+unsigned int reverse_builtin_32(unsigned int t)
     {
         size_t n = t;//store in 64 bit number for call to BSWAP
-        __asm__("BSWAP %0" : "=r"(n) : "0"(n));
+	n = __builtin_bswap32(n);
         n >>= ((sizeof(size_t) - sizeof(unsigned int)) * 8);
         n = ((n & 0xaaaaaaaa) >> 1) | ((n & 0x55555555) << 1);
         n = ((n & 0xcccccccc) >> 2) | ((n & 0x33333333) << 2);
@@ -155,10 +212,12 @@ unsigned int reverse_asm(unsigned int t)
         return n;
     }
 
-unsigned int reverse_builtin(unsigned int t)
+// I don't trust myself here
+
+unsigned int reverse_builtin_64(size_t t)
     {
         size_t n = t;//store in 64 bit number for call to BSWAP
-	n = __builtin_bswap(n)
+	n = __builtin_bswap64(n);
         n >>= ((sizeof(size_t) - sizeof(unsigned int)) * 8);
         n = ((n & 0xaaaaaaaa) >> 1) | ((n & 0x55555555) << 1);
         n = ((n & 0xcccccccc) >> 2) | ((n & 0x33333333) << 2);

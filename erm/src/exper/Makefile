@@ -1,9 +1,10 @@
-PROGS = structpassing
+#PROGS = structpassing bitendian
+PROGS = bitendian
 
-SRCS  = structpassing.c
+SRCS  = structpassing.c bitendian.c
 
-DLIB  = debug.o traps.o
-DSRCS = debug.c traps.c
+DLIB  = ../debug.o ../traps.o
+DSRCS = ../debug.c ../traps.c
 FORMAT = clang-format
 
 BHEADERS = align.h c11.h command_line.h globals.h interfaces.h kernel.h \
@@ -19,7 +20,7 @@ VERSION = version.h
 INCLUDES = -I$(INC)
 GENVERSION = $(TOOLS)/generate-version.sh
 
-CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES) -flax-vector-conversions
+CFLAGS  = -std=gnu11 -Os -Wall -L../../lib $(INCLUDES) -flax-vector-conversions
 LDFLAGS = -lrt
 
 OBJDIR_DEBUG = $(CC)
@@ -84,8 +85,10 @@ DOBJS2 += $(patsubst %.c,%.dbg,$(SRCS))
 
 # We can't link core lib .dbg objects to themselves
 
-traps.dbg: traps.c debug.o
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< debug.o $(LDFLAGS) -o $@
+all: $(PROGS)
+
+traps.dbg: ../traps.c ../debug.o
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< ../debug.o $(LDFLAGS) -o $@
 
 # arch is a generated file, no point in debugging it. Phony? It would actually be
 # handy to have it as a program to use later...
@@ -127,7 +130,7 @@ $(OBJDIR):
 
 # local shared memory command line client
 
-CLIENTDEPS = erm_client.o commands.o debug.o traps.o
+CLIENTDEPS = erm_client.o commands.o ../debug.o traps.o
 
 germ: germ.c $(CLIENTDEPS)
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< $(CLIENTDEPS) $(LDFLAGS) -o $@
