@@ -162,7 +162,9 @@ SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectorno_zoomon)(tbl_a* a, tbl_b* 
   return *b;
 }
 
-// like so much here, this is not correct code. But at least it vectorized
+// like so much here, this is not correct code. But at least it vectorized.
+// RUNAHEAD must be > 15 for the compiler to consider it a candidate
+
 REGCALL
 SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectoryes)(tbl_a* a, tbl_b* B_ALIGNED b)
 {
@@ -208,7 +210,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match_firsthit)(tbl_a* a, tbl_b* B_ALIGNED b, uns
   tbl_a match = *a;
   --b;
   while(r) {
-    while(c++ & RUNAHEAD & r) r += match == *++b;
+    while(c++ & (RUNAHEAD-1) & r) r += match == *++b;
   }
   while(r = RESULT(r, a, b))
     ;
