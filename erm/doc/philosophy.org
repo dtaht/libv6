@@ -1,4 +1,4 @@
-* Philisophy
+* Philisophy about the Embeddable Routing Machine
 
 ERM is an outgrowth of my encounters with many, many other network simulation
 tools over the past decades of dealing with them. It's different from all of
@@ -18,7 +18,7 @@ that will get you closer to "there".
 - It is declaratively table driven and state machine based
 
 ** ERM looks like hardware
-See: [[ERM_MACHINE][ERM_MACHINE.org]]
+See: [[ERM_MACHINE.org][ERM_MACHINE]]
 
 - Massively parallel
 - Uses concepts like splay, scatter, stagger
@@ -76,6 +76,7 @@ At least, I hope it will be.
 - Lock free data structures
 - Pure functions
 - Generational Garbage collection
+- tagged memory
 - mmap rather rather than stdio
 - Linker magic to swap in and out critical sections
 

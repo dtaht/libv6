@@ -15,6 +15,7 @@
 
 #ifdef HAVE_NEON
 register global_flags_t tflags asm("q15");
+#define FFFFFFFF (0xFFFFFFFF)
 #include <arm_neon.h>
 static inline void push_regs() {}
 static inline void pop_regs() {}
@@ -23,6 +24,7 @@ typedef uint32x4_t usimd VECTOR(16);
 
 #ifdef HAVE_SSE4
 register global_flags_t tflags asm("r15");
+#define FFFFFFFF (0xFFFFFFFF)
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <xmmintrin.h>
@@ -33,6 +35,7 @@ typedef unsigned int usimd VECTOR(16);
 
 #ifdef HAVE_ADAPTEVA
 register global_flags_t tflags asm("r41");
+register uint32_t FFFFFFFF asm("r63");
 #include <bsp.h>
 static inline void push_regs() {}
 static inline void pop_regs() {}
@@ -41,6 +44,7 @@ typedef unsigned int usimd VECTOR(16);
 
 #if !(defined(HAVE_NEON) | defined(HAVE_SSE4) | defined(HAVE_ADAPTEVA))
 extern global_flags_t tflags;
+#define FFFFFFFF (0xFFFFFFFF)
 static inline void push_regs() {}
 static inline void pop_regs() {}
 typedef unsigned int usimd VECTOR(16);
