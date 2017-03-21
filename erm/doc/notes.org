@@ -1316,3 +1316,52 @@ In file included from tables_search.c(22):
 ../includes/tables_search.h(138): error: parallel loop condition operator must be one of <, <=, >, >=, or !=
     for(d = 1; d ; d++) // I love writing infinite looking loops even tho icc will complain
 
+* And moving to neon
+
+except that an infinit loop crept into all the rest of the code.
+
+used to have "do":
+
+ while(r = RESULT(r, a, b)) ;
+
+anyway, finally generating code for neon, too. Still about twice as much as I expected
+
+00000298 <tbl_a_tbl_b_roar_match_firsthit_vvector>:
+ 298:   8802            ldrh    r2, [r0, #0]
+ 29a:   efc0 2811       vmov.i16        d18, #1 ; 0x0001
+ 29e:   f961 17df       vld1.64 {d17}, [r1 :64]
+ 2a2:   efc0 0010       vmov.i32        d16, #0 ; 0x00000000
+ 2a6:   b538            push    {r3, r4, r5, lr}
+ 2a8:   ee83 2bb0       vdup.16 d19, r2
+ 2ac:   460c            mov     r4, r1
+ 2ae:   8909            ldrh    r1, [r1, #8]
+ 2b0:   ff51 18b3       vceq.i16        d17, d17, d19
+ 2b4:   4605            mov     r5, r0
+ 2b6:   4610            mov     r0, r2
+ 2b8:   ff62 01b1       vbit    d16, d18, d17
+ 2bc:   ffd0 0a30       vmovl.u16       q8, d16
+ 2c0:   ef61 08a0       vadd.i32        d16, d17, d16
+ 2c4:   ef60 0bb0       vpadd.i32       d16, d16, d16
+ 2c8:   ee10 3b90       vmov.32 r3, d16[0]
+ 2cc:   4291            cmp     r1, r2
+ 2ce:   bf0c            ite     eq
+ 2d0:   461a            moveq   r2, r3
+ 2d2:   1e5a            subne   r2, r3, #1
+ 2d4:   e000            b.n     2d8 <tbl_a_tbl_b_roar_match_firsthit_vvector+0x40>
+ 2d6:   8828            ldrh    r0, [r5, #0]
+ 2d8:   8821            ldrh    r1, [r4, #0]
+ 2da:   f7ff fffe       bl      0 <my_result>
+ 2de:   4602            mov     r2, r0
+ 2e0:   2800            cmp     r0, #0
+ 2e2:   d1f8            bne.n   2d6 <tbl_a_tbl_b_roar_match_firsthit_vvector+0x3e>
+ 2e4:   8820            ldrh    r0, [r4, #0]
+ 2e6:   bd38            pop     {r3, r4, r5, pc}
+
+* TODO Big stuff <2017-03-20 Mon> 
+** Decide on Timestamps.
+** Decide on librcu trial or bsp
+** Give shared mem another go
+** Work on virtual fs
+** Improve my emacs more (timestamps time logging etc - and fkeys!)
+** Rework headers and further abstract makefile
+** Oh yea, make compile again.

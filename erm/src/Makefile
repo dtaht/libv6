@@ -57,13 +57,13 @@ ifeq ($(CC),e-gcc)          # adapteva compiler
 	# CFLAGS +=-msmall16
 endif
 
-+ARCH = $(shell uname -m)
+ARCH = $(shell uname -m)
 
 # Arm notes:
 # per function code generation __attribute__((target("+crc+nocrypto")))
 # backtrace better on arm: -mpoke-function-name
 # use neon more on aarch64: -mneon-for-64bits
-# -mcmse - compile in secure mode: 
+# -mcmse - compile in secure mode:
 # http://infocenter.arm.com/help/topic/com.arm.doc.ecm0359818/ECM0359818_armv8m_security_extensions_reqs_on_dev_tools_1_0.pdf
 
 # https://software.intel.com/sites/default/files/m/4/8/8/2/a/31848-CompilerAutovectorizationGuide.pdf
@@ -192,7 +192,7 @@ werm: werm.c $(CLIENTDEPS)
 tabeld: $(HEADERS) $(SRCS) $(VERSION)
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $(LDFLAGS) -o $@
 
-tabeld-whole.c: $(HEADERS) $(SRCS) 
+tabeld-whole.c: $(HEADERS) $(SRCS)
 	cat $(SRCS) > $@
 
 tabeld-whole.s: tabeld-whole.c

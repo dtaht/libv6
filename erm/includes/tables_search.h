@@ -171,6 +171,7 @@ SOMETIMES_INLINE tbl_b PO(roar_match_freerun_vvectoryes)(tbl_a* a, tbl_b* B_ALIG
   unsigned char r = -1;
   tbl_a match = *a;
   #pragma simd
+
   for(d = 0; d < 16 ; d++)
 	  r += (match == b[d]);
   r = RESULT(r, a, b);
@@ -214,7 +215,6 @@ SOMETIMES_INLINE tbl_b PO(roar_match_firsthit)(tbl_a* a, tbl_b* B_ALIGNED b, uns
 
   return *b;
 }
-// B_ALIGNED?
 
 REGCALL
 SOMETIMES_INLINE tbl_b PO(roar_match_firsthit_vvector)(tbl_a* a, tbl_b* B_ALIGNED b)
