@@ -15,15 +15,15 @@
 
 // Worse, we need saturating arith
 
-#define generic u16
-#define blanusa blanusau16
+#define generic uint16_t
+#define blanusa blanusauint16_t
 #define mypow(a,b) ((a) << (b))
 #include "blanusa.h"
 
 #undef generic
 #undef blanusa
-#define generic u32
-#define blanusa blanusau32
+#define generic uint32_t
+#define blanusa blanusauint32_t
 #include "blanusa.h"
 
 #undef generic
@@ -34,14 +34,14 @@
 
 #undef generic
 #undef blanusa
-#define generic s16
-#define blanusa blanusas16
+#define generic int16_t
+#define blanusa blanusaint16_t
 #include "blanusa.h"
 
 #undef generic
 #undef blanusa
-#define generic s32
-#define blanusa blanusas32
+#define generic int32_t
+#define blanusa blanusaint32_t
 #include "blanusa.h"
 
 #undef generic
@@ -79,9 +79,9 @@ int main()
   }
 
 */
-  u16 c;
+  uint16_t c;
   for(int i = -0xff; i < 0xff; i++) {
-    c = blanusau16(i);
+    c = blanusauint16_t(i);
 //    printf("Blanusa16 %d: %d: %g\n", i, c, blanusadouble(c));
     printf("Blanusa16trunc %d: %d\n", i, c);
     }

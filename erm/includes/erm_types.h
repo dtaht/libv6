@@ -47,20 +47,20 @@ but applied everywhere.
 
 // All addresses are kept as vector types to start with
 
-typedef u32 v6addr_t VECTOR(16); // v6 addresses
-typedef u32 r6addr_t VECTOR(8); // Router ID
-typedef u32 emacaddr_t VECTOR(8); // We waste 2 bytes on macs
+typedef uint8_t v6addr_t VECTOR(16); // v6 addresses
+typedef uint8_t r6addr_t VECTOR(8); // Router ID
+typedef uint8_t emacaddr_t VECTOR(8); // We waste 2 bytes on macs
 
 // I would like to vectorize ipv4 but am not sure how to express it cleanly
-// typedef u32 v4addr_t VECTOR(4); // v6 addresses
+// typedef uint8_t v4addr_t VECTOR(4); // v6 addresses
 
-typedef u32 v4addr_t;
+typedef uint32_t v4addr_t;
 
 /* There is a hard limit of 64k anything in the system presently,
    but we can change that if we need to and/or fire off another
    vm to split it */
 
-typedef u16 ubase_t;
+typedef uint16_t ubase_t;
 
 typedef ubase_t address_t;
 typedef ubase_t neigh_t;
@@ -69,15 +69,15 @@ typedef ubase_t rid_t; /* router id */
 typedef ubase_t seqno_t;
 typedef ubase_t macaddr_t;
 
-typedef u16 ifindex_t; // the spec says this is an int
-typedef u32 proto_t;    // We pee on 255 for special stuff
+typedef uint16_t ifindex_t; // the spec says this is an int
+typedef uint8_t proto_t;    // We pee on 255 for special stuff
 
-typedef u32 plen_t;
-typedef u32 popcnt_t;
+typedef uint8_t plen_t;
+typedef uint8_t popcnt_t;
 
-typedef u32 gc_t; // Garbage collection could be 4 bits
+typedef uint8_t gc_t; // Garbage collection could be 4 bits
 
-typedef u32 ttime_t; // time in usec
+typedef uint32_t ttime_t; // time in usec
 
 // typedef ttable * address_p;
 /* Unified metric table too, expressable as a vector */
@@ -109,13 +109,13 @@ typedef struct {
 typedef struct {
   plen_t len;
   popcnt_t pop;
-  u16 mcast : 1;
-  u16 ll : 1;
-  u16 martian : 1;
-  u16 v4 : 1;
-  u16 v6 : 1;
+  uint16_t mcast : 1;
+  uint16_t ll : 1;
+  uint16_t martian : 1;
+  uint16_t v4 : 1;
+  uint16_t v6 : 1;
 
-  u16 aggregating : 2;
+  uint16_t aggregating : 2;
 
   // This idea is around the concept of both
   // aggregating routes and watching for potential changes ahead
@@ -123,7 +123,7 @@ typedef struct {
   // 3 = stable. 10 = stablizing 01 = going unstable 00 = unstable
   // or the reverse 0s here. Dunno
 
-  u16 stability : 2;
+  uint16_t stability : 2;
 
   // I could put in more state here - nexthop, dest, src...
   // hmm lets do that
@@ -132,12 +132,12 @@ typedef struct {
   // An address that has none of these bits unset is nearly
   // dead.
 
-  u16 dead : 1; // Do the next bits suffice for GC
-  u16 notspecific : 1;
-  u16 notnexthop : 1;
-  u16 notsrc : 1;
-  u16 notdst : 1;
-  u16 notaddress : 1;
+  uint16_t dead : 1; // Do the next bits suffice for GC
+  uint16_t notspecific : 1;
+  uint16_t notnexthop : 1;
+  uint16_t notsrc : 1;
+  uint16_t notdst : 1;
+  uint16_t notaddress : 1;
 
 } addrflags_t;
 
@@ -147,7 +147,7 @@ typedef struct {
 typedef struct {
   v6addr_t address;
   addrflags_t flags;
-  s32 special;
+  int32_t special;
 } fulladdr_t;
 
 // The original source table was 80 bytes
@@ -173,34 +173,34 @@ typedef struct {
 } buffered_update;
 
 typedef struct {
-  u32 debug : 2;
-  u32 stubby : 1;
-  u32 link_detect : 1;
-  u32 all_wireless : 1;
-  u32 has_ipv6_subtrees : 1;
-  u32 ipv4 : 1;
-  u32 ipv6 : 1;
-  u32 do_daemonise : 1;
-  u32 skip_kernel_setup : 1;
-  u32 iff_running : 1;
-  u32 have_id : 1;
-  u32 random_id : 1;
-  u32 deoptimize_wired : 1;
-  u32 split_horizon : 1;
-  u32 config_finalized : 1;
-  u32 monitor : 1;
-  u32 flush_invisible : 1;
-  u32 use_unicast : 1;
-  u32 use_unicast_ihu : 1;
-  u32 default_metric : 2;
-  u32 diversity : 2;
+  uint32_t debug : 2;
+  uint32_t stubby : 1;
+  uint32_t link_detect : 1;
+  uint32_t all_wireless : 1;
+  uint32_t has_ipv6_subtrees : 1;
+  uint32_t ipv4 : 1;
+  uint32_t ipv6 : 1;
+  uint32_t do_daemonise : 1;
+  uint32_t skip_kernel_setup : 1;
+  uint32_t iff_running : 1;
+  uint32_t have_id : 1;
+  uint32_t random_id : 1;
+  uint32_t deoptimize_wired : 1;
+  uint32_t split_horizon : 1;
+  uint32_t config_finalized : 1;
+  uint32_t monitor : 1;
+  uint32_t flush_invisible : 1;
+  uint32_t use_unicast : 1;
+  uint32_t use_unicast_ihu : 1;
+  uint32_t default_metric : 2;
+  uint32_t diversity : 2;
 
   // I might regret this as it changes
 
-  u32 kernel_routes_changed : 1;
-  u32 kernel_rules_changed : 1;
-  u32 kernel_link_changed : 1;
-  u32 kernel_addr_changed : 1;
+  uint32_t kernel_routes_changed : 1;
+  uint32_t kernel_rules_changed : 1;
+  uint32_t kernel_link_changed : 1;
+  uint32_t kernel_addr_changed : 1;
 
   // I could see adding - compute_bloated, discarding, GC or
   // other states here. Maybe.

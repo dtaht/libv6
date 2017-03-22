@@ -9,12 +9,12 @@
 #define MESSAGE_CAPABILITIES_H
 
 typedef struct {
-  u16 gps : 1;
-  u16 routes : 1;
-  u16 routers : 1;
-  u16 interfaces : 1;
-  u16 uptime : 1;
-  u16 load : 1;
+  uint16_t gps : 1;
+  uint16_t routes : 1;
+  uint16_t routers : 1;
+  uint16_t interfaces : 1;
+  uint16_t uptime : 1;
+  uint16_t load : 1;
   // ?
 }
 #endif

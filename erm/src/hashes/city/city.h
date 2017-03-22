@@ -51,8 +51,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-typedef u32 uint8;
-typedef u32 uint32;
+typedef uint8_t uint8;
+typedef uint32_t uint32;
 typedef uint64_t uint64;
 
 typedef struct _uint128 uint128;
