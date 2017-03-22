@@ -93,7 +93,10 @@ static inline int donothing_false() { return 0; }
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 
+// https://gcc.gnu.org/onlinedocs/gcc/Common-Type-Attributes.html#Common-Type-Attributes
 // Common additional function attributes in GCC and LLVM
+
+#define VECTOR(width) __attribute__((vector_size(width)))
 
 #define CONST __attribute__((const))
 #define PURE __attribute__((pure))
@@ -115,9 +118,22 @@ static inline int donothing_false() { return 0; }
 #define INTERRUPT __attribute__((interrupt))
 #define ALWAYS_INLINE __attribute__((always_inline))
 
-// Hmm... maybe move to simd header directly
+// PACKED on a wire or in memory on the tightest boundaries
 
-#define VECTOR(width) __attribute__((vector_size(width)))
+#define PACKED __attribute__((packed))
+
+// A variety of additional attributes
+// Tell the Pointer Bounds Checker that this variable can be variably sized
+// (used at the end of variable length structures
+
+#define VARISIZE __attribute__((bnd_variable_size))
+
+// Declare endianess of a variable to the compiler
+
+#define STORELE __attribute__((scalar_storage_order("little-endian")))
+#define STOREBE __attribute__((scalar_storage_order("big-endian")))
+
+#define TRANSUNION __attribute__ ((__transparent_union__))
 
 // Intel compiler specific extension used in function declarations
 
