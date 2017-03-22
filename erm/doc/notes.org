@@ -1442,3 +1442,32 @@ qlib looked interesting.
 * Riscv compiler version
 
 ** TODO Gotta get this thing re-loaded into the fpga
+
+* Back to my snark (blanusa)
+
+We have to solve the same problem at least 3 different ways for an optimal set
+of solutions, and choose three.
+
+1) The *best* route - that is the one currently shown by most of the parameters
+   to be the one with
+
+- The highest bandwidth
+- the lowest latency
+- the least packet loss
+- The shortest number of hops to the destination
+- the highest available bandwidth to that destination
+
+(BGP has something like 14 possible goals in total, including financial cost)
+
+2) The second best route has the following properties
+- Not the same device as the best route (in case that fails)
+- the best set of the above properties
+
+3) The third best route has a different set of properties than the first two.
+
+And I don't need any floating point. At least, not for REALLY small values.
+Several of these are pure functions but to scribble them down:
+
+The second one I'm too tired to fill in the margins of this notebook.
+
+The simpler derivatives, also.
