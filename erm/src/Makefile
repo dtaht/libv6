@@ -232,13 +232,13 @@ version.h: $(SRCS) $(HEADERS)
 searches: search_uint8.o search_uint16.o search_uint32.o search_uint64.o # search_v6addr.o search_uint128.o
 
 search_uint16.o: tables_search.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=uint16_t $< -c -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=u16 $< -c -o $@
 
 search_uint32.o: tables_search.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=uint32_t $< -c -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=u32 $< -c -o $@
 
 search_uint64.o: tables_search.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=uint64_t $< -c -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=u64 $< -c -o $@
 
 search_uint128.o: tables_search.c
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=uint128_t $< -c -o $@
@@ -247,7 +247,7 @@ search_v6addr.o: tables_search.c
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=v6addr_t $< -c -o $@
 
 search_uint8.o: tables_search.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=uint8_t $< -c -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=u8 $< -c -o $@
 
 # Helper tools
 
