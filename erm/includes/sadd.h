@@ -12,9 +12,9 @@
 
 // The winner on x86 is:
 
-static inline uint16_t sadd16(uint16_t a, uint16_t b)
+static inline u16 sadd16(u16 a, u16 b)
 {
-  uint16_t c = a + b;
+  u16 c = a + b;
   if(c < a) /* Can only happen due to overflow */
     c = -1;
   return c;
@@ -24,16 +24,16 @@ static inline uint16_t sadd16(uint16_t a, uint16_t b)
 // http://stackoverflow.com/questions/121240/how-to-do-saturating-addition-in-c
 // Sorted in order of least bad on x86, with gcc5
 
-uint16_t adds16_msalters(uint16_t a, uint16_t b)
+u16 adds16_msalters(u16 a, u16 b)
 {
-  uint16_t c = a + b;
+  u16 c = a + b;
   if(c < a) /* Can only happen due to overflow */
     c = -1;
   return c;
 }
-uint32_t adds32_msalters(uint32_t a, uint32_t b)
+u32 adds32_msalters(u32 a, u32 b)
 {
-  uint32_t c = a + b;
+  u32 c = a + b;
   if(c < a) /* Can only happen due to overflow */
     c = -1;
   return c;
@@ -44,9 +44,9 @@ uint32_t adds32_msalters(uint32_t a, uint32_t b)
 
 // ideally check __i686__ for cmov, but that's only defined for an actual i686
 // target, not e.g. haswell
-uint32_t adds32_x86_pjc_mov(uint32_t a, uint32_t b)
+u32 adds32_x86_pjc_mov(u32 a, u32 b)
 { // shorter critical-path latency by one cycle than the sbb version
-  uint32_t tmp = -1;
+  u32 tmp = -1;
   // { AT&T    | Intel }  syntax alternatives.  The other versions without
   // this  will break with -masm=intel
   asm("add     { %[b],%[a]   | %[a],  %[b] }\n\t"
@@ -58,14 +58,14 @@ uint32_t adds32_x86_pjc_mov(uint32_t a, uint32_t b)
       );
   return tmp;
 }
-uint32_t adds32_x86_pjc_sbb(uint32_t a, uint32_t b)
+u32 adds32_x86_pjc_sbb(u32 a, u32 b)
 { // smaller code-size, but longer critical-path latency (4c on Haswell, 3c on
   // AMD and Broadwell/Skylake)
   // sbb is on the critical path, unlike mov -1.  sbb and cmov are the same
   // latency on all CPUs
   // sbb same,same doesn't break the dependency on the old value of dst on any
   // uarch except AMD
-  uint32_t tmp;
+  u32 tmp;
   asm("add     %[b], %[a]\n\t"
       "sbb     %[dst], %[dst]\n\t"
       "or      %[a], %[dst]"
@@ -73,7 +73,7 @@ uint32_t adds32_x86_pjc_sbb(uint32_t a, uint32_t b)
       : [b] "g"(b));
   return tmp;
 }
-uint32_t adds32_x86_pjc_inplace(uint32_t a, uint32_t b)
+u32 adds32_x86_pjc_inplace(u32 a, u32 b)
 { // can reuse the same -1 register, but can't produce the result in a new
   // register
   asm("add  %[b], %[a]\n\t"
@@ -93,47 +93,47 @@ unsigned saturate_add_uint_kevin(unsigned x, unsigned y)
   if(y > UINT32_MAX - x) return UINT32_MAX;
   return x + y;
 }
-uint16_t sadd16_remo(uint16_t a, uint16_t b)
+u16 sadd16_remo(u16 a, u16 b)
 {
   return (a > 0xFFFF - b) ? 0xFFFF : a + b;
 }
 
-uint32_t sadd32_remo(uint32_t a, uint32_t b)
+u32 sadd32_remo(u32 a, u32 b)
 {
   return (a > 0xFFFFFFFF - b) ? 0xFFFFFFFF : a + b;
 }
 
 
-uint32_t sadd32_r(uint32_t a, uint32_t b)
+u32 sadd32_r(u32 a, u32 b)
 { // from R.
-  uint64_t s = (uint64_t)a + b;
-  return -(s >> 32) | (uint32_t)s;
+  u64 s = (u64)a + b;
+  return -(s >> 32) | (u32)s;
 }
 
 #define sadd16(a, b)                                                         \
-  (uint16_t)(((uint32_t)(a) + (uint32_t)(b)) > 0xffff ? 0xffff : ((a) + (b)))
-uint32_t sadd32_op(uint32_t a, uint32_t b)
+  (u16)(((u32)(a) + (u32)(b)) > 0xffff ? 0xffff : ((a) + (b)))
+u32 sadd32_op(u32 a, u32 b)
 {
-  return (uint32_t)(((uint64_t)(a) + (uint64_t)(b)) > 0xffffffff ? 0xffffffff :
+  return (u32)(((u64)(a) + (u64)(b)) > 0xffffffff ? 0xffffffff :
                                                                    ((a) + (b)));
 }
 
 
 // unfortunately compiles to two conditional branches or cmoves, because
 // compilers don't grok this
-uint32_t saturate_add32_dgentry(uint32_t a, uint32_t b)
+u32 saturate_add32_dgentry(u32 a, u32 b)
 {
-  uint32_t sum = a + b;
+  u32 sum = a + b;
   if((sum < a) || (sum < b))
-    return ~((uint32_t)0);
+    return ~((u32)0);
   else
     return sum;
 } /* saturate_add32 */
-uint16_t saturate_add16_dgentry(uint16_t a, uint16_t b)
+u16 saturate_add16_dgentry(u16 a, u16 b)
 {
-  uint16_t sum = a + b;
+  u16 sum = a + b;
   if((sum < a) || (sum < b))
-    return ~((uint16_t)0);
+    return ~((u16)0);
   else
     return sum;
 } /* saturate_add16 */
@@ -141,11 +141,11 @@ uint16_t saturate_add16_dgentry(uint16_t a, uint16_t b)
 
 // These generate horrible code :(
 // SWAR 8 in 32
-uint32_t SatAddUnsigned8_SWAR_nils(uint32_t x, uint32_t y)
+u32 SatAddUnsigned8_SWAR_nils(u32 x, u32 y)
 {
-  uint32_t signmask = 0x80808080;
-  uint32_t t0 = (y ^ x) & signmask;
-  uint32_t t1 = (y & x) & signmask;
+  u32 signmask = 0x80808080;
+  u32 t0 = (y ^ x) & signmask;
+  u32 t1 = (y & x) & signmask;
   x &= ~signmask;
   y &= ~signmask;
   x += y;
@@ -153,11 +153,11 @@ uint32_t SatAddUnsigned8_SWAR_nils(uint32_t x, uint32_t y)
   t1 = (t1 << 1) - (t1 >> 7);
   return (x ^ t0) | t1;
 }
-uint32_t SatAddUnsigned32_nils(uint32_t x, uint32_t y)
+u32 SatAddUnsigned32_nils(u32 x, u32 y)
 {
-  uint32_t signmask = 0x80000000;
-  uint32_t t0 = (y ^ x) & signmask;
-  uint32_t t1 = (y & x) & signmask;
+  u32 signmask = 0x80000000;
+  u32 t0 = (y ^ x) & signmask;
+  u32 t1 = (y & x) & signmask;
   x &= ~signmask;
   y &= ~signmask;
   x += y;
@@ -168,10 +168,10 @@ uint32_t SatAddUnsigned32_nils(uint32_t x, uint32_t y)
 
 
 // signed saturation
-int32_t signed_sadd_Hannodje(int32_t a, int32_t b)
+s32 signed_sadd_Hannodje(s32 a, s32 b)
 {
-  int32_t sum = a + b;
-  int32_t overflow = ((a ^ sum) & (b ^ sum)) >> 31;
+  s32 sum = a + b;
+  s32 overflow = ((a ^ sum) & (b ^ sum)) >> 31;
   return (overflow << 31) ^ (sum >> (overflow & 31));
 }
 

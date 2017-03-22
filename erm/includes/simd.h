@@ -35,7 +35,7 @@ typedef unsigned int usimd VECTOR(16);
 
 #ifdef HAVE_ADAPTEVA
 register global_flags_t tflags asm("r41");
-register uint32_t FFFFFFFF asm("r63");
+register u32 FFFFFFFF asm("r63");
 #include <bsp.h>
 static inline void push_regs() {}
 static inline void pop_regs() {}
@@ -54,10 +54,10 @@ typedef union Vec4 {
   v6addr_t a;
   usimd p;
   float e[4];
-  int32_t i[4];
-  uint32_t u[4];
-  uint16_t s[8];
-  uint8_t c[16];
+  s32 i[4];
+  u32 u[4];
+  u16 s[8];
+  u8 c[16];
 } Vec4_t;
 
 #endif

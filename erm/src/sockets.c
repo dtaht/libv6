@@ -82,10 +82,10 @@ static int fail(int s)
 }
 
 typedef struct {
-  uint8_t val;
-  uint8_t ign;
-  uint8_t proto;
-  uint8_t opt;
+  u8 val;
+  u8 ign;
+  u8 proto;
+  u8 opt;
 } socket_defaults_t;
 
 socket_defaults_t babel_defaults[] = {

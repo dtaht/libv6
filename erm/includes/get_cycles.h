@@ -22,14 +22,14 @@
 
 #ifdef __x86_64__
 
-typedef uint64_t cycles_t;
+typedef u64 cycles_t;
 #define CYCLES_FMT "%lu"
 static inline int init_get_cycles() { return 0; } // Always works on this arch
 
 /** Get CPU timestep counter */
 ALWAYS_INLINE static inline cycles_t get_cycles()
 {
-  uint64_t tsc;
+  u64 tsc;
   /** @todo not recommended to use rdtsc on old multicore machines */
   __asm__("rdtsc;"
           "shl $32, %%rdx;"
@@ -44,7 +44,7 @@ ALWAYS_INLINE static inline cycles_t get_cycles()
 /** Get CPU timestep counter */
 
 #ifdef __arm__
-typedef cycles_t uint32_t;
+typedef cycles_t u32;
 
 // Sometimes works on this arch. I need to try to hook the perf lib
 // Also look over the right register for aarch64
@@ -62,7 +62,7 @@ ALWAYS_INLINE static inline cycles_t get_cycles(void)
 
 #ifdef __epiphany__
 #define CYCLES_FMT "%u"
-typedef uint32_t cycles_t;
+typedef u32 cycles_t;
 static inline int init_get_cycles() { return 0; } // Always works on this arch
 static inline cycles_t get_cycles() { return 0L; }
 static inline cycles_t get_all_cycles() { return 0L; }
@@ -72,7 +72,7 @@ static inline cycles_t get_all_cycles() { return 0L; }
 
 #ifdef NO_CYCLES
 #define CYCLES_FMT "%u"
-typedef uint32_t cycles_t;
+typedef u32 cycles_t;
 
 // I want to compile this out even harder than this
 
@@ -82,7 +82,7 @@ static inline cycles_t get_cycles() { return 0L; }
 #else
 #warning no sane get_cycles on this arch so benchmarking is impossible
 #define CYCLES_FMT "%u"
-typedef uint32_t cycles_t;
+typedef u32 cycles_t;
 static inline int init_get_cycles()
 {
   return -1;

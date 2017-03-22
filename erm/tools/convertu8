@@ -2,10 +2,12 @@
 
 find . -type f -name \*.c -o -name \*.h | while read x
 do
-sed -i s/uint32_t/u32/ $x
-sed -i s/uint16_t/u16/ $x
-sed -i s/uint8_t/u32/ $x
-sed -i s/int32_t/s32/ $x
-sed -i s/int16_t/s16/ $x
-sed -i s/int8_t/s8/ $x
+sed -i s/uint64_t/u64/g $x
+sed -i s/uint32_t/u32/g $x
+sed -i s/uint16_t/u16/g $x
+sed -i s/uint8_t/u8/g $x
+sed -i s/int64_t/s64/g $x
+sed -i s/int32_t/s32/g $x
+sed -i s/int16_t/s16/g $x
+sed -i s/int8_t/s8/g $x
 done

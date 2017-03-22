@@ -19,7 +19,7 @@ __thread interface_t ifp = { 0 };
 __thread int fds = 0;
 __thread int notfailed = 0;
 
-int interface_handler(uint16_t offset)
+int interface_handler(u16 offset)
 {
   ifp = ifptable[offset];
   //       int fds = construct_fds(ifp.ifacefd,ifp.v4routefd,ifp.v6routefd,

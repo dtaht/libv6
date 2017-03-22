@@ -29,7 +29,7 @@ static int default_perms = (MAP_SHARED | MAP_HUGETLB);
 
 static __thread int fd = 0;
 static __thread int tsize = BASE * 16;
-static __thread uint32_t* mem = NULL;
+static __thread u32* mem = NULL;
 static __thread char file[255] = { 0 };
 
 int erm_close(erm_t erm)
@@ -70,8 +70,8 @@ erm_t erm_attach_client(char* instance)
 }
 
 erm_t erm_open(char *instance) { return erm_attach_client(instance); }
-uint32_t erm_status(erm_t erm) { return mem[8]; }
-erm_t* erm_query(erm_t erm, uint32_t* buf, int size) { return &mem[9]; }
+u32 erm_status(erm_t erm) { return mem[8]; }
+erm_t* erm_query(erm_t erm, u32* buf, int size) { return &mem[9]; }
 
 #ifdef DEBUG_MODULE
 #define MYMEM "/erm-test"

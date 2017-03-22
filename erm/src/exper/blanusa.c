@@ -15,39 +15,39 @@
 
 // Worse, we need saturating arith
 
-#define generic uint16_t
-#define blanusa blanusauint16_t
+#define generic u16
+#define blanusa blanusau16
 #define mypow(a,b) ((a) << (b))
 #include "blanusa.h"
 
 #undef generic
 #undef blanusa
-#define generic uint32_t
-#define blanusa blanusauint32_t
+#define generic u32
+#define blanusa blanusau32
 #include "blanusa.h"
 
 #undef generic
 #undef blanusa
-#define generic uint64_t
-#define blanusa blanusauint64_t
+#define generic u64
+#define blanusa blanusau64
 #include "blanusa.h"
 
 #undef generic
 #undef blanusa
-#define generic int16_t
-#define blanusa blanusaint16_t
+#define generic s16
+#define blanusa blanusas16
 #include "blanusa.h"
 
 #undef generic
 #undef blanusa
-#define generic int32_t
-#define blanusa blanusaint32_t
+#define generic s32
+#define blanusa blanusas32
 #include "blanusa.h"
 
 #undef generic
 #undef blanusa
-#define generic int64_t
-#define blanusa blanusaint64_t
+#define generic s64
+#define blanusa blanusas64
 #include "blanusa.h"
 
 // Floating point is different. I can improve it but I don't care at the moment
@@ -79,9 +79,9 @@ int main()
   }
 
 */
-  uint16_t c;
+  u16 c;
   for(int i = -0xff; i < 0xff; i++) {
-    c = blanusauint16_t(i);
+    c = blanusau16(i);
 //    printf("Blanusa16 %d: %d: %g\n", i, c, blanusadouble(c));
     printf("Blanusa16trunc %d: %d\n", i, c);
     }

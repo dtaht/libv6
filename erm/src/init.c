@@ -183,7 +183,7 @@ int main(int argc, char** argv)
   char* shmem = argc == 2 ? argv[1] : MYMEM;
   int fd;
   int tsize = BASE * 16;
-  uint32_t* mem = NULL;
+  u32* mem = NULL;
   unsigned char* tables = NULL;
   char buf[255];
   sprintf(buf, ERM_SHARED_DIR_PATTERN, shmem);
