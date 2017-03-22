@@ -20,7 +20,7 @@
 #include "io.h"
 #include "preprocessor.h"
 #include "shared.h"
-#include "tabeld.h"
+#include "erm_types.h"
 #include "traps.h"
 
 // yea, global memory. Shoot me

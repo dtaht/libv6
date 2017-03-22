@@ -28,7 +28,7 @@
 #include "init.h"
 #include "io.h"
 #include "shared.h"
-#include "tabeld.h"
+#include "erm_types.h"
 #include "traps.h"
 
 #include "arch.c"

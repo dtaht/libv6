@@ -9,7 +9,7 @@
 #define INIT_H
 #include <stdint.h>
 #include "preprocessor.h"
-#include "tabeld.h"
+#include "erm_types.h"
 #define ERM_SHARED_MEM_PATTERN "%s-machine"
 #define ERM_SHARED_DIR_PATTERN "/dev/shm%s"
 

@@ -7,7 +7,7 @@
 #include <sched.h>
 #include <stdint.h>
 #include "preprocessor.h"
-#include "tabeld.h"
+#include "erm_types.h"
 
 #ifndef GEN_TYPE
 #define tbl_a uint16_t

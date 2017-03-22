@@ -11,7 +11,7 @@
 
 #include "protocol.h"
 #include "shared.h"
-#include "tabeld.h"
+#include "erm_types.h"
 
 typedef struct {
   global_flags_t g;
