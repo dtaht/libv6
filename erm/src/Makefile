@@ -277,8 +277,11 @@ md: debug_modules
 vector:
 	$(MAKE) CC=icc EXTRA_DEFINES="-msse4.2 -qopt-report-phase=vec -simd  -diag-enable=vec -qopt-report=5" # " -qopt-report-file=stdout"
 
+riscv: 
+	$(MAKE) CC=riscv64-unknown-elf-gcc $(filter-out riscv,$@)
+
 mips:
-	$(MAKE) CC=mipsel-openwrt-linux-gcc $(filter-out mipsel-openwrt-linux-gcc,$@)
+	$(MAKE) CC=mipsel-openwrt-linux-gcc $(filter-out mips,$@)
 
 clang:
 	$(MAKE) CC=clang $(filter-out clang,$@)
