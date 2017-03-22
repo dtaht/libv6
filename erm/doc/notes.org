@@ -1400,3 +1400,39 @@ can't remember how to throw them in a frame
 ** Try to find a decent packet parsing language
 I really want something abstract. P4? What?
 VPP?
+
+* Doxygen. I personally find this sort of doc more annoying than useful
+
+Then again, I'm not liking my opinionated // comments that much either.
+
+And I already have way more comments than code. And what is the point of
+repeating the @param and @return from the code itself?
+
+but what does the second @code statement mean?
+
+qlib looked interesting.
+
+/**
+ * Get 32-bit Murmur3 hash.
+ *
+ * @param data      source data
+ * @param nbytes    size of data
+ *
+ * @return 32-bit unsigned hash value.
+ *
+ * @code
+ *  uint32_t hashval = qhashmurmur3_32((void*)"hello", 5);
+ * @endcode
+ *
+ * @code
+ *  MurmurHash3 was created by Austin Appleby  in 2008. The initial
+ *  implementation was published in C++ and placed in the public.
+ *    https://sites.google.com/site/murmurhash/
+ *  Seungyoung Kim has ported its implementation into C language
+ *  in 2012 and published it as a part of qLibc component.
+ * @endcode
+ */
+
+* Riscv compiler version
+
+** TODO Gotta get this thing re-loaded into the fpga
