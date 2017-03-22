@@ -1390,8 +1390,14 @@ before/after even if nobody else does.
 Just a generic one. Can do SSE and NEON later no matter how 
 tempted I am.
 *** Actual working table lookups
-*** Virtual Machine start, reg placement and setup api
-*** printf hooks
+*** Replace the std apis for:
+**** interfaces
+**** addrinfo
+**** printing ipv6 addresses (And scanning them)
+**** and whatever else in the c lib I don't need
+**** printf hooks
+tho I want to kill printf entirely
+*** Declarative Virtual Machine start, reg placement and setup api
 *** DONE gdb hooks for bits
 print /t $xmm1.uint128
 can't remember how to throw them in a frame

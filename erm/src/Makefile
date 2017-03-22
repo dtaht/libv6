@@ -313,7 +313,7 @@ TAGS: $(HEADERS) $(SRCS)
 	etags $(HEADERS) $(SRCS)
 
 clean:
-	rm -f *.o $(PROGS) *.dbg extract_keys
+	rm -f *.o $(PROGS) *.dbg extract_keys version.h
 
 reallyclean: clean
-	rm -f *~ *.out *.prof tags TAGS
+	rm -f *~ *.out *.prof tags TAGS *.optrpt
