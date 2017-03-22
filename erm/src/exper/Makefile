@@ -1,7 +1,7 @@
 #PROGS = structpassing bitendian
-PROGS = bitendian
+PROGS = bitendian blanusa
 
-SRCS  = structpassing.c bitendian.c
+SRCS  = structpassing.c bitendian.c blanusa.c
 
 DLIB  = ../debug.o ../traps.o
 DSRCS = ../debug.c ../traps.c
@@ -21,7 +21,7 @@ INCLUDES = -I$(INC)
 GENVERSION = $(TOOLS)/generate-version.sh
 
 CFLAGS  = -std=gnu11 -Os -Wall -L../../lib $(INCLUDES) -flax-vector-conversions
-LDFLAGS = -lrt
+LDFLAGS = -lrt -lm
 
 OBJDIR_DEBUG = $(CC)
 
