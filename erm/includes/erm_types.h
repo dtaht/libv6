@@ -1,12 +1,12 @@
 /**
- * tabeld.h
+ * erm_types.h
  *
  * Dave Taht
  * 2017-03-11
  */
 
-#ifndef TABELD_H
-#define TABELD_H
+#ifndef ERM_TYPES_H
+#define ERM_TYPES_H
 
 #include "align.h"
 #include <stdint.h>
