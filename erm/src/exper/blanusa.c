@@ -72,7 +72,7 @@
 int main()
 {
   double d;
-  for(int i = 0; i < 0xffff; i++) {
+  for(int i = -0xffff; i < 0xffff; i++) {
     d = blanusadouble(i);
     printf("Blanusa %d: %g: %g\n", i, d, blanusadouble(d));
   }
