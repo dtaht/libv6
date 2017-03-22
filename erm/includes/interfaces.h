@@ -21,14 +21,14 @@ typedef struct {
 // This will grow so let's leave it at a 16.
 
 typedef struct {
-  uint16_t up : 1;            // Interface up
-  uint16_t wireless : 1;      // Interface is wireless
-  uint16_t split_horizon : 1; // Apply split horizon
-  uint16_t lq : 1;            // Do link quality estimation
-  uint16_t faraway : 1;       // Nodes on the far end don't interfere
-  uint16_t timestamps : 1;    // Use timestamps
-  uint16_t wedged : 1;
-  uint16_t dead : 1;
+  u16 up : 1;            // Interface up
+  u16 wireless : 1;      // Interface is wireless
+  u16 split_horizon : 1; // Apply split horizon
+  u16 lq : 1;            // Do link quality estimation
+  u16 faraway : 1;       // Nodes on the far end don't interfere
+  u16 timestamps : 1;    // Use timestamps
+  u16 wedged : 1;
+  u16 dead : 1;
   // needs attention? Has garbage? Just went down/up and is coming back?
   // doesn't have an address? Wedged? (I've wedged a device driver a lot)
 } interface_flags_t;

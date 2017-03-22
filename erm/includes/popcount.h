@@ -23,8 +23,8 @@
 #define popcount(X)                                                          \
   _Generic((X), uint128_t                                                    \
            : popcount16, uint64_t                                            \
-           : popcount8, uint32_t                                             \
-           : popcount4, uint16_t                                             \
+           : popcount8, u32                                             \
+           : popcount4, u16                                             \
            : popcount2, usimd                                                \
            : popcount_vec16, default                                         \
            : popcount8)(X)
@@ -37,35 +37,35 @@ x
 
 #if !((defined(HAVE_SSE4) | !defined(HAVE_NEON)))
 #ifdef HAVE_64BIT_ARCH
-static inline uint8_t
+static inline u32
 popcount16(uint32x4_t i)
 {
   return popcountll(i) + popcountll(i);
 }
-static inline uint8_t popcountvec16(uint32x4_t i)
+static inline u32 popcountvec16(uint32x4_t i)
 {
   return __builtin_popcountll(i) + __builtin_popcountll(i);
 }
 #else
-static inline uint8_t
+static inline u32
 popcount16(uint32x4_t i)
 {
   return popcountll(i) + popcountll(i);
 }
-static inline uint8_t popcountvec16(uint32x4_t i)
+static inline u32 popcountvec16(uint32x4_t i)
 {
   return __builtin_popcountll(i) + __builtin_popcountll(i);
 }
 #endif
 
-static inline uint8_t popcount8(uint64_t i) { return __builtin_popcountl(i); }
-static inline uint8_t popcountvec8(uint64_t i)
+static inline u32 popcount8(uint64_t i) { return __builtin_popcountl(i); }
+static inline u32 popcountvec8(uint64_t i)
 {
   return __builtin_popcountl(i);
 }
-static inline uint8_t popcount4(uint32_t i) { return __builtin_popcount(i); }
-static inline uint8_t popcount2(uint16_t i) { return __builtin_popcount(i); }
-static inline uint8_t popcount1(uint8_t i) { return __builtin_popcount(i); }
+static inline u32 popcount4(u32 i) { return __builtin_popcount(i); }
+static inline u32 popcount2(u16 i) { return __builtin_popcount(i); }
+static inline u32 popcount1(us8 i) { return __builtin_popcount(i); }
 
 #else
 #if defined(HAVE_NEON)
@@ -73,18 +73,18 @@ static inline uint8_t popcount1(uint8_t i) { return __builtin_popcount(i); }
 #else
 #if defined(HAVE_SSE4)
 #ifdef HAVE_64BIT_ARCH
-static inline uint8_t popcount16(uint32x4_t i) { return popcountll(i) + popcountll(i); }
-static inline uint8_t popcountvec16(uint32x4_t i) { return __builtin_popcountll(i) + __builtin_popcountll(i); }
+static inline u32 popcount16(uint32x4_t i) { return popcountll(i) + popcountll(i); }
+static inline u32 popcountvec16(uint32x4_t i) { return __builtin_popcountll(i) + __builtin_popcountll(i); }
 #else
-static inline uint8_t popcount16(uint32x4_t i) { return popcountll(i) + popcountll(i); }
-static inline uint8_t popcountvec16(uint32x4_t i) { return __builtin_popcountll(i) + __builtin_popcountll(i); }
+static inline u32 popcount16(uint32x4_t i) { return popcountll(i) + popcountll(i); }
+static inline u32 popcountvec16(uint32x4_t i) { return __builtin_popcountll(i) + __builtin_popcountll(i); }
 #endif
 
-static inline uint8_t popcount8(uint64_t i) { return __builtin_popcountl(i); }
-static inline uint8_t popcountvec8(uint64_t i) { return __builtin_popcountl(i); }
-static inline uint8_t popcount4(uint32_t i) { return __builtin_popcount(i); }
-static inline uint8_t popcount2(uint16_t i) { return __builtin_popcount(i); }
-static inline uint8_t popcount1(uint8_t i) { return __builtin_popcount(i); }
+static inline u32 popcount8(uint64_t i) { return __builtin_popcountl(i); }
+static inline u32 popcountvec8(uint64_t i) { return __builtin_popcountl(i); }
+static inline u32 popcount4(u32 i) { return __builtin_popcount(i); }
+static inline u32 popcount2(u16 i) { return __builtin_popcount(i); }
+static inline u32 popcount1(us8 i) { return __builtin_popcount(i); }
 #endif
 
 // And: Now things get hairy - to use this right - and interleave instructions - we

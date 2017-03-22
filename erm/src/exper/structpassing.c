@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 typedef struct {
-	uint32_t a;
+	u32 a;
 } global_flags_t;
 
 global_flags_t tflags;
@@ -13,11 +13,11 @@ global_flags_t tflags;
 #include "simd.h"
 
 typedef struct {
-	uint32_t flags;
+	u32 flags;
 } flags_t;
 
 typedef struct {
-	uint8_t a VECTOR(16);
+	u32 a VECTOR(16);
 } v6addr_t;
 
 typedef struct {

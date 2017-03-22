@@ -8,7 +8,7 @@ printf_arginfo_M(const struct printf_info *info,
                  size_t      n,
                  int        *argtypes)
 {
-    /* "%M" always takes one argument, a pointer to uint8_t[6]. */
+    /* "%M" always takes one argument, a pointer to u32[6]. */
     if (n > 0) {
         argtypes[0] = PA_POINTER;
     }

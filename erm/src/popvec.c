@@ -8,9 +8,9 @@
 #include "debug.h"
 #include "shared.h"
 
-static uint8_t asizes[128];  // current size of the table must be a power of
+static u32 asizes[128];  // current size of the table must be a power of
                              // two
-static uint16_t atable[128]; // offsets? ptrs? to starting points?
+static u16 atable[128]; // offsets? ptrs? to starting points?
 
 /*
 

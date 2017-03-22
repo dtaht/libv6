@@ -15,8 +15,8 @@
 #include "simd.h"
 
 #ifndef GEN_TYPE
-#define tbl_a uint16_t
-#define tbl_b uint16_t
+#define tbl_a u16
+#define tbl_b u16
 #else
 #define tbl_a GEN_TYPE
 #define tbl_b GEN_TYPE

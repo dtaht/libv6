@@ -31,7 +31,7 @@
 #define REVERSEB(v) reverse_asm_const(v)
 
 ///typedef struct {
-// uint32_t a VECTOR(16);
+// u32 a VECTOR(16);
 // }v6addr_t;
 
 unsigned char littleendian[] = { 0, 1, 2,  3,  4,  5,  6,  7,
@@ -64,7 +64,7 @@ unsigned int reverse_obvious(int v)
 
 #ifdef __arm__
 
-return uint32_t *reverse_arm(uint32_t *image, int size) {
+return u32 *reverse_arm(us32 *image, int size) {
 
 	for (i = 0; i < size / 4; h++) {
     asm("rbit %1,%0" : "=r" (image[i]) : "r" (image[i]));
@@ -152,9 +152,9 @@ inline unsigned int reverse_asm(unsigned int t)
 #endif
 
 /* Classic binary partitioning algorithm */
-inline uint32_t brev_classic (uint32_t a)
+inline u32 brev_classic (us32 a)
 {
-    uint32_t m;
+    u32 m;
     a = (a >> 16) | (a << 16);                            // swap halfwords
     m = 0x00ff00ff; a = ((a >> 8) & m) | ((a << 8) & ~m); // swap bytes
     m = m^(m << 4); a = ((a >> 4) & m) | ((a << 4) & ~m); // swap nibbles
@@ -188,9 +188,9 @@ int new_main()
 
 /* Knuth's algorithm from http://www.hackersdelight.org/revisions.pdf. Retrieved 8/19/2015 */
 
-inline uint32_t brev_knuth (uint32_t a)
+inline u32 brev_knuth (us32 a)
 {
-    uint32_t t;
+    u32 t;
     a = (a << 15) | (a >> 17);
     t = (a ^ (a >> 10)) & 0x003f801f;
     a = (t + (t << 10)) ^ a;
