@@ -10,6 +10,14 @@ and assembly language for pounding through routing calculations more
 than anything else.
 
 * Oddities
+
+** Dedicated Registers
+
+There is at least one dedicated "flags" register per machine, located
+in an onchip register. This avoids locking issues entirely within a
+cpu, and, so long as you have no more than (16?) major flags within the
+program, lets you run fast.
+
 ** C11isms
 
 *** Structure return, assignment, and so forth
@@ -66,7 +74,7 @@ which case... I am not going to think about it.
 
 I may have just shot myself in the foot here by abstracting out ipv4. Hmm.
 
-** Plugins share memory space
+** Plugins and Servers share memory space
 
 Be *careful*. Compile with the same compile options as are in the 
 build or things like the register to register calling convention may
@@ -95,6 +103,7 @@ while(1) donothing();
 things will get very warm. Hmm. I wrote plugins for this just to see how warm.
 
 *** All operations are reducing operations by default
+
 given data X, we end up with data of some value X-Y.
 If you have something that explodes in the other direction, expect problems.
 I need to work out just what those are - for example a route dump from this,
@@ -123,7 +132,7 @@ kernel_route_notify(struct kernel_route *route, flags, void *closure)
     flags.kernel_routes_changed = 1; // OR #IMMEDATE something
 }
 
-and after you are done, I think a non-racy version is:
+and after you are done, I think a non-racy in memory version is:
 
 if(flags.krc == 1 && global.flags.krc == 0  ) {
 kflags_barrier_start();
@@ -133,6 +142,8 @@ atomic_update(global,flags);
 kflags_barrier_end();
 }
 
+which is why we just stick this in a register to start with.
+
 You should bulk this up for anything that changes global state as the result of
 an operation. (so if you changed kernel routes and addresses, accumulate then
 "commit" both at the same time)
@@ -141,8 +152,7 @@ I may try adopting rcu semantics or something else in the and it may end up
 the barrier has to be before and after the if.
 
 You should *only* push things forward in a plugin. It's somebody elses job to
-clear the state change, handled by the main engine.
-
+clear the state change back, handled by the main engine.
 
 ** Memory structures are (almost) always append only and generational
 

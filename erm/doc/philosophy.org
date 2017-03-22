@@ -63,6 +63,7 @@ At least, I hope it will be.
 
 ** ERM uses old coding techniques
 
+- real registers
 - abort, trap, signal
 - Everything is a file
 - Where another tool sufficies (rsync, ssh), we use that rather than reinvent
@@ -114,6 +115,12 @@ World Domination!
 ** PHASE VI
 
 * Note on other methods
+** Other routing daemons
+
+*** Bird
+
+is really first class in many ways. It only shows its age on a few points.
+
 ** Other simulators
 *** ns2
 

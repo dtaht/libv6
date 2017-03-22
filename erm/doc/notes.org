@@ -1471,3 +1471,29 @@ Several of these are pure functions but to scribble them down:
 The second one I'm too tired to fill in the margins of this notebook.
 
 The simpler derivatives, also.
+
+* Now that I have my potential licensing problems sorted
+
+I dared look at bird. Yep, it's been solving all the same problems (and in
+nearly every case, *really well*) for decades now. Many similar abstractions to
+what I've been putting in exist, and the code is really tight. Even the codebase
+style is very similar to my native one. The "slab" concept is quite similar to
+my generational table lookup idea. (I know slabs are nothing new). It uses unix
+domain sockets to communicate.
+
+So good, I can work on bird-2.0 babel and get a version of that that compiles
+down small (and has ipv4 support)and maybe wedge in a few other features.
+
+That said there are a few major differences between what I'm trying to do here
+and how bird does it. I started writing this table only to have emacs break.
+
+cond: Symbol's function definition is void: org-table-justify-field-maybe
+
+|Item|Bird |Babeld|Erm|Note|
+|timebase|seconds|usec|nanosec|Fixable|
+|ip comparisons|xor|memcmp|xor|joy|
+|hashes|yes|no|yes|joy|
+|popcount|no|no|yes|hook is in there|
+|fs|no|no|yes|doable|
+|protocols|all|babel|none|sigh|
+|indexes|some|none|all|

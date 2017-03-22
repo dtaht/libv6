@@ -103,19 +103,19 @@ code after boot.
 ** Packet Parser
 ** Packet Encoder
 ** Configurator
-** Metric Generator
+** Metric calculator(s)
 ** Interface Processor
 ** Queue Manager
 ** GC
 ** Logger
 
-RingBuffer
+* RingBuffers
 
 It also is a write only data structure amiable to hardware and the
-parallela. The ring itself is an on chip register, the data can go off
+parallela. The ring itself is on-chip memory, the data can go off
 chip pretty fast.
 
-Might abuse the internationalization standard for this: _
+* Might abuse the internationalization standard for this: _
 
 There are issues with formattting multiple arguments but we'll see what
 happens as we hit that.
@@ -140,7 +140,6 @@ appropriately.
 ** Scheduled updates to heartbeat-like operations
 ** Congestion control
 ** RingBuffers & Concurrency
-
 
 * Design notes
 ** Wrapping the API
