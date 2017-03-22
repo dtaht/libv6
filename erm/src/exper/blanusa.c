@@ -71,12 +71,23 @@
 #include <stdio.h>
 int main()
 {
+/*
   double d;
   for(int i = -0xffff; i < 0xffff; i++) {
     d = blanusadouble(i);
     printf("Blanusa %d: %g: %g\n", i, d, blanusadouble(d));
   }
 
+*/
+  uint16_t c;
+  for(int i = -0xff; i < 0xff; i++) {
+    c = blanusauint16_t(i);
+//    printf("Blanusa16 %d: %d: %g\n", i, c, blanusadouble(c));
+    printf("Blanusa16trunc %d: %d\n", i, c);
+    }
+
+  // saturating
+  
   return 0;
 }
 #endif
