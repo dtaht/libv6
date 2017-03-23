@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <math.h>
+#include <tgmath.h>
 
 #include "preprocessor.h"
 #include "debug.h"
@@ -55,12 +56,14 @@
 #undef generic
 #undef blanusa
 #undef mypow
-#define mypow pow
+#define mypow powf
 #define generic float
 #define blanusa blanusafloat
 #include "blanusa.h"
 #undef generic
 #undef blanusa
+#undef mypow
+#define mypow pow
 #define generic double
 #define blanusa blanusadouble
 #include "blanusa.h"
@@ -71,18 +74,21 @@
 #include <stdio.h>
 int main()
 {
-/*
+  float f;
+  for(int i = -0xff; i < 0xff; i++) {
+    f = blanusadouble(i);
+    printf("Blanusa %d: %g: %g\n", i, f, blanusafloat(f));
+  }
+
   double d;
-  for(int i = -0xffff; i < 0xffff; i++) {
+  for(int i = -0xff; i < 0xff; i++) {
     d = blanusadouble(i);
     printf("Blanusa %d: %g: %g\n", i, d, blanusadouble(d));
   }
 
-*/
   u16 c;
   for(int i = -0xff; i < 0xff; i++) {
     c = blanusau16(i);
-//    printf("Blanusa16 %d: %d: %g\n", i, c, blanusadouble(c));
     printf("Blanusa16trunc %d: %d\n", i, c);
     }
 

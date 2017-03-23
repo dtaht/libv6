@@ -11,8 +11,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "shared.h"
 #include "preprocessor.h"
-#include "tabeld.h"
 #include "simd.h"
 
 // What I want is to popcount and reverse bits at the same time
