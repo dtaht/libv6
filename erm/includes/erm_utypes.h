@@ -32,6 +32,9 @@ typedef struct {
 
 #endif
 
+typedef u8 v64 VECTOR(8);
+typedef u8 v128 VECTOR(16);
+
 // Logical. Register
 
 typedef u8 L128 VECTOR(16);
