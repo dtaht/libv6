@@ -1497,3 +1497,20 @@ cond: Symbol's function definition is void: org-table-justify-field-maybe
 |fs|no|no|yes|doable|
 |protocols|all|babel|none|sigh|
 |indexes|some|none|all|
+
+* YAML has promise
+
+here I am fiddling with yacc and peg, when the world has moved onto yaml.
+
+* And I finally dared look, also, at vpp
+
+It's pretty portable. An OS all by itself. It's *ginormous*.
+Merely watching it build caused me to lose all the motivation
+I've had for weeks.
+
+I've enjoyed myself enormously writing this thing, but I guess
+It's time to go and see what vpp and ddpk can do for me, instead.
+
+I took a walk. It's still building.
+
+
