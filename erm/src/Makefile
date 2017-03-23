@@ -115,6 +115,9 @@ logger.dbg: logger.c $(DLIB) io.o
 %.dbg: %.c $(DLIB)
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< $(DLIB) $(LDFLAGS) -o $@
 
+%.static: %.c $(DLIB)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -static -g $< $(DLIB) $(LDFLAGS) -o $@
+
 %.c: %.gp
 	gperf -m 16 -s 4 -c -C $< | $(FORMAT) > $@
 
