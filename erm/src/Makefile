@@ -1,4 +1,4 @@
-PROGS = germ werm tabelb sqerm berm
+PROGS = germ werm tabelb sqerm
 
 SRCS  = command_line.c commands.c init.c input.c io.c logger.c
 SRCS += parser.c popvec.c random_bytes.c interfaces.c
@@ -12,12 +12,16 @@ SRCS += send.c recv.c
 
 DLIB  = debug.o traps.o
 DSRCS = debug.c traps.c
-FORMAT = clang-format
+LINENOISE = ../../lib/linenoise.c
 
+EHEADERS = erm_types.h erm.h erm_utypes.h erm_hash.h erm_types.h
 BHEADERS = align.h c11.h command_line.h globals.h interfaces.h kernel.h \
-	  logger.h resend.h simd.h traps.h arch_detect.h c11threads.h \
+	  logger.h resend.h simd.h traps.h arch/arch_detect.h c11threads.h \
 	  config.h init.h io.h kernel_input.h neighbor.h shared.h \
-	  tabeld.h util.h random_bytes.h traps.h preprocessor.h
+	  tabeld.h util.h random_bytes.h traps.h preprocessor.h \
+	  $(EHEADERS)
+
+FORMAT = clang-format
 
 TOOLS = ../tools
 INC = ../includes
@@ -87,6 +91,12 @@ ifeq ($(ARCH),aarch64)         # aarch64 native compiler
 	CFLAGS += -DHAVE_NEON  # it knows we have neon, the code doesn't.
 	SRCS += knetlink.c
 endif
+
+parser.dbg: parser.c $(DLIB)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< $(LINENOISE) $(DLIB) $(LDFLAGS) -o $@
+
+logger.dbg: logger.c $(DLIB) io.o
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< $(DLIB) io.o $(LDFLAGS) -o $@
 
 # Intel - use cpuid? have patch at run time?
 # __assume_aligned(x,16)
@@ -170,7 +180,7 @@ $(OBJDIR):
 
 CLIENTDEPS = erm_client.o commands.o debug.o traps.o
 
-germ: germ.c $(CLIENTDEPS)
+germ: germ.c $(CLIENTDEPS) $(OBJS)
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< $(CLIENTDEPS) $(LDFLAGS) -o $@
 
 # noize version
@@ -207,7 +217,7 @@ tabeld-$(ARCH): $(HEADERS) $(SRCS)
 
 # Some preprocessed magic to get an arch string, endian, keys, etc
 
-arch.c: $(INC)/arch_detect.h
+arch.c: $(INC)/arch/arch_detect.h
 	$(CC) -E $< -o $@
 
 # This must run using the local cc

@@ -5,11 +5,10 @@
  * 2017-03-15
  */
 
-#include "interfaces.h"
+#include "shared.h"
 #include "c11threads.h"
 #include "debug.h"
-#include "shared.h"
-#include "erm_types.h"
+#include "interfaces.h"
 
 extern interface_t ifptable[];
 

@@ -5,6 +5,7 @@
  * 2017-03-15
  */
 
+#include "shared.h"
 #include "random_bytes.h"
 
 #ifdef DEBUG_MODULE

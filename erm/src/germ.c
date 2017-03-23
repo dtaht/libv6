@@ -22,13 +22,12 @@
 #include <sys/mman.h>
 #include <sys/stat.h> /* For mode constants */
 
+#include "shared.h"
 #include "c11threads.h"
 #include "defaults.h"
 #include "erm_client.h"
 #include "init.h"
 #include "io.h"
-#include "shared.h"
-#include "erm_types.h"
 #include "traps.h"
 
 #include "arch.c"

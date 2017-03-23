@@ -13,15 +13,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "shared.h"
 #include "c11threads.h"
 #include "defaults.h"
-#include "erm_client.h"
 #include "init.h"
 #include "io.h"
-#include "preprocessor.h"
-#include "shared.h"
-#include "erm_types.h"
 #include "traps.h"
+#include "erm_client.h"
 
 // yea, global memory. Shoot me
 
