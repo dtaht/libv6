@@ -1,0 +1,66 @@
+* A rant on the standard C api
+
+The C API has been with us since the days of 8 bit processors, and it shows.
+Everyone is "used" to it, but it stinks in so many basic ways, that I thought
+I'd get this rant out of my system.
+
+* Taking open() as my first example
+
+int fd = open("wherever", flags);
+
+if(fd < 0) { printf("Your error was", errno); trytorecoverorexit() }
+
+...
+
+read(fd);
+
+*** Problem 0 - what an "fd" does is often very abstract
+*** Problem 1 - the range of fd is usually no more than 8128 values.
+*** Problem 2 - you always have to test and branch
+*** Problem 3 - errno is a hidden variable on the stack somewhere
+*** Problem 4 - errno's range is constrained usually to no more than 1024 values
+
+* GO and a few other languages improve on this - their API is:
+
+val, err = open("wherever", flags);
+if(err)
+
+Which means you are always returning two values (in a register) - but you still
+always need the conditional check afterwards 
+
+* Take mmap as another example
+ void ptr = mmap(NULL,size,etc,etc);
+
+*** Problem 0 - what an "ptr" does is often very abstract
+*** Problem 1 - the range of ptr is usually no more than 2^48 values.
+*** Problem 2 - you always have to test and branch
+*** Problem 3 - errno is a hidden variable on the stack somewhere
+
+
+* Sendmsg as my third
+
+* Taking this against your typical use cases
+you pretty much *always* in a given program want to do the same things on an
+error. If I fail on open, mmap - I'm doomed. Failing on sendmsg, retry - there's
+only like 10 possible errors in each of these calls. Using errno - which is
+descriptive - is dumb when you can just map your errors to the right errno if
+you need text output.
+
+An abstract machine could basically be folding all those ops into a single
+instruction. The programmer would load the correct error handlers on start,
+and every opcode would perpetually basically do this:
+
+if(a & TAGBITS) jsr(a & TAGBITS);
+
+or, better, use the top bits to also indicate the error value & return if any.
+And it's better than that, as you can just have the processor trap on illegal
+memory accesses, so a piece of code *never* has to pause or have inline
+instructions to check its return values. It can just motor on.
+
+if the API is any good. 
+
+The C library abstraction has leaked into *every* library on top of it, so we
+end up with a lot of obese branchy code that doesn't need to be.
+
+But it's worse than that. Add garbage collection to the mix.
+
