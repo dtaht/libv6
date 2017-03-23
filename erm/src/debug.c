@@ -5,10 +5,12 @@
  * 2017-03-15
  */
 #include "debug.h"
-#include <execinfo.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#ifdef HAVE_EXECINFO
+#include <execinfo.h>
+#endif
 
 void mignore(const char* msg)
 {
@@ -26,6 +28,7 @@ void unfinished(const char* msg)
 
 int debug_backtrace(char* msg)
 {
+#ifdef HAVE_EXECINFO
   int j, nptrs;
   void* buffer[BT_BUF_SIZE];
   char** strings;
@@ -46,6 +49,11 @@ int debug_backtrace(char* msg)
 
   free(strings);
   return -1;
+#else
+  printf(msg);
+  return -1;
+#endif
+
 }
 #ifdef DEBUG_MODULE
 MFIXME
