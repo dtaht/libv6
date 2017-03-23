@@ -1,4 +1,4 @@
-* Philisophy about the Embeddable Routing Machine
+* Philosophy about the Embeddable Routing Machine
 
 ERM is an outgrowth of my encounters with many, many other network simulation
 tools over the past decades of dealing with them. It's different from all of
