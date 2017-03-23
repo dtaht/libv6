@@ -34,7 +34,7 @@ typedef struct {
 
 // Logical. Register
 
-typedef u128 L128 VECTOR(16);
-typedef u128 R128 VECTOR(16);
+typedef u8 L128 VECTOR(16);
+typedef u8 R128 VECTOR(16);
 
 #endif
