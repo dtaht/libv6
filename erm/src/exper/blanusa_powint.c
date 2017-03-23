@@ -100,15 +100,28 @@ int main()
 
   // Parallel?
 
-  float *vals = calloc(0xffff,sizeof bvals);
-  float *res  = calloc(0xffff,sizeof bvals);
+  float *vals __attribute__((aligned(16)));
+  vals = calloc(0xffff,sizeof bvals);
+  float *res __attribute__((aligned(16)));
+  res = calloc(0xffff,sizeof bvals);
 
+// No workie
 #pragma simd
   for (int i = 0; i < 0xff; i+=4) {
 	res[i] = blanusa_powintfloat(vals[i]); 
 	res[i+1] = blanusa_powintfloat(vals[i+1]); 
 	res[i+2] = blanusa_powintfloat(vals[i+2]); 
 	res[i+3] = blanusa_powintfloat(vals[i+3]); 
+  }
+  for (int i = 0; i < 0xff; i+=4) {
+	printf("%g %g %g %g\n", res[i], res[i+1], res[i+2], res[i+3]);
+  }
+
+// No workie
+
+#pragma simd
+  for (int i = 0; i < 0x100; i++) {
+	res[i] = blanusa_powintfloat(vals[i]); 
   }
   for (int i = 0; i < 0xff; i+=4) {
 	printf("%g %g %g %g\n", res[i], res[i+1], res[i+2], res[i+3]);

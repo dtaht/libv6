@@ -16,6 +16,8 @@ TOOLS = ../../tools
 INC = ../../includes
 FILT = ../../filters
 
+PITA = icc -I../../includes -msse4.2 -qopt-report-phase=vec -simd -diag-enable=vec -qopt-report=5 -DDEBUG_MODULE -c blanusa_powint.c
+
 VERSION = version.h
 INCLUDES = -I$(INC)
 GENVERSION = $(TOOLS)/generate-version.sh
