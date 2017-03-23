@@ -105,6 +105,9 @@ int main()
   float *res __attribute__((aligned(16)));
   res = calloc(0xffff,sizeof bvals);
 
+  for(int i = 0; i < 0xff*4; i++) {
+	vals[i] = random() % 32;
+  }
 // No workie
 #pragma simd
   for (int i = 0; i < 0xff; i+=4) {
