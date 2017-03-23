@@ -1,7 +1,7 @@
 #PROGS = structpassing bitendian
-PROGS = bitendian blanusa
+PROGS = bitendian blanusa packing
 
-SRCS  = structpassing.c bitendian.c blanusa.c
+SRCS  = structpassing.c bitendian.c blanusa.c packing.c
 
 DLIB  = ../debug.o ../traps.o
 DSRCS = ../debug.c ../traps.c

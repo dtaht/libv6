@@ -14,18 +14,25 @@ typedef struct  {
     int new;
 } PACKED NC2;
 
-// THIS IS THE WRONG FORM OF THE DECLARATION
-typedef PACKED struct  {
+typedef struct PACKED {
     char old;
     int ip;
     int new;
 } NC3;
 
-typedef struct PACKED {
+// THESE ARE THE WRONG FORM OF THE DECLARATION
+
+typedef PACKED struct  {
     char old;
     int ip;
     int new;
 } NC4;
+
+typedef struct  {
+    char old;
+    int ip;
+    int new;
+} NC5 PACKED;
 
 int main(void) {
 	printf("size unpacked: %d\n", (int) sizeof(NC1));
