@@ -10,8 +10,8 @@ SRCS += send.c recv.c
 
 # SRCS += packet.c // unfinished
 
-DLIB  = debug.o traps.o
-DSRCS = debug.c traps.c
+DLIB  = debug.o traps.o erm_client.o
+DSRCS = debug.c traps.c erm_client.c
 LINENOISE = ../../lib/linenoise.c
 
 EHEADERS = erm_types.h erm.h erm_utypes.h erm_hash.h erm_types.h
@@ -116,7 +116,7 @@ logger.dbg: logger.c $(DLIB) io.o
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< $(DLIB) $(LDFLAGS) -o $@
 
 %.static: %.c $(DLIB)
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -static -g $< $(DLIB) $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g -static $< $(DLIB) -lpthreads $(LDFLAGS) -o $@
 
 %.c: %.gp
 	gperf -m 16 -s 4 -c -C $< | $(FORMAT) > $@
