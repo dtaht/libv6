@@ -1,0 +1,68 @@
+* ERM forwarding
+
+I told myself I wasn't going to write this because forwarding is hard,
+and a long way off. But it was on my mind, so:
+
+** ERM is designed to be massively, ridiculously parallel
+
+And only have latencies when they don't matter. The basic packet processing path
+looks like this:
+
+- 1 start getting a packet
+- 2 timestamp it from the semi-synced timestamp register
+- 3a parse the vlan tag and start hashing it
+- 3b parse the dst macaddr and start hashing it and popcounting it
+- 3c parse the src address and start hashing it and popcounting it
+- 3d parse the dst address and start hashing it and popcounting it
+- 4a parse the protocol and start hashing that against both src and dst address
+- 4b parse the underlying protocol and start hashing that into everything else
+- 5 split the result into a queue % 1024 based on the core flags you care about
+
+** Next enqueue step (1024 queues)
+
+- 1 each queue (mapped over as many processors as available):
+does a CAM-like lookup for the right nexthop based on the popcount of the dest vlan and
+dest addr. If it misses, it tries harder (while others runahead), and adds the
+dest and hash to that queue's cam and MRU comparison unit
+- 2 starts copying the packet to the right destination - hardware if it's empty
+a physical queue if it is not.
+- 3 wake up that queue's processor thread if it's not already alive
+
+Now... the fastest hash algorithm I've got (CRC32) claims 6ns per byte, which is
+quite bad, as we have a minimum (in the routed case) of 34 bytes to process, but
+the process can be short circuited (vlan tag or v4), done speculatively (match
+the src address and pass it to another queue), or - as I've noted, in high
+parallel using a MRU algorithm per queue on the native values of the packet at
+various steps.
+
+IN hardware - nearly all the above can take place in parallel.
+
+IN software, we can read each packet individually with a different thread.
+
+In the end, assuming you have enough processors, most of the time we end up
+servicing a packet no later than a function of worst_case_processing_time/cpus
+when flows >= cpus.
+
+** Dequeue step (1024 threads per interface)
+if you have nothing to dequeue (already in hardware), go to sleep
+otherwise, run codel on your incoming packet, and push it to hardware.
+send yourself to the back of the wake list if you are "done" your round.
+
+* The overall positive points are:
+
+** is that you can cut the search space by 3 orders of magnitude
+and use (a lot of) smaller CAMs
+** you can defer the expensive next hop lookup til after the hash
+** You can run it all in massive parallel
+** It does awesome congestion control at line rates
+** Timestamping, hashing popcount, can be entirely pushed into hardware - as can the dequeue step
+** It doesn't get hot when idle - everything has a natural blocking state
+** You measure the length of the queue from exact entrance to final egress
+The way things happen now we don't get around to codel until we've already made
+the routing decisions.
+
+* Negatives
+
+** That's a LOT of cams. Honestly, 256 8 way set associative cake-like queues seems like enough for 10gigE
+** I haven't got any of this working yet
+
