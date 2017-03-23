@@ -24,7 +24,7 @@ INC = ../includes
 FILT = ../filters
 
 VERSION = version.h
-INCLUDES = -I$(INC)
+INCLUDES = -I$(INC) -I../../includes
 GENVERSION = $(TOOLS)/generate-version.sh
 
 CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES) -ftree-vectorize

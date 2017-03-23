@@ -9,9 +9,7 @@
 #define COMMAND_LINE_H
 #define HAVE_EXTENSIONS
 
-#include "protocol.h"
-#include "shared.h"
-#include "erm_types.h"
+#include "protocol_defaults_example.h"
 
 typedef struct {
   global_flags_t g;
