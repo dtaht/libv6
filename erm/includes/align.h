@@ -8,6 +8,8 @@
 #ifndef ALIGN_H
 #define ALIGN_H
 
+#define CACHELINE_ALIGN
+
 // Handle alignment and probably other special memory handling
 // ALIGN_CACHELINE?
 // get_aligned_memory is now a c11 primitive

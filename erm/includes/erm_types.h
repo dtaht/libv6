@@ -8,42 +8,13 @@
 #ifndef ERM_TYPES_H
 #define ERM_TYPES_H
 
-#include "align.h"
 #include <stdint.h>
+#include "align.h"
+#include "erm_utypes.h"
 
 #ifndef INFINITY
 #define INFINITY (0xFFFF)
 #endif
-
-// FIXME
-
-#define CACHELINE_ALIGN
-
-/*
-  24 = sizeof (filter_result)
- 112 = sizeof (filter)
-  44 = sizeof (buffered_update)
-  56 = sizeof (interface_conf)
- 272 = sizeof (interface)
-  68 = sizeof (kernel_route)
-  28 = sizeof (kernel_rule)
-  64 = sizeof (kernel_filter)
-  24 = sizeof (local_socket)
-  88 = sizeof (resend)
-
- I don't understand why these are so different
-
- 120 = sizeof (neighbour)
-  80 = sizeof (babel_route)
-  56 = sizeof (source)
-  44 = sizeof (xroute)
-
-  24 = sizeof (zone)
-
-What we are doing here is extremely similar to the zone concept
-but applied everywhere.
-
-*/
 
 // All addresses are kept as vector types to start with
 
