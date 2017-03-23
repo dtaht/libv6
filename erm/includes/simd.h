@@ -14,12 +14,12 @@
 // FIXME - I need to wedge 32 bytes into a register correctly. Somehow
 
 #ifdef HAVE_NEON
-register global_flags_t tflags asm("q15");
+register global_flags_t tflags asm("r7");
 #define FFFFFFFF (0xFFFFFFFF)
 #include <arm_neon.h>
 static inline void push_regs() {}
 static inline void pop_regs() {}
-typedef uint32x4_t usimd VECTOR(16);
+typedef uint32x4_t usimd;
 #endif
 
 #ifdef HAVE_SSE4
