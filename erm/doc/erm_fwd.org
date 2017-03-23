@@ -50,12 +50,12 @@ send yourself to the back of the wake list if you are "done" your round.
 
 * The overall positive points are:
 
-** is that you can cut the search space by 3 orders of magnitude
+** That you can cut the search space by 3 orders of magnitude
 and use (a lot of) smaller CAMs
-** you can defer the expensive next hop lookup til after the hash
-** You can run it all in massive parallel
+** That you can defer the expensive next hop lookup til after the hash
+** That you can run it all in massive parallel
 ** It does awesome congestion control at line rates
-** Timestamping, hashing popcount, can be entirely pushed into hardware - as can the dequeue step
+** Timestamping, hashing and popcount, can be entirely pushed into hardware - as can the dequeue step
 ** It doesn't get hot when idle - everything has a natural blocking state
 ** You measure the length of the queue from exact entrance to final egress
 The way things happen now we don't get around to codel until we've already made
@@ -65,4 +65,3 @@ the routing decisions.
 
 ** That's a LOT of cams. Honestly, 256 8 way set associative cake-like queues seems like enough for 10gigE
 ** I haven't got any of this working yet
-
