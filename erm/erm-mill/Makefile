@@ -7,7 +7,7 @@ LDFLAGS = -lrt
 OBJS += $(patsubst %.c,%.o,$(SRCS))
 INC = tables_search.h preprocessor.h simd.h
 
-searches: search_uint8.o search_uint16.o search_uint32.o search_uint64.o search_uint128.o # search_v6addr_t
+searches: search_uint8.o search_uint16.o search_uint32.o search_uint64.o search_uint128.o # search_ip_addr
 
 search_uint8.o: tables_search.c $(INC)
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=u8 $< -c -o $@
@@ -25,7 +25,7 @@ search_uint128.o: tables_search.c $(INC)
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=$(QUAD) $< -c -o $@
 
 search_v6addr.o: tables_search.c $(INC)
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=v6addr_t $< -c -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=ip_addr $< -c -o $@
 
 .PHONY: mips arm aarch64 icc gcc clang parallella par vector clean reallyclean
 

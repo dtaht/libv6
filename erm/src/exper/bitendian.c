@@ -32,7 +32,7 @@
 
 ///typedef struct {
 // u32 a VECTOR(16);
-// }v6addr_t;
+// }ip_addr;
 
 unsigned char littleendian[] = { 0, 1, 2,  3,  4,  5,  6,  7,
                                  8, 9, 10, 11, 12, 13, 14, 3 };
@@ -225,7 +225,7 @@ unsigned int reverse_builtin_64(size_t t)
         return n;
     }
 
-int bitconvert16_plain(v6addr_t a)
+int bitconvert16_plain(ip_addr a)
 {
   Vec4_t v;
   Vec4_t c;
@@ -256,7 +256,7 @@ int bitconvert16_plain(v6addr_t a)
 
 int main()
 {
-  v6addr_t in;
+  ip_addr in;
   Vec4_t a;
   memcpy(&a.c,littleendian,sizeof(a));
   in = a.a;

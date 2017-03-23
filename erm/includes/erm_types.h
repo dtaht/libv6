@@ -18,7 +18,7 @@
 
 // All addresses are kept as vector types to start with
 
-typedef u8 v6addr_t VECTOR(16); // v6 addresses
+typedef u8 ip_addr VECTOR(16); // v6 addresses
 typedef u8 r6addr_t VECTOR(8); // Router ID
 typedef u8 emacaddr_t VECTOR(8); // We waste 2 bytes on macs
 
@@ -116,7 +116,7 @@ typedef struct {
 // in registers
 
 typedef struct {
-  v6addr_t address;
+  ip_addr address;
   addrflags_t flags;
   s32 special;
 } fulladdr_t;

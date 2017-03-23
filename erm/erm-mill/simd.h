@@ -48,11 +48,11 @@ typedef unsigned int usimd VECTOR(16);
 static inline void push_regs() {}
 static inline void pop_regs() {}
 typedef unsigned int usimd VECTOR(16);
-typedef unsigned int v6addr_t VECTOR(16);
+typedef unsigned int ip_addr VECTOR(16);
 #endif
 
 typedef union Vec4 {
-  v6addr_t a;
+  ip_addr a;
   usimd p;
   float e[4];
   s32 i[4];

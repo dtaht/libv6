@@ -18,10 +18,10 @@ typedef struct {
 
 typedef struct {
 	u8 a VECTOR(16);
-} v6addr_t;
+} ip_addr;
 
 typedef struct {
-	v6addr_t a;
+	ip_addr a;
 	flags_t f;
 } compound_struct_t;
 
@@ -34,27 +34,27 @@ typedef struct {
 // __m128, __m128i, __m128d
 
 extern compound_struct_t R fool_compiler1(compound_struct_t a, compound_struct_t b);
-extern compound_struct_t R fool_compiler2(flags_t af, v6addr_t av,
-				        flags_t bf, v6addr_t bv);
+extern compound_struct_t R fool_compiler2(flags_t af, ip_addr av,
+				        flags_t bf, ip_addr bv);
 
-extern v6addr_t R fool_compiler3(flags_t af, v6addr_t av,
-			       flags_t bf, v6addr_t bv);
+extern ip_addr R fool_compiler3(flags_t af, ip_addr av,
+			       flags_t bf, ip_addr bv);
 
-extern flags_t R fool_compiler4(flags_t af, v6addr_t av,
-			      flags_t bf, v6addr_t bv);
+extern flags_t R fool_compiler4(flags_t af, ip_addr av,
+			      flags_t bf, ip_addr bv);
 
-extern v6addr_t R fool_compiler5(flags_t af, v6addr_t av,
-			       flags_t bf, v6addr_t bv);
+extern ip_addr R fool_compiler5(flags_t af, ip_addr av,
+			       flags_t bf, ip_addr bv);
 
 extern compound_struct_t fool_compiler_compound_struct;
-extern v6addr_t fool_compiler_addr;
+extern ip_addr fool_compiler_addr;
 
 int check_flags(flags_t f) {
 	if(f.flags | 1) printf("Got 1\n");
 	return f.flags;
 }
 
-R int check_addr(v6addr_t a) {
+R int check_addr(ip_addr a) {
 	printf("hooked %Q", a);
 	return 1;
 }
@@ -67,7 +67,7 @@ int main() {
 	compound_struct_t c = {0};
 	compound_struct_t d = {0};
 	compound_struct_t r;
-	v6addr_t l = d.a;
+	ip_addr l = d.a;
 	c.f.flags = 1;
 	d.f.flags = 2;
 	TESTS1(1,c,d,r); // does not generate SSE instructions

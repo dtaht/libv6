@@ -27,7 +27,7 @@ v6table sources;
 // Hmm. Maybe for our stronger typing we can do a cast thusly
 // and hide the rest of the struct
 
-v6addr_t* addresses;
+ip_addr* addresses;
 addrflags_t* addrdata;
 
 void* place_tables(void* mem)
@@ -40,12 +40,12 @@ void* place_tables(void* mem)
 
 bool load_tables(void* mem)
 {
-  addrs.data = calloc(BASE, sizeof(v6addr_t));
+  addrs.data = calloc(BASE, sizeof(ip_addr));
   addrdatas.data = calloc(BASE, sizeof(addrflags_t));
   routes.data = calloc(BASE, sizeof(routes_t));
   sources.data = calloc(BASE, sizeof(sources_t));
   routers.data = calloc(NUM_ROUTERS, sizeof(routers_t));
-  addresses = (v6addr_t*)addrs.data;
+  addresses = (ip_addr*)addrs.data;
   if(addrs.data && addrdatas.data && routers.data) {
     addrs.size = addrdatas.size = routes.size = BASE;
     if(sources.data && routers.data) {

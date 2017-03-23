@@ -244,7 +244,7 @@ search_uint128.o: tables_search.c
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=uint128_t $< -c -o $@
 
 search_v6addr.o: tables_search.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=v6addr_t $< -c -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=ip_addr $< -c -o $@
 
 search_uint8.o: tables_search.c
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=u8 $< -c -o $@

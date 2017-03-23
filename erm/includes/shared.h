@@ -35,9 +35,6 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "globals.h"
-#include "preprocessor.h"
-#include "simd.h"
-#include "erm_types.h"
+#include "erm_common.h"
 
 #endif
