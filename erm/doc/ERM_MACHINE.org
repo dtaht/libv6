@@ -24,12 +24,15 @@ FIXME: look over ebpf register map
 - popcount
 - hash table constants
 - common ipv4 and ipv6 matches
+- HWRNG
 * Functional Units
 ** Popcountr
 ** Timers
 ** DMA engine
 ** CAM memories
 ** Hasher
+** HWRNG
+
 * System Interfaces
 ** Network Interfaces
 ** Shared Memory
