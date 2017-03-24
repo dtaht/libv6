@@ -46,15 +46,13 @@
 
 u8 rngpool[ERM_RND_PAGE_SIZE / sizeof(u32)] SECTION("rng");
 
-// Simple stupid filler thread
-
 void rng_fill()
 {
-	for(int i = 0; i < ERM_RND_PAGE_SIZE/sizeof(i); i++) {
-        rngpool[i] = random();
+	for(int i = 0; i < ERM_RND_PAGE_SIZE; i++) {
+		rngpool[i] = random();
   }
-//    sleep(1);
 }
+
 
 #ifdef DEBUG_MODULE
 #include <stdio.h>
@@ -65,12 +63,34 @@ void rng_fill()
 #include "erm_logger.h"
 #include "get_cycles.h"
 
+void rng_fill_stupid(int c)
+{
+	for(int i = 0; i < ERM_RND_PAGE_SIZE; i++) {
+        rngpool[i] = c;
+  }
+}
+
 int main()
 {
-  rng_fill();
-  LOGGER_INFO(PERF, "This will probably not be sufficiently random: "
+  rng_fill_stupid('@');
+  LOGGER_INFO(PERF, "Memory filled with '@':"
                     " u8: %c u16: %d u32: %d u64: %ld\n",
               get_rng_bytes1(), get_rng_bytes2(), get_rng_bytes4(), get_rng_bytes8());
+  rng_fill();
+  LOGGER_INFO(PERF, "Probably random:"
+                    " u8: %c u16: %d u32: %d u64: %ld\n",
+              get_rng_bytes1(), get_rng_bytes2(), get_rng_bytes4(), get_rng_bytes8());
+
+  LOGGER_INFO(PERF, "May not be reasonably random:\n"
+                    " u64: %ld\n u64: %ld\n u64: %ld\n u64: %ld\n",
+	  get_rng_bytes8(),get_rng_bytes8(),get_rng_bytes8(), get_rng_bytes8());
+
+  rng_fill_stupid('A');
+  LOGGER_INFO(PERF, "Mem Filled with A:\n"
+                    " u64: %ld\n u64: %ld\n u64: %ld\n u64: %ld\n",
+	  get_rng_bytes8(),get_rng_bytes8(),get_rng_bytes8(), get_rng_bytes8());
+
+  // FIXME, use lfence
   return 0;
 }
 
