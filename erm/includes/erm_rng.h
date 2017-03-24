@@ -74,7 +74,7 @@ ALWAYS_INLINE static inline v128 get_rng_bytesv16()
 */
 #else
 /* TODO - real rng. Also one that always returns 0 for sims */
-#warning better version of erm_random not written yet
+#warning better version of erm_rng not written yet
 #endif
 
 #endif

@@ -50,7 +50,7 @@ u32 rngpool[ERM_RND_PAGE_SIZE / sizeof(u32)] SECTION("rng");
 
 void rng_fill()
 {
-  for(int i = 0; i < ERM_RND_PAGE_SIZE; i++) {
+	for(int i = 0; i < ERM_RND_PAGE_SIZE/sizeof(i); i++) {
     rngpool[i] = random();
   }
     sleep(1);
@@ -60,7 +60,7 @@ void rng_fill()
 #include <stdio.h>
 
 #define PERF stdout
-#define LOGGER_INFO(where, fmt, ... ) printf(where, fmt, __VA_ARGS__)
+#define LOGGER_INFO(where, fmt, ... ) fprintf(where, fmt, __VA_ARGS__)
 
 #include "erm_logger.h"
 #include "get_cycles.h"
