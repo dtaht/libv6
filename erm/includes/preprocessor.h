@@ -126,7 +126,7 @@ static inline int donothing_false() { return 0; }
 // Tell the Pointer Bounds Checker that this variable can be variably sized
 // (used at the end of variable length structures
 
-#define VARISIZE __attribute__((bnd_variable_size))
+#define VARISIZE(max_size) __attribute__((bnd_variable_size))
 
 // Declare endianess of a variable to the compiler
 
