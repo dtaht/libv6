@@ -1,22 +1,22 @@
 * erm guidelines
 
-The "Embedded Routing Machine" - ERM - is intended to be able to run on
-bare metal, a coprocessor, within a vm or container, and... also... as 
-a regular Linux process. 
+The "Embedded Routing Machine" - ERM - is intended to be able to run on bare
+metal, a coprocessor, within a vm or container, and... also... as a regular
+Linux process.
 
 As such it has a few conventions that might look odd to normal C language
-programmers. It is helpful to think of it as a highly specialized cpu
-and assembly language for pounding through routing calculations more
-than anything else.
+programmers. It is helpful to think of it as a highly specialized cpu and
+assembly language for pounding through routing calculations more than anything
+else.
 
 * Oddities
 
 ** Dedicated Registers
 
-There is at least one dedicated "flags" register per machine, located
-in an onchip register. This avoids locking issues entirely within a
-cpu, and, so long as you have no more than (16?) major flags within the
-program, lets you run fast.
+There is at least one dedicated "flags" register per machine, located in an
+onchip register. This avoids locking issues entirely within a cpu, and, so long
+as you have no more than (16?) major flags within the program, lets you run
+fast.
 
 ** C11isms
 
@@ -35,9 +35,9 @@ stacks and the simpler __thread typedef.
 
 *** Attributes
 
-do use "pure, const, cold, hot, noreturn", wherever possible. Note that some
+Do use "pure, const, cold, hot, noreturn", wherever possible. Note that some
 notions of const and pure are violated by the vm and generational
-garbage collector. 
+garbage collector.
 
 Make sure your code operates correctly with -O3. Run valgrind. Use both
 gcc and llvm.
@@ -48,20 +48,30 @@ Don't use pointers.
 
 ** No stack
 
+Well, not much of one, anyway. Goal is a stack not much bigger than 256 bytes
+per thread. The call stack and data stack are in different places, too.
+
+Try to use up registers.
+
+Use a separate memory area for transient info too big for registers.
+
 ** No recursion
+
+Or only in a very, very, very limited basis. If you use tail recursion, make
+sure it actually compiles down to tail recursion.
 
 ** Permissions
 
-erm uses shared memory and various permissions tricks to limit access
-to itself. For maximal safety, add your administrative user to the
-appropriate group, and don't access it (after starting) as root. 
+erm uses shared memory and various permissions tricks to limit access to itself.
+For maximal safety, add your administrative user to the appropriate group, and
+don't access it (after starting) as root.
 
 ** TRAPS and error handling
 
-All library and system calls MUST be trapped, and something appropriate
-MUST be done in all error cases. There are some handy macros that help
-with this, and they exist because we are a virtual machine with no 
-general access to normal C and linux functionality.
+All library and system calls MUST be trapped, and something appropriate MUST be
+done in all error cases. There are some handy macros that help with this, and
+they exist because we are a virtual machine with no general access to normal C
+and Linux functionality.
 
 ** Clients don't share memory space
 
@@ -72,22 +82,22 @@ That said, it's sane to try to stick to what's here.
 ** Tables are terminated as a stopgap from killing yourself
 
 As this is a specialized routing engine, the end of any given table is
-denominated by the special pattern 0xFFFF0000. The only place where this could
-bite me is if the IETF created a multicast address type with this pattern. In
-which case... I am not going to think about it.
+denominated by a redzone with special pattern 0xFFFF0000. The only place where
+this could bite me is if the IETF created a multicast address type with this
+pattern. In which case... I am not going to think about it.
 
 I may have just shot myself in the foot here by abstracting out ipv4. Hmm.
 
-** Virtual memory protections are used whenever possible
+*** Also: virtual memory protections are used whenever possible
+
 all data and especially each table is explicitly located in their own memory
 areas that cannot be overrun or underrun (when running an a higher end cpu)
 without an illegal access trap.
 
 ** Plugins and Servers share memory space
 
-Be *careful*. Compile with the same compile options as are in the 
-build or things like the register to register calling convention may
-break.
+Be *careful*. Compile with the same compile options as are in the build or
+things like the register to register calling convention may break.
 
 *** NEVER use a blocking operation unless you are in your own thread
 And yield when it seems appropriate.
@@ -166,11 +176,11 @@ clear the state change back, handled by the main engine.
 
 ** Memory structures are (almost) always append only and generational
 
-a query is "pure" in that it pulls from a generation of tables and
-(in theory, unless you are asking for a "stream"), always put elsewhere.
+a query is "pure" in that it pulls from a generation of tables and (in theory,
+unless you are asking for a "stream"), always put elsewhere.
 
-Queries are memoized, also, if you so desire. Another way of thinking
-about a "query" is that it becomes an index.
+Queries are memoized, also, if you so desire. Another way of thinking about a
+"query" is that it becomes an index.
 
 *** All structures must be aligned and padded to a natural vector boundry
 - x86_64 16 bytes
@@ -193,17 +203,16 @@ Merge sort of two sorted data sets is insanely faster than walking pointers.
 ** Big vs Little endian
 
 Internally IP addresses are represented in native (usually little nowadays)
-endian format, and converted on the way in and out back to big endian.
-This makes for faster compares, but also means that you cannot - except in
-well defined cases - use common IETF defined macros like inet_ntop and so
-forth. 
+endian format, and converted on the way in and out back to big endian. This
+makes for faster compares, but also means that you cannot - except in well
+defined cases - use common IETF defined macros like inet_ntop and so forth.
 
-Use the replacement versions provided by the library. The (s)printf
-hooks, are handy in particular.
+Use the replacement versions provided by the library. The (s)printf hooks, are
+handy in particular.
 
-On the other hand, you can assume that you never need to do a be32 
-conversion as a plugin, unless you are parsing some protocol not
-already handled by the engine. 
+On the other hand, you can assume that you never need to do a be32 conversion as
+a plugin, unless you are parsing some protocol not already handled by the
+engine.
 
 ** Crash recovery
 
@@ -213,7 +222,7 @@ FIXME. All I can say about it.
 
 - Use table driven design and think in terms that Codd and Date would understand
 
-Split "hot" data from cold data and join them via an index.
+- Split "hot" data from cold data and join them via an index.
 
 - Only keep one copy
 
