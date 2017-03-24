@@ -30,12 +30,29 @@ static inline int init_cycles(int events) { return 0; }
 
 static inline int stop_cycles(int events) { return 0; }
 
+// For out of order ops you need
+// mfence;rdtsc on AMD platforms and lfence;rdtsc on Intel. If you don't want to
+// bother with distinguishing between these, mfence;rdtsc works.
+
+/** Get CPU timestep counter */
+ALWAYS_INLINE static inline int get_bottom_cycles()
+{
+	register volatile u32 r asm("%eax");
+  /** Not recommended to use rdtsc on old multicore machines */
+  __asm__ volatile("rdtscp;"
+                   : "=a"(r)
+                   :
+                   : "%rcx", "%rdx", "memory");
+
+  return r;
+}
+
 /** Get CPU timestep counter */
 ALWAYS_INLINE static inline cycles_t get_cycles()
 {
   volatile u64 r;
   /** Not recommended to use rdtsc on old multicore machines */
-  __asm__ volatile("rdtsc;"
+  __asm__ volatile("rdtscp;"
                    "shl $32, %%rdx;"
                    "or %%rdx,%%rax"
                    : "=a"(r)

@@ -27,6 +27,8 @@ extern u8 rngpool[ERM_RND_PAGE_SIZE / sizeof(u32)]; // SECTION("rng")
 
 #define RNDTABLE_SIZE_MASK (255)
 
+#define get_cycles() get_bottom_cycles()
+
 /*
    My simplest implementation. ... except that get_cycles is slow, buggy, or
    unavailable on some processors.
