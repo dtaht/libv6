@@ -18,7 +18,7 @@
 #define __GET_CYCLES_H
 
 #if !(defined(NO_CYCLES) | defined(USING_PERF)) &&                           \
-(defined(__x86_64__) | defined(__arm__) | defined(__epiphany__) | defined(__aarch64))
+(defined(__x86_64__) | defined(__arm__) | defined(__epiphany__) | defined(__aarch64__))
 
 #ifdef __x86_64__
 
@@ -61,10 +61,10 @@ typedef cycles_t u32;
   (1 << 29) /* Non-secure EL1 (kernel) modes filtering bit */
 #define ARMV8_PMEVTYPER_NSU                                                  \
   (1 << 28) /* Non-secure User mode filtering bit                            \
-                 */
+                  */
 #define ARMV8_PMEVTYPER_NSH                                                  \
   (1 << 27)                          /* Non-secure Hyp modes filtering bit   \
-                                          */
+                                           */
 #define ARMV8_PMEVTYPER_M (1 << 26)  /* Secure EL3 filtering bit */
 #define ARMV8_PMEVTYPER_MT (1 << 25) /* Multithreading */
 #define ARMV8_PMEVTYPER_EVTCOUNT_MASK 0x3ff

@@ -13,12 +13,13 @@
 
 #define pow2(a) ((a) * (a))
 #define pow3(a) ((a) * (a) * (a))
-#define pow4(a) ((a) * (a) * (a) * (a) )
+#define pow4(a) ((a) * (a) * (a) * (a))
 
 generic blanusa_powint(generic x); // PURE;
 
-generic blanusa_powint(generic x) {
-return pow3((x-3)*(x-1)) * ((x+1)*(x+2)) *
-	(pow4(x) + pow3(x) - 7 * pow2(x) - 5 * x + 6) *
-	 pow2(pow4(x) + pow3(x) - 5 * (pow2(x) - 3 * x + 4));
+generic blanusa_powint(generic x)
+{
+  return pow3((x - 3) * (x - 1)) * ((x + 1) * (x + 2)) *
+         (pow4(x) + pow3(x) - 7 * pow2(x) - 5 * x + 6) *
+         pow2(pow4(x) + pow3(x) - 5 * (pow2(x) - 3 * x + 4));
 }

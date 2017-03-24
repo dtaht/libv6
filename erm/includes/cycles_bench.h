@@ -14,16 +14,69 @@
  * limitations under the License.
  */
 
+// FIXME: Make work with the perf related system calls
+// FIXME: Make work with simulated time
+// FIXME: For all I know I'm just going to use -pg and perf
+
+// #define GET_CYCLES_ELAPSED_TIME()
+// #define GET_CYCLES_PUSH (don't print, store it somewhere)
+// POP? PUSH? FIXUP? 32 bits is not enough
+
 #ifndef CYCLES_BENCH_H
 #define CYCLES_BENCH_H
-#include "get_cycles.h"
 
-// haven't decided on this API YET. if doing anything with start or end title
-// doonething do aother should compile out.
+#ifdef NO_PERF
+#define GET_CYCLES_INIT(mask, collect, start, end) DONOTHING
+#define GET_CYCLES_DECLARE_ACC(v) DONOTHING
+#define GET_CYCLES_ASSIGN(a, b) DONOTHING
+#define GET_CYCLES_AVAIL(start, end) DONOTHING
+#define GET_CYCLES_START(collect, start, end) DONOTHING
+#define GET_CYCLES_STOP(collect, start, end) DONOTHING
+#define GET_CYCLES_PAUSE(collect, start, end) DONOTHING
+#define GET_CYCLES_RESUME(collect, start, end) DONOTHING
+#define GET_CYCLES_COLLECT(collect, start, end) DONOTHING
+#define GET_CYCLES_CLEAN(collect, start, end) DONOTHING
+#define GET_CYCLES_CANCEL(mask) DONOTHING
+#define GET_CYCLES_PRINT(where, title, collect) DONOTHING
+#define GET_CYCLES_PRINT_DIFFERENCE(where, title, v1, v2) DONOTHING
+
+#ifndef PERF
+#define PERF stdout
+#endif
+
+#ifndef PERFINFO
+#define PERFINFO stdout
+#endif
 
 #ifndef LOGGER
-#warning "no logger defined, using printf"
-#define LOGGER(fmt, ...) printf(fmt, __VA_ARGS__)
+#warning "no logger defined, compiling out"
+#define LOGGER(where, fmt, ...) DONOTHING
+#endif
+
+#ifndef LOGGER_INFO
+#warning "no info logger defined, compiling out"
+#define LOGGER_INFO(where, fmt, ...) DONOTHING
+#endif
+
+#else
+#include "get_cycles.h"
+
+#ifndef PERF
+#define PERF stdout
+#endif
+
+#ifndef PERFINFO
+#define PERFINFO stdout
+#endif
+
+#ifndef LOGGER
+#warning "no logger defined, using fprintf"
+#define LOGGER(where, fmt, ...) fprintf(where, fmt, __VA_ARGS__)
+#endif
+
+#ifndef LOGGER_INFO
+#warning "no info logger defined, using fprintf"
+#define LOGGER_INFO(where, fmt, ...) fprintf(where, fmt, __VA_ARGS__)
 #endif
 
 #define GET_CYCLES_INIT(mask, collect, start, end)                           \
@@ -32,12 +85,15 @@
   u64 collect = 0;                                                           \
   init_cycles(mask)
 
+#define GET_CYCLES_DECLARE_ACC(v) u64 v
+#define GET_CYCLES_ASSIGN(a, b) a = b
+
 #define GET_CYCLES_AVAIL(start, end)                                         \
   do {                                                                       \
     start = get_cycles();                                                    \
     sleep(1);                                                                \
     end = get_cycles();                                                      \
-    LOGGER("cycle counter%s active\n", start == end ? " not" : " ");         \
+    LOGGER(PERF, "cycle counter:%sactive\n", start == end ? " in" : " ");    \
   } while(0)
 
 #define GET_CYCLES_START(collect, start, end)                                \
@@ -71,11 +127,12 @@
 
 #define GET_CYCLES_CLEAN(collect, start, end) collect = start = end = 0
 #define GET_CYCLES_CANCEL(mask) stop_cycles(mask)
-#define GET_CYCLES_PRINT(title, collect)                                     \
-  LOGGER("%s Cycles: %ld\n", title, collect)
+#define GET_CYCLES_PRINT(where, title, collect)                              \
+  LOGGER(where, title ": Cycles: %ld\n", collect)
 
-// #define GET_CYCLES_ELAPSED_TIME()
-// #define GET_CYCLES_PUSH (don't print, store it somewhere)
-// POP? PUSH? FIXUP? 32 bits is not enough
+#define GET_CYCLES_PRINT_DIFFERENCE(where, title, v1, v2)                    \
+  LOGGER(where, title ": Cycles: %ld Improvement: %20.20g\n", v2 - v1,       \
+         (double)(v2) / (double)(v1))
+#endif
 
 #endif

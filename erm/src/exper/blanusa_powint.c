@@ -72,7 +72,26 @@
 #undef blanusa_powint
 
 #ifdef DEBUG_MODULE
+// #define NO_PERF
+
+#define LOGGER_INFO(where, fmt, ...)
+
+#ifndef DONOTHING
+#define DONOTHING                                                            \
+  do {                                                                       \
+  } while(0)
+#endif
+
+#ifndef CALLOCA
+#define CALLOCA(type, dest, size, num)                                       \
+  type dest __attribute__((aligned(16)));                                    \
+  dest = calloc(size, num)
+#endif
+
+#include "align.h"
 #include "cycles_bench.h"
+#include "logger.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -83,40 +102,44 @@ int main()
 {
   GET_CYCLES_INIT(0, collect, start, end);
   GET_CYCLES_AVAIL(start, end);
+  GET_CYCLES_DECLARE_ACC(simdversion);
+  GET_CYCLES_DECLARE_ACC(nonsimdversion);
+
   float f;
+
+  // without LOGGER_INFO these should all just compile out to a single
+  // statement
+
   for(int i = -0xff; i < 0xff; i++) {
-    f = blanusa_powintdouble(i);
-    printf("Blanusa %d: %g: %g\n", i, f, blanusa_powintfloat(f));
+    f = blanusa_powintfloat(i);
+    LOGGER_INFO(PERF, "Blanusa %d: %g: %g\n", i, f, blanusa_powintfloat(f));
   }
-  GET_CYCLES_STOP(collect, start, end);
 
   double d;
   for(int i = -0xff; i < 0xff; i++) {
     d = blanusa_powintdouble(i);
-    printf("Blanusa %d: %g: %g\n", i, d, blanusa_powintdouble(d));
+    LOGGER_INFO(PERF, "Blanusa %d: %g: %g\n", i, d, blanusa_powintdouble(d));
   }
 
   u16 c;
   for(int i = -0xff; i < 0xff; i++) {
     c = blanusa_powintu16(i);
-    printf("Blanusa16trunc %d: %d\n", i, c);
+    LOGGER_INFO(PERF, "Blanusa16trunc %d: %d\n", i, c);
   }
 
-  // FIXME: saturating
+  // FIXME: add saturating arith
 
-  // Parallel?
+  // Parallel or not?
 
-  float* vals __attribute__((aligned(16)));
-  vals = calloc(0xffff, sizeof bvals);
-  float* res __attribute__((aligned(16)));
-  res = calloc(0xffff, sizeof bvals);
+  CALLOCA(float*, vals, 0xffff, sizeof bvals);
+  CALLOCA(float*, res, 0xffff, sizeof bvals);
 
   for(int i = 0; i < 0xff * 4; i++) {
     vals[i] = i * .03124 * (random() % 32);
   }
 
-  // No workie
   GET_CYCLES_START(collect, start, end);
+
 #pragma simd
   for(int i = 0; i < 0xffff; i += 4) {
     res[i] = blanusa_powintfloat(vals[i]);
@@ -125,32 +148,30 @@ int main()
     res[i + 3] = blanusa_powintfloat(vals[i + 3]);
   }
   GET_CYCLES_STOP(collect, start, end);
-  u64 last = collect;
-
-  GET_CYCLES_PRINT("vectorized", collect);
+  GET_CYCLES_ASSIGN(simdversion, collect);
+  GET_CYCLES_PRINT(PERF, "vectorized", collect);
 
   for(int i = 0; i < 0xff; i += 4) {
-    printf("%g %g %g %g\n", res[i], res[i + 1], res[i + 2], res[i + 3]);
+    LOGGER_INFO(PERF, "%g %g %g %g\n", res[i], res[i + 1], res[i + 2], res[i + 3]);
   }
 
   for(int i = 0; i < 0xff * 4; i++) {
     vals[i] = i * .03124 * (random() % 32);
   }
+
   GET_CYCLES_START(collect, start, end);
+
 #pragma simd
   for(int i = 0; i < 0xffff; i++) {
     res[i] = blanusa_powintfloat(vals[i]);
   }
   GET_CYCLES_STOP(collect, start, end);
-  double l1 = last;
-  double l2 = collect;
-  double ratio = l2 / l1;
-
-  GET_CYCLES_PRINT("simple vectorized", collect);
+  GET_CYCLES_ASSIGN(nonsimdversion, collect);
+  GET_CYCLES_PRINT(PERF, "simple vectorized", collect);
   for(int i = 0; i < 0xff; i += 4) {
-    printf("%g %g %g %g\n", res[i], res[i + 1], res[i + 2], res[i + 3]);
+    LOGGER_INFO(PERF, "%g %g %g %g\n", res[i], res[i + 1], res[i + 2], res[i + 3]);
   }
-  printf("difference: %ld speedup: %.30f\n", last - collect, ratio);
+  GET_CYCLES_PRINT_DIFFERENCE(PERF, "simd vs nonsimd version", simdversion, nonsimdversion);
   return 0;
 }
 #endif
