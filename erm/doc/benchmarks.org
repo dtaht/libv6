@@ -1,0 +1,17 @@
+* Benchmarks
+There really is no long term point to doing this unless it can actually run
+faster than the native linux kernel for a multitude of operations.
+
+Unfortunately, getting there requires a lot of coding up front.
+
+** Microbenchmarks
+*** DONE Vectored Blanusa solver
+*** Additive metric solver
+*** TODO Hash with popcount speed
+** TODO Macrobenchmarks
+*** Cpu overhead
+*** Route table import
+*** Route table export
+*** Route table change
+*** IP Comparisons/second
+*** Packets/sec (forwarding)
