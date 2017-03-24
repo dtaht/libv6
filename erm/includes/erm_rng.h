@@ -21,11 +21,11 @@
    pool per functional unit is needed. Sometimes. Unless we do linker magic.
 */
 
-extern u32 rngpool[ERM_RND_PAGE_SIZE / sizeof(u32)]; // SECTION("rng")
+extern u8 rngpool[ERM_RND_PAGE_SIZE / sizeof(u32)]; // SECTION("rng")
 
 #if !(defined(PARANOID_CRYPTOGRAPHERS) | defined(HAVE_NO_CYCLES))
 
-#define RNDTABLE_SIZE_MASK (ERM_RND_PAGE_SIZE - 1)
+#define RNDTABLE_SIZE_MASK (255)
 
 /*
    My simplest implementation. ... except that get_cycles is slow, buggy, or
@@ -41,19 +41,19 @@ extern u32 rngpool[ERM_RND_PAGE_SIZE / sizeof(u32)]; // SECTION("rng")
 
 ALWAYS_INLINE u8 static inline get_rng_bytes1()
 {
-  return (u8)rngpool[get_cycles() & (RNDTABLE_SIZE_MASK)];
+  return *(u8 *) &rngpool[get_cycles() & (RNDTABLE_SIZE_MASK)];
 }
 ALWAYS_INLINE static inline u16 get_rng_bytes2()
 {
-  return (u16)rngpool[(get_cycles() << 1) & (RNDTABLE_SIZE_MASK)];
+  return *(u16 *) &rngpool[(get_cycles() << 1) & (RNDTABLE_SIZE_MASK)];
 }
 ALWAYS_INLINE static inline u32 get_rng_bytes4()
 {
-  return (u32)rngpool[(get_cycles() << 2) & (RNDTABLE_SIZE_MASK)];
+  return *(u32 *) &rngpool[(get_cycles() << 2) & (RNDTABLE_SIZE_MASK)];
 }
 ALWAYS_INLINE static inline u64 get_rng_bytes8()
 {
-  return (u64)rngpool[(get_cycles() << 3) & (RNDTABLE_SIZE_MASK >> 1)];
+  return *(u64* ) &rngpool[(get_cycles() << 3) & (RNDTABLE_SIZE_MASK >> 1)];
 }
 /*
 

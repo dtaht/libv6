@@ -33,7 +33,7 @@ static inline int stop_cycles(int events) { return 0; }
 /** Get CPU timestep counter */
 ALWAYS_INLINE static inline cycles_t get_cycles()
 {
-  u64 r;
+  volatile u64 r;
   /** Not recommended to use rdtsc on old multicore machines */
   __asm__ volatile("rdtsc;"
                    "shl $32, %%rdx;"

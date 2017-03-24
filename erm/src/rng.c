@@ -44,16 +44,16 @@
 #include "get_cycles.h"
 #include "erm_rng.h"
 
-u32 rngpool[ERM_RND_PAGE_SIZE / sizeof(u32)] SECTION("rng");
+u8 rngpool[ERM_RND_PAGE_SIZE / sizeof(u32)] SECTION("rng");
 
 // Simple stupid filler thread
 
 void rng_fill()
 {
 	for(int i = 0; i < ERM_RND_PAGE_SIZE/sizeof(i); i++) {
-    rngpool[i] = random();
+        rngpool[i] = random();
   }
-    sleep(1);
+//    sleep(1);
 }
 
 #ifdef DEBUG_MODULE
