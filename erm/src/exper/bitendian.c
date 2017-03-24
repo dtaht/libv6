@@ -5,18 +5,19 @@
  * 2017-03-20
  */
 
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
 
-#include "shared.h"
 #include "preprocessor.h"
+#include "shared.h"
 #include "simd.h"
 
 // What I want is to popcount and reverse bits at the same time
-// popcount doesn't care about endian. It seems silly (but benchmarking awaits)
+// popcount doesn't care about endian. It seems silly (but benchmarking
+// awaits)
 // to not do all this on one pass
 // pop = popcount128(result);
 // result = flip128(result);
@@ -30,7 +31,7 @@
 //#define REVERSEB(v) reverse_obvious(v)
 #define REVERSEB(v) reverse_asm_const(v)
 
-///typedef struct {
+/// typedef struct {
 // u32 a VECTOR(16);
 // }ip_addr;
 
@@ -59,17 +60,19 @@ unsigned int reverse_obvious(int v)
 
 #define CONVERT "%9x%9x%9x%9x"
 
-// Native ARM instruction "rbit" can do it with 1 cpu cycle and 1 extra cpu register, impossible to beat. Can it be done right in neon?
+// Native ARM instruction "rbit" can do it with 1 cpu cycle and 1 extra cpu
+// register, impossible to beat. Can it be done right in neon?
 // just need rbit for words
 
 #ifdef __arm__
 
-return u32 *reverse_arm(u32 *image, int size) {
+return u32 * reverse_arm(u32 * image, int size)
+{
 
-	for (i = 0; i < size / 4; h++) {
-    asm("rbit %1,%0" : "=r" (image[i]) : "r" (image[i]));
-    asm("rev %1,%0" : "=r" (image[i]) : "r" (image[i]));
-}
+  for(i = 0; i < size / 4; h++) {
+    asm("rbit %1,%0" : "=r"(image[i]) : "r"(image[i]));
+    asm("rev %1,%0" : "=r"(image[i]) : "r"(image[i]));
+  }
 }
 
 #endif
@@ -84,21 +87,21 @@ return u32 *reverse_arm(u32 *image, int size) {
 */
 
 size_t reverse_bswap_asm(size_t n, unsigned int bytes)
-    {
-        __asm__("BSWAP %0" : "=r"(n) : "0"(n));
-        n >>= ((sizeof(size_t) - bytes) * 8);
-        n = ((n & 0xaaaaaaaa) >> 1) | ((n & 0x55555555) << 1);
-        n = ((n & 0xcccccccc) >> 2) | ((n & 0x33333333) << 2);
-        n = ((n & 0xf0f0f0f0) >> 4) | ((n & 0x0f0f0f0f) << 4);
-        return n;
-    }
+{
+  __asm__("BSWAP %0" : "=r"(n) : "0"(n));
+  n >>= ((sizeof(size_t) - bytes) * 8);
+  n = ((n & 0xaaaaaaaa) >> 1) | ((n & 0x55555555) << 1);
+  n = ((n & 0xcccccccc) >> 2) | ((n & 0x33333333) << 2);
+  n = ((n & 0xf0f0f0f0) >> 4) | ((n & 0x0f0f0f0f) << 4);
+  return n;
+}
 
- int c1 = 0xaaaaaaaa;
- int c2 = 0x55555555;
- int c3 = 0xcccccccc;
- int c4 = 0x33333333;
- int c5 = 0xf0f0f0f0;
- int c6 = 0x0f0f0f0f; // it irks me that these are just basically shifted
+int c1 = 0xaaaaaaaa;
+int c2 = 0x55555555;
+int c3 = 0xcccccccc;
+int c4 = 0x33333333;
+int c5 = 0xf0f0f0f0;
+int c6 = 0x0f0f0f0f; // it irks me that these are just basically shifted
 
 //  40088a:       81 e5 f0 f0 f0 f0       and    $0xf0f0f0f0,%ebp
 //  400890:       25 0f 0f 0f 0f          and    $0xf0f0f0f,%eax
@@ -128,48 +131,50 @@ size_t reverse_bswap_asm(size_t n, unsigned int bytes)
 */
 
 inline unsigned int reverse_asm_const(unsigned int t)
-    {
-        size_t n = t;//store in 64 bit number for call to BSWAP
-        __asm__("BSWAP %0" : "=r"(n) : "0"(n));
-        n >>= ((sizeof(size_t) - sizeof(unsigned int)) * 8);
-        n = ((n & c1) >> 1) | ((n & c2) << 1);
-        n = ((n & c3) >> 2) | ((n & c4) << 2);
-        n = ((n & c5) >> 4) | ((n & (c5 >> 4)) << 4);
-        return n;
-    }
+{
+  size_t n = t; // store in 64 bit number for call to BSWAP
+  __asm__("BSWAP %0" : "=r"(n) : "0"(n));
+  n >>= ((sizeof(size_t) - sizeof(unsigned int)) * 8);
+  n = ((n & c1) >> 1) | ((n & c2) << 1);
+  n = ((n & c3) >> 2) | ((n & c4) << 2);
+  n = ((n & c5) >> 4) | ((n & (c5 >> 4)) << 4);
+  return n;
+}
 
 inline unsigned int reverse_asm(unsigned int t)
-    {
-        size_t n = t;//store in 64 bit number for call to BSWAP
-        __asm__("BSWAP %0" : "=r"(n) : "0"(n));
-        n >>= ((sizeof(size_t) - sizeof(unsigned int)) * 8);
-        n = ((n & 0xaaaaaaaa) >> 1) | ((n & 0x55555555) << 1);
-        n = ((n & 0xcccccccc) >> 2) | ((n & 0x33333333) << 2);
-        n = ((n & 0xf0f0f0f0) >> 4) | ((n & 0x0f0f0f0f) << 4);
-        return n;
-    }
+{
+  size_t n = t; // store in 64 bit number for call to BSWAP
+  __asm__("BSWAP %0" : "=r"(n) : "0"(n));
+  n >>= ((sizeof(size_t) - sizeof(unsigned int)) * 8);
+  n = ((n & 0xaaaaaaaa) >> 1) | ((n & 0x55555555) << 1);
+  n = ((n & 0xcccccccc) >> 2) | ((n & 0x33333333) << 2);
+  n = ((n & 0xf0f0f0f0) >> 4) | ((n & 0x0f0f0f0f) << 4);
+  return n;
+}
 
 #endif
 
 /* Classic binary partitioning algorithm */
-inline u32 brev_classic (u32 a)
+inline u32 brev_classic(u32 a)
 {
-    u32 m;
-    a = (a >> 16) | (a << 16);                            // swap halfwords
-    m = 0x00ff00ff; a = ((a >> 8) & m) | ((a << 8) & ~m); // swap bytes
-    m = m^(m << 4); a = ((a >> 4) & m) | ((a << 4) & ~m); // swap nibbles
-    m = m^(m << 2); a = ((a >> 2) & m) | ((a << 2) & ~m);
-    m = m^(m << 1); a = ((a >> 1) & m) | ((a << 1) & ~m);
-    return a;
+  u32 m;
+  a = (a >> 16) | (a << 16); // swap halfwords
+  m = 0x00ff00ff;
+  a = ((a >> 8) & m) | ((a << 8) & ~m); // swap bytes
+  m = m ^ (m << 4);
+  a = ((a >> 4) & m) | ((a << 4) & ~m); // swap nibbles
+  m = m ^ (m << 2);
+  a = ((a >> 2) & m) | ((a << 2) & ~m);
+  m = m ^ (m << 1);
+  a = ((a >> 1) & m) | ((a << 1) & ~m);
+  return a;
 }
 
-u64 reverse_vectorized(const u64 n,
-                 const u64 k)
+u64 reverse_vectorized(const u64 n, const u64 k)
 {
-        u64 r, i;
-        for (r = 0, i = 0; i < k; ++i)
-                r |= ((n >> i) & 1) << (k - i - 1);
-        return r;
+  u64 r, i;
+  for(r = 0, i = 0; i < k; ++i) r |= ((n >> i) & 1) << (k - i - 1);
+  return r;
 }
 
 /*
@@ -186,44 +191,45 @@ int new_main()
 
 */
 
-/* Knuth's algorithm from http://www.hackersdelight.org/revisions.pdf. Retrieved 8/19/2015 */
+/* Knuth's algorithm from http://www.hackersdelight.org/revisions.pdf.
+ * Retrieved 8/19/2015 */
 
-inline u32 brev_knuth (u32 a)
+inline u32 brev_knuth(u32 a)
 {
-    u32 t;
-    a = (a << 15) | (a >> 17);
-    t = (a ^ (a >> 10)) & 0x003f801f;
-    a = (t + (t << 10)) ^ a;
-    t = (a ^ (a >>  4)) & 0x0e038421;
-    a = (t + (t <<  4)) ^ a;
-    t = (a ^ (a >>  2)) & 0x22488842;
-    a = (t + (t <<  2)) ^ a;
-    return a;
+  u32 t;
+  a = (a << 15) | (a >> 17);
+  t = (a ^ (a >> 10)) & 0x003f801f;
+  a = (t + (t << 10)) ^ a;
+  t = (a ^ (a >> 4)) & 0x0e038421;
+  a = (t + (t << 4)) ^ a;
+  t = (a ^ (a >> 2)) & 0x22488842;
+  a = (t + (t << 2)) ^ a;
+  return a;
 }
 
 unsigned int reverse_builtin_32(unsigned int t)
-    {
-        size_t n = t;//store in 64 bit number for call to BSWAP
-	n = __builtin_bswap32(n);
-        n >>= ((sizeof(size_t) - sizeof(unsigned int)) * 8);
-        n = ((n & 0xaaaaaaaa) >> 1) | ((n & 0x55555555) << 1);
-        n = ((n & 0xcccccccc) >> 2) | ((n & 0x33333333) << 2);
-        n = ((n & 0xf0f0f0f0) >> 4) | ((n & 0x0f0f0f0f) << 4);
-        return n;
-    }
+{
+  size_t n = t; // store in 64 bit number for call to BSWAP
+  n = __builtin_bswap32(n);
+  n >>= ((sizeof(size_t) - sizeof(unsigned int)) * 8);
+  n = ((n & 0xaaaaaaaa) >> 1) | ((n & 0x55555555) << 1);
+  n = ((n & 0xcccccccc) >> 2) | ((n & 0x33333333) << 2);
+  n = ((n & 0xf0f0f0f0) >> 4) | ((n & 0x0f0f0f0f) << 4);
+  return n;
+}
 
 // I don't trust myself here
 
 unsigned int reverse_builtin_64(size_t t)
-    {
-        size_t n = t;//store in 64 bit number for call to BSWAP
-	n = __builtin_bswap64(n);
-        n >>= ((sizeof(size_t) - sizeof(unsigned int)) * 8);
-        n = ((n & 0xaaaaaaaa) >> 1) | ((n & 0x55555555) << 1);
-        n = ((n & 0xcccccccc) >> 2) | ((n & 0x33333333) << 2);
-        n = ((n & 0xf0f0f0f0) >> 4) | ((n & 0x0f0f0f0f) << 4);
-        return n;
-    }
+{
+  size_t n = t; // store in 64 bit number for call to BSWAP
+  n = __builtin_bswap64(n);
+  n >>= ((sizeof(size_t) - sizeof(unsigned int)) * 8);
+  n = ((n & 0xaaaaaaaa) >> 1) | ((n & 0x55555555) << 1);
+  n = ((n & 0xcccccccc) >> 2) | ((n & 0x33333333) << 2);
+  n = ((n & 0xf0f0f0f0) >> 4) | ((n & 0x0f0f0f0f) << 4);
+  return n;
+}
 
 int bitconvert16_plain(ip_addr a)
 {
@@ -248,17 +254,16 @@ int bitconvert16_plain(ip_addr a)
 
   printf("RET: " CONVERT "\n", o.u[0], o.u[1], o.u[2], o.u[3]);
 
-// if(c == a) return true;
+  // if(c == a) return true;
 
   return false;
-
 }
 
 int main()
 {
   ip_addr in;
   Vec4_t a;
-  memcpy(&a.c,littleendian,sizeof(a));
+  memcpy(&a.c, littleendian, sizeof(a));
   in = a.a;
   if(bitconvert16_plain(in)) {
     printf("success!\n");

@@ -5,20 +5,20 @@
  * 2017-03-21
  */
 
-#include <stdint.h>
 #include <math.h>
+#include <stdint.h>
 #include <tgmath.h>
 
-#include "preprocessor.h"
 #include "debug.h"
 #include "erm_types.h"
+#include "preprocessor.h"
 #include "simd.h"
 
 // Worse, we need saturating arith
 
 #define generic u16
 #define blanusa blanusau16
-#define mypow(a,b) ((a) << (b))
+#define mypow(a, b) ((a) << (b))
 #include "blanusa.h"
 
 #undef generic
@@ -51,7 +51,8 @@
 #define blanusa blanusas64
 #include "blanusa.h"
 
-// Floating point is different. I can improve it but I don't care at the moment
+// Floating point is different. I can improve it but I don't care at the
+// moment
 
 #undef generic
 #undef blanusa
@@ -90,11 +91,10 @@ int main()
   for(int i = -0xff; i < 0xff; i++) {
     c = blanusau16(i);
     printf("Blanusa16trunc %d: %d\n", i, c);
-    }
+  }
 
   // saturating
-  
+
   return 0;
 }
 #endif
-
