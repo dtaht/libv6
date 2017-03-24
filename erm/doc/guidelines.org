@@ -90,11 +90,11 @@ I may have just shot myself in the foot here by abstracting out ipv4. Hmm.
 
 *** Also: virtual memory protections are used whenever possible
 
-all data and especially each table is explicitly located in their own memory
-areas that cannot be overrun or underrun (when running an a higher end cpu)
+all data and especially each table are explicitly located in their own memory
+areas that cannot be overrun or under-run (when running an a higher end cpu)
 without an illegal access trap.
 
-** Plugins and Servers share memory space
+** Plugins and Servers share much memory space
 
 Be *careful*. Compile with the same compile options as are in the build or
 things like the register to register calling convention may break.
@@ -123,12 +123,14 @@ things will get very warm. Hmm. I wrote plugins for this just to see how warm.
 
 *** All operations are reducing operations by default
 
-Given data X, we end up with data of some value X-Y.
+Given data of size X, we end up with data of size X-Y.
+
+*** Except for those that aren't
 
 If you have something that explodes in the other direction, expect problems.
 I need to work out just what those are - for example a route dump from this,
-reformatted to fit the kernel, explodes rather much in size - but it is a
-predictable, maximum size.
+reformatted to fit the kernel, explodes rather much in size - but that is a
+predictable, maximum size, and can be streamed.
 
 *** operations are pipelined
 
@@ -191,7 +193,7 @@ Queries are memoized, also, if you so desire. Another way of thinking about a
 *** Message passing
 *** Structure passing
 
-** MergeSort, always
+** MergeSort always
 
 - operation: accumulate data (sorted or unsorted)
 - sort the data according the core merge characteristic (or do it as part of the
@@ -224,7 +226,7 @@ FIXME. All I can say about it.
 
 - Split "hot" data from cold data and join them via an index.
 
-- Only keep one copy
+- Only keep one copy of static data (example: addresses, mac addresses)
 
 - Block on one thing only while having no pending operations
 
