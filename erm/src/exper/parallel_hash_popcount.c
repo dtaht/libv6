@@ -17,22 +17,26 @@
 /* The root of ERM's classification system is to *rapidly* get both a popcount
    of the value(s) and a usable hash. One of the things that irks me about hash
    developers is that they all benchmark their hashes with these enormouse loops
-   against X amount of data, each time. Running a hot cache for their ins.
+   against X amount of data - long strings often - each time. Big, beautiful benchmarks.
 
-   Not, as if, I run the hash often enough to care about that - I need a quick
-   hash, then move on. Start time is important. Now, it happens that cake ended
-   up using 3 hashes ... and I'm wondering that can yield to running 4 hashes in
-   parallel in the simd unit, which would be pretty awesome...
+   Running a hot cache for their ins. As if our cpus did nothing more than hash
+   stuff all day.
+
+   Not, as if, I run the hash often enough to care about that! I need a quick
+   hash on some fairly small fixed length values, then move on. Start time is
+   important. Now, it happens that cake ended up using a similar hash on 3
+   values at the same time ... and I'm wondering that can yield to running 4
+   hashes in parallel in the simd unit, which would be pretty awesome...
 
 ... but I don't know anyone that has single hash, multiple data code. (I should
 look).
 
-   The first problem, is actually popcount. Which is SSE4 instruction. Awesome.
-0 clock cycles, given all the other overheads we got. Except, where we don't
-have popcount - which is on everything else. __builtin_popcount is like 20
-instructions per *word*. Which also might yield to a vectorized approach. Now,
-if we can hash and popcount 4 values at exactly the same time... big win. Worth
-writing lots of code for.
+   The first problem, is actually popcount. Which is an SSE4 instruction that
+actually runs in the main cpu. Awesome. 0 clock cycles, given all the other
+overheads we got. Except, where we don't have popcount - which is on everything
+else. __builtin_popcount is like 20 instructions per *word*. Which also might
+yield to a vectorized approach. Now, if we can hash and popcount 4 values at
+exactly the same time... big win. Worth writing lots of code for.
 
 Well, first benchmarking what straightline code does makes the most sense. :)
 
