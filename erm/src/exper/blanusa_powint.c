@@ -90,7 +90,7 @@
 
 #include "align.h"
 #include "cycles_bench.h"
-#include "logger.h"
+#include "erm_logger.h"
 
 #include <stdio.h>
 #include <stdlib.h>
