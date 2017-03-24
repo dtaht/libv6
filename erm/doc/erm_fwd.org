@@ -23,9 +23,12 @@ looks like this:
 - 1 each queue (mapped over as many processors as available):
 does a CAM-like lookup for the right nexthop based on the popcount of the dest vlan and
 dest addr. If it misses, it tries harder (while others runahead), and adds the
-dest and hash to that queue's cam and MRU comparison unit
+dest and hash to that queue's cam and MRU comparison unit.
+
+Note this process can be overlapped once you have that popcount.
+
 - 2 starts copying the packet to the right destination - hardware if it's empty
-a physical queue if it is not.
+a physical queue (also the_right_hash % 1024 for that interface ) if it is not.
 - 3 wake up that queue's processor thread if it's not already alive
 
 Now... the fastest hash algorithm I've got (CRC32) claims 6ns per byte, which is
@@ -51,7 +54,8 @@ send yourself to the back of the wake list if you are "done" your round.
 * The overall positive points are:
 
 ** That you can cut the search space by 3 orders of magnitude
-and use (a lot of) smaller CAMs
+and use (a lot of) smaller CAMs that miss more often and have to trap to
+software.
 ** That you can defer the expensive next hop lookup til after the hash
 ** That you can run it all in massive parallel
 ** It does awesome congestion control at line rates
@@ -60,8 +64,10 @@ and use (a lot of) smaller CAMs
 ** You measure the length of the queue from exact entrance to final egress
 The way things happen now we don't get around to codel until we've already made
 the routing decisions.
+** That if you are queueing in the first place it doesn't matter how slow the enqueue is
 
 * Negatives
 
 ** That's a LOT of cams. Honestly, 256 8 way set associative cake-like queues seems like enough for 10gigE
+Worse, you need two sets of cams to load generationally.
 ** I haven't got any of this working yet

@@ -46,6 +46,10 @@ gcc and llvm.
 
 Don't use pointers.
 
+** No stack
+
+** No recursion
+
 ** Permissions
 
 erm uses shared memory and various permissions tricks to limit access
@@ -73,6 +77,11 @@ bite me is if the IETF created a multicast address type with this pattern. In
 which case... I am not going to think about it.
 
 I may have just shot myself in the foot here by abstracting out ipv4. Hmm.
+
+** Virtual memory protections are used whenever possible
+all data and especially each table is explicitly located in their own memory
+areas that cannot be overrun or underrun (when running an a higher end cpu)
+without an illegal access trap.
 
 ** Plugins and Servers share memory space
 
@@ -104,7 +113,8 @@ things will get very warm. Hmm. I wrote plugins for this just to see how warm.
 
 *** All operations are reducing operations by default
 
-given data X, we end up with data of some value X-Y.
+Given data X, we end up with data of some value X-Y.
+
 If you have something that explodes in the other direction, expect problems.
 I need to work out just what those are - for example a route dump from this,
 reformatted to fit the kernel, explodes rather much in size - but it is a
@@ -142,7 +152,7 @@ atomic_update(global,flags);
 kflags_barrier_end();
 }
 
-which is why we just stick this in a register to start with.
+which is why we just stick this in the flags register to start with.
 
 You should bulk this up for anything that changes global state as the result of
 an operation. (so if you changed kernel routes and addresses, accumulate then
@@ -202,6 +212,10 @@ FIXME. All I can say about it.
 * General Guidelines
 
 - Use table driven design and think in terms that Codd and Date would understand
+
+Split "hot" data from cold data and join them via an index.
+
+- Only keep one copy
 
 - Block on one thing only while having no pending operations
 
