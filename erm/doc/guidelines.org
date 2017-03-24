@@ -36,8 +36,8 @@ stacks and the simpler __thread typedef.
 *** Attributes
 
 Do use "pure, const, cold, hot, noreturn", wherever possible. Note that some
-notions of const and pure are violated by the vm and generational
-garbage collector.
+notions of const and pure are violated by the vm and generational garbage
+collector.
 
 Make sure your code operates correctly with -O3. Run valgrind. Use both
 gcc and llvm.
@@ -104,10 +104,9 @@ And yield when it seems appropriate.
 
 *** NEVER run a calculation with an infinite bound
 
-ERM tries to work with tight R/T guaranties throughout. I need
-to come up with a way to express this. If you need to work for longer
-than X, and you need (some) of the data, allocate memory somewhere else
-and do your work at leisure.
+ERM tries to work with tight R/T guaranties throughout. I need to come up with a
+way to express this. If you need to work for longer than X, and you need (some)
+of the data, allocate memory somewhere else and do your work at leisure.
 
 Sure - go and do a bulky operation for *a while* without calling YIELD. GC is
 expensive.
@@ -117,7 +116,7 @@ and what they conflict with, so they can be scheduled better.
 
 but if you do something stupid like
 
-while(1) donothing();
+while(1) DONOTHING;
 
 things will get very warm. Hmm. I wrote plugins for this just to see how warm.
 
@@ -130,14 +129,16 @@ Given data of size X, we end up with data of size X-Y.
 If you have something that explodes in the other direction, expect problems.
 I need to work out just what those are - for example a route dump from this,
 reformatted to fit the kernel, explodes rather much in size - but that is a
-predictable, maximum size, and can be streamed.
+predictable, maximum size, and can be pipelined and streamed.
 
-*** operations are pipelined
+*** Operations are pipelined
+
+Pretend you have hardware with billions of gates at your disposal.
 
 *** Work on a local copy, accumulate changes, then commit
 
-to borrow an example from the codebase, here's a rule that gets fired every time
-it succeeds.
+To borrow an example from another codebase, here's a conventional unix-y rule
+that gets fired every time it succeeds.
 
 static int
 kernel_route_notify(struct kernel_route *route, void *closure)
@@ -146,7 +147,7 @@ kernel_route_notify(struct kernel_route *route, void *closure)
     return -1;
 }
 
-it is better to bulk that up:
+It is better to bulk that up in the onchip register
 
 static inline int
 kernel_route_notify(struct kernel_route *route, flags, void *closure)
@@ -154,7 +155,7 @@ kernel_route_notify(struct kernel_route *route, flags, void *closure)
     flags.kernel_routes_changed = 1; // OR #IMMEDATE something
 }
 
-and after you are done, I think a non-racy in memory version is:
+Were we doing this in memory, after you are done, I think a non-racy in memory version is:
 
 if(flags.krc == 1 && global.flags.krc == 0  ) {
 kflags_barrier_start();
@@ -164,14 +165,14 @@ atomic_update(global,flags);
 kflags_barrier_end();
 }
 
-which is why we just stick this in the flags register to start with.
+Which is why we just stick this in the flags register to start with.
 
 You should bulk this up for anything that changes global state as the result of
 an operation. (so if you changed kernel routes and addresses, accumulate then
 "commit" both at the same time)
 
 I may try adopting rcu semantics or something else in the and it may end up
-the barrier has to be before and after the if.
+the barrier has to be before and after the if in my example.
 
 You should *only* push things forward in a plugin. It's somebody elses job to
 clear the state change back, handled by the main engine.
