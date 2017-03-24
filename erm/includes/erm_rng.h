@@ -39,38 +39,39 @@ extern u32 rngpool[ERM_RND_PAGE_SIZE / sizeof(u32)]; // SECTION("rng")
    and returning 0 to genuine crypto code in... was it arm? mips?
 */
 
-ALWAYS_INLINE u8 get_rng_bytes1()
+ALWAYS_INLINE u8 static inline get_rng_bytes1()
 {
-  return (u8)rngpool[get_cycles() & (RNDTABLE_SIZE_MASK)]
+  return (u8)rngpool[get_cycles() & (RNDTABLE_SIZE_MASK)];
 }
-ALWAYS_INLINE u16 get_rng_bytes2()
+ALWAYS_INLINE static inline u16 get_rng_bytes2()
 {
-  return (u16)rngpool[(get_cycles() << 1) & (RNDTABLE_SIZE_MASK)]
+  return (u16)rngpool[(get_cycles() << 1) & (RNDTABLE_SIZE_MASK)];
 }
-ALWAYS_INLINE u32 get_rng_bytes4()
+ALWAYS_INLINE static inline u32 get_rng_bytes4()
 {
-  return (u32)rngpool[(get_cycles() << 2) & (RNDTABLE_SIZE_MASK)]
+  return (u32)rngpool[(get_cycles() << 2) & (RNDTABLE_SIZE_MASK)];
 }
-ALWAYS_INLINE u64 get_rng_bytes8()
+ALWAYS_INLINE static inline u64 get_rng_bytes8()
 {
-  return (u64)rngpool[(get_cycles() << 3) & (RNDTABLE_SIZE_MASK >> 1)]
+  return (u64)rngpool[(get_cycles() << 3) & (RNDTABLE_SIZE_MASK >> 1)];
 }
-ALWAYS_INLINE u128 get_rng_bytes128()
+/*
+
+ALWAYS_INLINE u128 static inline get_rng_bytes128()
 {
-  return (u128)rngpool[(get_cycles() << 4) & (RNDTABLE_SIZE_MASK >> 2)]
+  return (u128)rngpool[(get_cycles() << 4) & (RNDTABLE_SIZE_MASK >> 2)];
 }
 
 // And hopefully this will let me load up sse/neon sanely
-
-ALWAYS_INLINE v64 get_rng_bytesv8()
+ALWAYS_INLINE static inline v64 get_rng_bytesv8()
 {
-  return (v64)rngpool[(get_cycles() << 3) & (RNDTABLE_SIZE_MASK >> 1)]
+  return (v64)rngpool[(get_cycles() << 3) & (RNDTABLE_SIZE_MASK >> 1)];
 }
-ALWAYS_INLINE v128 get_rng_bytesv16()
+ALWAYS_INLINE static inline v128 get_rng_bytesv16()
 {
-  return (v128)rngpool[(get_cycles() << 4) & (RNDTABLE_SIZE_MASK >> 2)]
+  return (v128)rngpool[(get_cycles() << 4) & (RNDTABLE_SIZE_MASK >> 2)];
 }
-
+*/
 #else
 /* TODO - real rng. Also one that always returns 0 for sims */
 #warning better version of erm_random not written yet

@@ -36,8 +36,13 @@
 #define ERM_RND_PAGE_SIZE (256)
 #endif
 
-#include "erm_rng.h"
+#define SECTION(a)
+
 #include "shared.h"
+#include "preprocessor.h"
+#include "erm_types.h"
+#include "get_cycles.h"
+#include "erm_rng.h"
 
 u32 rngpool[ERM_RND_PAGE_SIZE / sizeof(u32)] SECTION("rng");
 
@@ -47,12 +52,15 @@ void rng_fill()
 {
   for(int i = 0; i < ERM_RND_PAGE_SIZE; i++) {
     rngpool[i] = random();
-    sleep(1);
   }
+    sleep(1);
 }
 
 #ifdef DEBUG_MODULE
 #include <stdio.h>
+
+#define PERF stdout
+#define LOGGER_INFO(where, fmt, ... ) printf(where, fmt, __VA_ARGS__)
 
 #include "erm_logger.h"
 #include "get_cycles.h"
