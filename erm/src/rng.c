@@ -17,11 +17,12 @@
 /* ERM's emulation of a hardware rng is different from a real rng. It is
    entirely nonblocking, using a periodically regenerated pnrg from another
    thread. If you overrun the entropy pool, you start over from the beginning,
-   which for all you know has been regenerated while you weren't looking but you
+   which for all you know has been regenerated while you weren't looking but
+   you
    can't be sure.
 
-   By default it is one memory page in size, but can be compiled down to a
-   cacheline and placed in hot or cold memory.
+   By default it is one memory page in size, but can be compiled down to
+   two cachelines and placed in hot or cold memory.
 
    You can have many hwrngs.
 
@@ -30,12 +31,39 @@
 
 */
 
-#include "rng.h"
+#ifndef ERM_RND_PAGE_SIZE
+#warning you should very much define ERM_RND_PAGE_SIZE
+#define ERM_RND_PAGE_SIZE (256)
+#endif
 
-// My simplest implementation of this would be get_cycles & (TOP_MASK | ALIGNMENT)
-// Toss all randomness into one memory area
-// whatever SECTION HWRNG
+#include "erm_rng.h"
+#include "shared.h"
+
+u32 rngpool[ERM_RND_PAGE_SIZE / sizeof(u32)] SECTION("rng");
+
+// Simple stupid filler thread
+
+void rng_fill()
+{
+  for(int i = 0; i < ERM_RND_PAGE_SIZE; i++) {
+    rngpool[i] = random();
+    sleep(1);
+  }
+}
 
 #ifdef DEBUG_MODULE
-FIXME
+#include <stdio.h>
+
+#include "erm_logger.h"
+#include "get_cycles.h"
+
+int main()
+{
+  rng_fill();
+  LOGGER_INFO(PERF, "This will probably not be sufficiently random: "
+                    " u8: %c u16: %d u32: %d u64: %ld\n",
+              get_rng_bytes1(), get_rng_bytes2(), get_rng_bytes4(), get_rng_bytes8());
+  return 0;
+}
+
 #endif
