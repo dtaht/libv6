@@ -73,16 +73,21 @@
 #ifdef DEBUG_MODULE
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include "cycles_bench.h"
 
 float bvals[4];
- 
+
 int main()
 {
+  GET_CYCLES_INIT(0,collect,start,end);
+  GET_CYCLES_AVAIL(start,end);
   float f;
   for(int i = -0xff; i < 0xff; i++) {
     f = blanusa_powintdouble(i);
     printf("Blanusa %d: %g: %g\n", i, f, blanusa_powintfloat(f));
   }
+  GET_CYCLES_STOP(collect,start,end);
 
   double d;
   for(int i = -0xff; i < 0xff; i++) {
@@ -106,30 +111,45 @@ int main()
   res = calloc(0xffff,sizeof bvals);
 
   for(int i = 0; i < 0xff*4; i++) {
-	vals[i] = random() % 32;
+	vals[i] = i *.03124 * (random() % 32);
   }
+
 // No workie
+  GET_CYCLES_START(collect,start,end);
 #pragma simd
-  for (int i = 0; i < 0xff; i+=4) {
-	res[i] = blanusa_powintfloat(vals[i]); 
-	res[i+1] = blanusa_powintfloat(vals[i+1]); 
-	res[i+2] = blanusa_powintfloat(vals[i+2]); 
-	res[i+3] = blanusa_powintfloat(vals[i+3]); 
+  for (int i = 0; i < 0xffff; i+=4) {
+	res[i] = blanusa_powintfloat(vals[i]);
+	res[i+1] = blanusa_powintfloat(vals[i+1]);
+	res[i+2] = blanusa_powintfloat(vals[i+2]);
+	res[i+3] = blanusa_powintfloat(vals[i+3]);
   }
+  GET_CYCLES_STOP(collect,start,end);
+  u64 last = collect;
+
+  GET_CYCLES_PRINT("vectorized",collect);
+
   for (int i = 0; i < 0xff; i+=4) {
 	printf("%g %g %g %g\n", res[i], res[i+1], res[i+2], res[i+3]);
   }
 
-// No workie
-
-#pragma simd
-  for (int i = 0; i < 0x100; i++) {
-	res[i] = blanusa_powintfloat(vals[i]); 
+  for(int i = 0; i < 0xff*4; i++) {
+	vals[i] = i *.03124 * (random() % 32);
   }
+  GET_CYCLES_START(collect,start,end);
+#pragma simd
+  for (int i = 0; i < 0xffff; i++) {
+	res[i] = blanusa_powintfloat(vals[i]);
+  }
+  GET_CYCLES_STOP(collect,start,end);
+  double l1 = last;
+  double l2 = collect;
+  double ratio = l2/l1;
+
+  GET_CYCLES_PRINT("simple vectorized",collect);
   for (int i = 0; i < 0xff; i+=4) {
 	printf("%g %g %g %g\n", res[i], res[i+1], res[i+2], res[i+3]);
   }
-
+  printf("difference: %ld speedup: %.30f\n", last - collect, ratio);
   return 0;
 }
 #endif
