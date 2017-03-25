@@ -1746,3 +1746,13 @@ unconditional jump the compiler puts in (2 branches vs 1 on entry)
 
 And this started off as an exercise in getting post-increment addressing modes
 working on another arch entirely, too.
+
+* We don't need no steenking jhashes.
+
+Xors may well suffice. It's a set associative lookup cache, after all.
+
+Because worse is better.
+
+* try using Ripgrep
+
+in emacs
