@@ -1514,3 +1514,66 @@ It's time to go and see what vpp and ddpk can do for me, instead.
 I took a walk. It's still building.
 $
 
+* Back to vector processing
+
+vdup takes conditionals, so you can more easily load up your choice of mask
+
+VDUP{cond}.size Qd, Dm[x]
+VDUP{cond}.size Dd, Dm[x]
+VDUP{cond}.size Qd, Rm
+
+
+size
+must be 8, 16, or 32.
+Qd
+
+everything takes conditionals
+
+VHADD is not a horizontal ADD (I thought it was). It is a halving add.
+
+VHADD adds corresponding elements in two vectors, shifts each result right one bit, and places the results in the destination vector. Results are truncated.
+
+
+http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0473m/dom1361289949173.html
+
+VLDM can load up to 8 q registers at a time.
+
+VMAX compares corresponding elements in two vectors, and copies the larger of each pair into the corresponding element in the destination vector.
+
+VMOV does let me use immediate (floating point format) constants
+
+
+VMOVN copies the least significant half of each element of a quadword vector into the corresponding elements of a doubleword vector.
+
+
+VMOV2 can generate any 16-bit immediate value, and a restricted range of 32-bit and 64-bit immediate values.
+
+The VMRS instruction transfers the contents of extsysreg into Rd.
+
+stalls until all other neon ins are complete
+
+VMVN inverts the value of each bit from the source register and places the
+results into the destination register
+
+VMVN inverts the value of each bit from an immediate value and places the results into each element in the destination register.
+
+
+VQABS takes the absolute value of each element in a vector, and places the results in a second vector.
+The sticky QC flag (FPSCR bit[27]) is set if saturation occurs.
+
+VQADD adds corresponding elements in two vectors, and places the results in the destination vector.
+The sticky QC flag (FPSCR bit[27]) is set if saturation occurs.
+
+elsewhere I was ranting about the wastebin idea. with neon condition codes I
+don't need that wastebin
+
+12.118 VSTn (multiple n-element structures)
+Vector Store multiple n-element structures.
+
+VUZP might be a start at doing the bit reversal stuff on two IP addrs at the same
+time.
+
+VCLZ counts the number of consecutive zeros, starting from the top bit, in each element in a vector, and places the results in a second vector.
+
+* ebusl - ebuse musl
+

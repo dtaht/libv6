@@ -85,18 +85,20 @@ typedef struct {
 // asm("sidt %0\n" :
 //   : "m"(loc));
 
-inline twocount popcount2thin(const u64 *buf) {
-    twocount t;
+inline u64 popcount2thin(const u64 *buf) {
+    u64 t;
     const int i = 0;
     asm("nop; /* dave was here*/");
     __asm__ __volatile__(
-            "popcnt %2, %0  \n\t"
+            "popcnt %1, %0  \n\t"
+            "popcnt %2, %%rax  \n\t"
+            "add %%rax, %0     \n\t"
+	    "shl $8, %0 \n\t "
             "popcnt %3, %%rax  \n\t"
             "add %%rax, %0     \n\t"
-            "popcnt %4, %1  \n\t"
-            "popcnt %5, %%rax  \n\t"
-            "add %%rax, %1     \n\t"
-            : "+r" (t.one), "+r" (t.two)
+            "popcnt %4, %%rax  \n\t"
+            "add %%rax, %0     \n\t"
+            : "r+" (t)
             : "m"  (buf[i]), "m"  (buf[i+1]), "m"  (buf[i+2]), "m"  (buf[i+3])
                 );
   return t;
@@ -208,8 +210,8 @@ int main() {
 	printf("popzero: %d %d\n",t.one, t.two);
 	t = popcount2cheaper(&test4);
 	printf("pop2cheaper: %d %d\n",t.one, t.two);
-	t = popcount2thin(&test5);
-	printf("pop2cheapest: %d %d\n",t.one, t.two);
+	short s = popcount2thin(&test5);
+	printf("pop2cheapest: %d %d\n",s >> 8, s & 255);
 	return 0;
 }
 
