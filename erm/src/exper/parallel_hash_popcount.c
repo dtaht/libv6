@@ -119,14 +119,17 @@ inline u64 popcount2thinpostinc1(const u64 *buf) {
 
 */
 
+// Popcount up to 8 128 bit values and stores the result in the return
+// (doing more than that is doable - but futile)
 // Lets you use any dest
+// Uses a counter reg (ecx)
+// Use a temp reg (any)
+// Return result in a register
 
 inline u64 popcount2anydest(const u64 *buf, int cnt) {
     u64 t;
     u64 *b2 = buf; // I don't want the !@#! %sp
     u64 scratch;
-//    register u64 counter asm("rcx");
-//    counter = cnt;
     __asm__ __volatile__(
           	    "lea %5, %1 \n\t"
                     "popcnt_again%=:\n\t"
@@ -144,11 +147,6 @@ inline u64 popcount2anydest(const u64 *buf, int cnt) {
   return t;
 }
 
-// Use a counter reg
-// Use a temp reg
-// Return result in t
-// Can popcount up to 8 128 bit values and store the result
-// (doing more than is futile)
 // FIXME: Doesn't load up ecx
 //        Not sure if it is doing the right thing with lea
 //        (the rsp should be enough?)
