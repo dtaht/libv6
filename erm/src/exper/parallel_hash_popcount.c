@@ -121,9 +121,11 @@ inline u64 popcount2anydest(const u64 *buf, int cnt) {
     u64 t;
     u64 *b2 = buf; // I don't want the !@#! %sp
     u64 scratch;
+    register u64 counter asm("rcx");
+    counter = cnt;
     __asm__ __volatile__(
 //	    "lea %2, %%rcx \n\t"
-	    "lea %4, %1 \n\t"
+	    "lea %5, %1 \n\t"
             "again:\n\t"
 	            "shl $8, %0 \n\t "
                     "popcnt (%1), %2  \n\t"
@@ -132,9 +134,9 @@ inline u64 popcount2anydest(const u64 *buf, int cnt) {
 	            "add $16, %1\n\t "
                     "add %2, %0     \n\t"
                     "LOOP again"
-	    : "=r" (t), "=r" (b2), "=r" (scratch)
-	    : "r" (cnt), "m" (buf)
-	    : "cc","%rcx"
+	    : "=r" (t), "=r" (b2), "=r" (scratch), "=r" (cnt)
+	    : "r" (counter),  "m" (buf)
+	    : "cc"
             );
   return t;
 }
