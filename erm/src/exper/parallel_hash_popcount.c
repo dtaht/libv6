@@ -115,6 +115,10 @@ inline u64 popcount2thinpostinc1(const u64 *buf) {
 }
 */
 
+/*
+
+*/
+
 // Lets you use any dest
 
 inline u64 popcount2anydest(const u64 *buf, int cnt) {
@@ -124,8 +128,8 @@ inline u64 popcount2anydest(const u64 *buf, int cnt) {
     register u64 counter asm("rcx");
     counter = cnt;
     __asm__ __volatile__(
-	    "lea %5, %1 \n\t"
-            "again:\n\t"
+          	    "lea %5, %1 \n\t"
+                    "again:\n\t"
 	            "shl $8, %0 \n\t "
                     "popcnt (%1), %2  \n\t"
                     "add %%rax, %0     \n\t"
@@ -134,7 +138,7 @@ inline u64 popcount2anydest(const u64 *buf, int cnt) {
                     "add %2, %0     \n\t"
                     "LOOP again"
 	    : "=r" (t), "=a" (b2), "=r" (scratch), "+r" (counter)
-	    : "r" (counter),  "m" (buf)
+	    : "r" (counter),  "m" (b2)
 	    : "cc"
             );
   return t;
