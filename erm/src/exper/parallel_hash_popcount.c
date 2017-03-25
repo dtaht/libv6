@@ -125,20 +125,20 @@ inline u64 popcount2anydest(const u64 *buf, int cnt) {
     u64 t;
     u64 *b2 = buf; // I don't want the !@#! %sp
     u64 scratch;
-    register u64 counter asm("rcx");
-    counter = cnt;
+//    register u64 counter asm("rcx");
+//    counter = cnt;
     __asm__ __volatile__(
           	    "lea %5, %1 \n\t"
-                    "again:\n\t"
+                    "popcnt_again%=:\n\t"
 	            "shl $8, %0 \n\t "
                     "popcnt (%1), %2  \n\t"
-                    "add %%rax, %0     \n\t"
+                    "add %2, %0     \n\t"
 	            "popcnt 8(%1), %2  \n\t"
 	            "add $16, %1\n\t "
                     "add %2, %0     \n\t"
-                    "LOOP again"
-	    : "=r" (t), "=a" (b2), "=r" (scratch), "+r" (counter)
-	    : "r" (counter),  "m" (b2)
+                    "LOOP popcnt_again%="
+	    : "=r" (t), "=r" (*b2), "=r" (scratch), "=c" (cnt)
+	    : "3" (cnt),  "m" (*b2)
 	    : "cc"
             );
   return t;
@@ -312,6 +312,10 @@ u64 test2[4] = {0xff, 0xff, 0xff, 0x7f};
 u64 test3[4] = {0xff7f,0x7fffffff, 0x7f, 0xff };
 u64 test4[4] = {0xff7f,0x7fffffff, 0xff, 0x7f };
 u64 test5[4] = {0xff, 0x7f, 0xff7f,0x7fffffff };
+u64 test6[16] = {0xff, 0x7f, 0xff7f,0x7fffffff,
+		  0xff, 0x7f, 0xff7f,0x7fffffff,
+		   0xff7f,0x7fffffff, 0xff, 0x7f,
+		   0xff7f,0x7fffffff, 0x7f, 0xff };
 
 int main() {
 	twocount t = popcount2(&test1);
@@ -328,6 +332,15 @@ int main() {
 //	printf("pop2postinc: %d %d\n",s >> 8, s & 255);
 	s = popcount2anydest(&test5,2);
 	printf("pop2postinc1: %d %d\n",s >> 8, s & 255);
+	s = popcount2anydest(&test4,2);
+	printf("pop2postinc1: %d %d\n",s >> 8, s & 255);
+	s = popcount2anydest(&test3,2);
+	printf("pop2postinc1: %d %d\n",s >> 8, s & 255);
+	s = popcount2anydest(&test2,2);
+	printf("pop2postinc1: %d %d\n",s >> 8, s & 255);
+// What would be the best logic? Low bits? high bits?
+	s = popcount2anydest(&test6,8);
+	printf("pop2anydest16: %d %d\n",s >> 8, s & 255);
 	return 0;
 }
 
