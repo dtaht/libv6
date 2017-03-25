@@ -1,6 +1,6 @@
 * Overview
 Over the years I'd developed a terminology for describing the concepts in ERM to
-myself that have gradually grown to a rather distinct dictionary and taxomy.
+myself that have gradually grown to a rather distinct dictionary and taxonomy.
 
 These are not objects. They are message passing functional units with clearly
 defined properties, in most cases, or fuzzy concepts that map to other concepts.
@@ -25,7 +25,8 @@ I am also seemingly in love with the letter S for no sound reason I can sink of.
 ** Sinks
 
 Note that instead of not writing a result to memory, we write it to an unneeded,
-uncontended (per cpu) area of memory (a wastebin) (and move on).
+un-contended (per cpu) area of memory (a cacheline-wide wastebin much like
+/dev/null) (and move on).
 
 ** Spitters
 sends an input to a single output
@@ -80,8 +81,8 @@ precision.
 
 The C library sort of has a three or four valued logic - -1 (11111111) usually
 means an error return. 0XXXXX means you have a valid result. 00 means you did
-nothing. Floating point sort of has it - inf, nan, number. Way too many
-varieties of infinity.
+nothing. Floating point sort of has it - inf, nan, number. (Way too many
+varieties of NAN!)
 
 Codd and Date struggled with it - the 3rd value of NULL is needed but doesn't
 fit into the language they designed (SQL) very well. It fit a lot better in later
@@ -108,9 +109,9 @@ I am attempting to use it consistently in the ERM. Take errno, for example - an
 error return with the top bit set contains the rest of the errno in the bottom
 bits. No need to stash errno somewhere else or check for it somewhere else, you
 already have it. No need to actually use the global errno type either, just the
-specific errors that you are returning for, that you can map back to a
-conventional errno if you need to. Result: straight line code with no obvious
-error checking, jumps, or branches required in many cases.
+(usually less than -10) specific errors that you are returning for, that you can
+map back to a conventional errno if you need to. Result: straight line code with
+no obvious error checking, jumps, or branches required in many cases.
 
 * Flow model
 
