@@ -79,11 +79,33 @@ typedef struct {
         : "%esi", "%edi", "%ecx" );
     }
 */
+
+
+//        leal    -4(%ebp), %ebx
 // If your code modifies the condition code register, “cc”.
 // So the code I pull from the web is wrong....
 
 // asm("sidt %0\n" :
 //   : "m"(loc));
+
+inline u64 popcount2thinpostinc(const u64 *buf) {
+    u64 t;
+    const int i = 0;
+    asm("nop; /* dave was here*/");
+    __asm__ __volatile__(
+            "popcnt %1, %0  \n\t"
+            "popcnt %2, %%rax  \n\t"
+            "add %%rax, %0     \n\t"
+	    "shl $8, %0 \n\t "
+            "popcnt %3, %%rax  \n\t"
+            "or %%rax, %0     \n\t"
+            "popcnt %4, %%rax  \n\t"
+            "add %%rax, %0     \n\t"
+            : "=r" (t) // , // "=a" (addr) ??
+            : "o>"  (buf[i]), "o>"  (buf[i+1]), "o>"  (buf[i+2]), "o>"  (buf[i+3])
+                );
+  return t;
+}
 
 inline u64 popcount2thin(const u64 *buf) {
     u64 t;
@@ -98,8 +120,8 @@ inline u64 popcount2thin(const u64 *buf) {
             "add %%rax, %0     \n\t"
             "popcnt %4, %%rax  \n\t"
             "add %%rax, %0     \n\t"
-            : "r+" (t)
-            : "m"  (buf[i]), "m"  (buf[i+1]), "m"  (buf[i+2]), "m"  (buf[i+3])
+            : "=r" (t)
+            : "o>"  (buf[i]), "o>"  (buf[i+1]), "o>"  (buf[i+2]), "o>"  (buf[i+3])
                 );
   return t;
 }
@@ -212,6 +234,8 @@ int main() {
 	printf("pop2cheaper: %d %d\n",t.one, t.two);
 	short s = popcount2thin(&test5);
 	printf("pop2cheapest: %d %d\n",s >> 8, s & 255);
+	s = popcount2thinpostinc(&test5);
+	printf("pop2postinc: %d %d\n",s >> 8, s & 255);
 	return 0;
 }
 
