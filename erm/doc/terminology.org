@@ -81,8 +81,8 @@ precision.
 
 The C library sort of has a three or four valued logic - -1 (11111111) usually
 means an error return. 0XXXXX means you have a valid result. 00 means you did
-nothing. Floating point sort of has it - inf, nan, number. (Way too many
-varieties of NAN!)
+nothing. mmap returns -1 as the address for a failed pointer attempt. Floating
+point sort of has it - inf, nan, number. (Way too many varieties of NAN!)
 
 Codd and Date struggled with it - the 3rd value of NULL is needed but doesn't
 fit into the language they designed (SQL) very well. It fit a lot better in later
