@@ -80,6 +80,12 @@ typedef struct {
     }
 */
 
+// popcnt + cmov?
+
+/* Label:			; this is a label in assembly
+   INX 	EAX   	; increment eax
+   LOOP 	Label		; decrement ECX, loop if not 0
+*/
 
 //        leal    -4(%ebp), %ebx
 // If your code modifies the condition code register, “cc”.
@@ -109,24 +115,62 @@ inline u64 popcount2thinpostinc1(const u64 *buf) {
 }
 */
 
-inline u64 popcount2thinpostinc1(const u64 *buf) {
+// Lets you use any dest
+
+inline u64 popcount2anydest(const u64 *buf, int cnt) {
     u64 t;
-    const int i = 0;
+    u64 *b2 = buf; // I don't want the !@#! %sp
+    u64 scratch;
     __asm__ __volatile__(
-//	    "lea %1, %%rbx \n\t"
-            "popcnt (%1), %0  \n\t"
-            "again: popcnt 8(%1), %%rax  \n\t"
-            "add %%rax, %0     \n\t"
-	    "shl $8, %0 \n\t "
-            "popcnt 16(%1), %%rax  \n\t"
-            "or %%rax, %0     \n\t"
-            "popcnt 24(%1), %%rax  \n\t"
-            "add %%rax, %0     \n\t"
-	     : "=r" (t)
-	     : "a" (buf)
-                );
+//	    "lea %2, %%rcx \n\t"
+	    "lea %4, %1 \n\t"
+            "again:\n\t"
+	            "shl $8, %0 \n\t "
+                    "popcnt (%1), %2  \n\t"
+                    "add %%rax, %0     \n\t"
+	            "popcnt 8(%1), %2  \n\t"
+	            "add $16, %1\n\t "
+                    "add %2, %0     \n\t"
+                    "LOOP again"
+	    : "=r" (t), "=r" (b2), "=r" (scratch)
+	    : "r" (cnt), "m" (buf)
+	    : "cc","%rcx"
+            );
   return t;
 }
+
+// Use a counter reg
+// Use a temp reg
+// Return result in t
+// Can popcount up to 8 128 bit values and store the result
+// (doing more than is futile)
+// FIXME: Doesn't load up ecx
+//        Not sure if it is doing the right thing with lea
+//        (the rsp should be enough?)
+//        I don't want to specify rax, or for that matter ecx
+//        can just us a classic loop instead, but...
+
+inline u64 popcount2thinpostinc1(const u64 *buf, int cnt) {
+    u64 t;
+    u64 *b2 = buf; // I don't want the !@#! %sp
+    __asm__ __volatile__(
+//	    "lea %2, %%rcx \n\t"
+	    "lea %3, %1 \n\t"
+            "again:\n\t"
+	            "shl $8, %0 \n\t "
+                    "popcnt (%1), %%rax  \n\t"
+                    "add %%rax, %0     \n\t"
+	            "popcnt 8(%1), %%rax  \n\t"
+	            "add $16, %1\n\t "
+                    "add %%rax, %0     \n\t"
+                    "LOOP again"
+	    : "=r" (t), "=r" (b2)
+	    : "r" (cnt), "m" (buf)
+	    : "cc","%rcx", "%rax"
+            );
+  return t;
+}
+
 /*
 inline u64 popcount2thinpostinc(const u64 *buf) {
     u64 t;
@@ -277,7 +321,7 @@ int main() {
 	printf("pop2cheapest: %d %d\n",s >> 8, s & 255);
 //	s = popcount2thinpostinc(&test5);
 //	printf("pop2postinc: %d %d\n",s >> 8, s & 255);
-	s = popcount2thinpostinc1(&test5);
+	s = popcount2anydest(&test5,2);
 	printf("pop2postinc1: %d %d\n",s >> 8, s & 255);
 	return 0;
 }
