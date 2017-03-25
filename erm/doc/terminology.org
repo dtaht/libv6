@@ -1,0 +1,129 @@
+* Overview
+Over the years I'd developed a terminology for describing the concepts in ERM to
+myself that have gradually grown to a rather distinct dictionary and taxomy.
+
+These are not objects. They are message passing functional units with clearly
+defined properties, in most cases, or fuzzy concepts that map to other concepts.
+
+I am also seemingly in love with the letter S for no sound reason I can sink of.
+
+* System Types
+** Hunters
+** Gatherers - collectors
+** Scatterers
+** Speculators
+** Monks
+** Arbiters
+** Kamikazes
+** Dreamers
+** Dozers
+** Seekers
+** Thinkers
+** Maids
+
+* IO output
+** Sinks
+
+Note that instead of not writing a result to memory, we write it to an unneeded,
+uncontended (per cpu) area of memory (a wastebin) (and move on).
+
+** Spitters
+sends an input to a single output
+** Spewers
+sends an input through a filter to output(s)
+** Spammers
+sends an input to as many outputs as are willing to listen
+
+* Translators - Filters
+** Arbs (arbiters)
+** Splicers
+** Splitters
+** Selectors
+** Skewers
+
+* Schedulers
+** Starters
+*** Stagger
+*** Stumble
+*** Spawn
+*** Stammer
+** Stoppers
+** Slammers
+
+* IO Input
+** Sources
+** Suckers
+
+* Memory
+
+Every memory area is protected by virtual memory and a red zone. There are no
+inherent checks for running out of bound except that if you run out of space in
+your area, a memory trap is thrown, and you have to reallocate and start your
+job over.
+
+Ringbuffers, when the architecture permits, use mmaped on themselves pages
+so they can free-run. Some ring buffers (like logging errors), are free-running
+entirely with no checks for overrun. Ringbuffers are strongly typed, and report
+high and low watermarks in addition to blocking.
+
+* [[https://en.wikipedia.org/wiki/Four-valued_logic][Four Valued logic]]
+
+Four valued logic concepts are everywhere - if you look. Or maybe I'm just
+overly sensitive to it.
+
+It's an essential part of Verilog. (VHDL has *9* states, and I don't want to
+talk about it).
+
+36 bit tagged architectures essentially had it, although it was partially
+wrapped around the separate ideas of garbage collection and higher numerical
+precision.
+
+The C library sort of has a three or four valued logic - -1 (11111111) usually
+means an error return. 0XXXXX means you have a valid result. 00 means you did
+nothing. Floating point sort of has it - inf, nan, number. Way too many
+varieties of infinity.
+
+Codd and Date struggled with it - the 3rd value of NULL is needed but doesn't
+fit into the language they designed (SQL) very well. It fit a lot better in later
+attempts like QUEL and GPRE - but those languages failed in the marketplace.
+
+Most recently - it showed up in Mill Computer's CPU design - NAR is "Not a result".
+(I love the mill. Erm will run like the wind on a mill).
+
+Despite all that, we've never had enough bits to spare, (until now) and the legacy of
+libraries first designed in the 70s lives on, with countless millions of (buggy)
+lines piled on top of them. C doesn't map particularly well to this. Go goes and
+makes the error return another variable entirely. C++ and java have exceptions.
+
+In modern CPUs...
+
+You can sort of get there using arm's conditional instructions but those are
+being phased out. You can also use the top bits of the address on all modern 64
+bit architectures for something other than their basic purpose. Vector units
+sort of have it in their 4 way modes with "Select".
+
+...
+
+I am attempting to use it consistently in the ERM. Take errno, for example - an
+error return with the top bit set contains the rest of the errno in the bottom
+bits. No need to stash errno somewhere else or check for it somewhere else, you
+already have it. No need to actually use the global errno type either, just the
+specific errors that you are returning for, that you can map back to a
+conventional errno if you need to. Result: straight line code with no obvious
+error checking, jumps, or branches required in many cases.
+
+* Flow model
+
+Written from right to left (function, rather than dataflow syntax) to be more
+expressible in C.
+
+FIXME: This is incorrect and quite a bit more complex than this - needs
+something other than ascii text for four valued logic!
+
+nok = YYYYYYYYYYYYYYYYYYYYYYY; // Y = 0
+
+l: foreach(source) {
+     while(!(nok |= select(spew(arb(splice(suck(source))))))) ; &
+   }
+
+   if(Fix(OK)) goto l;
