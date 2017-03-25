@@ -88,10 +88,49 @@ typedef struct {
 // asm("sidt %0\n" :
 //   : "m"(loc));
 
+/*
+inline u64 popcount2thinpostinc1(const u64 *buf) {
+    u64 t;
+    const int i = 0;
+    __asm__ __volatile__(
+	    // "lea %1, %%rbx \n\t"
+            "popcnt (%1), %0  \n\t"
+            "again: popcnt (%1), %%rax  \n\t"
+            "add %%rax, %0     \n\t"
+	    "shl $8, %0 \n\t "
+            "popcnt (%1), %%rax  \n\t"
+            "or %%rax, %0     \n\t"
+            "popcnt (%1), %%rax  \n\t"
+            "add %%rax, %0     \n\t"
+            : "=w" (t)
+            : "o" (buf)
+                );
+  return t;
+}
+*/
+
+inline u64 popcount2thinpostinc1(const u64 *buf) {
+    u64 t;
+    const int i = 0;
+    __asm__ __volatile__(
+//	    "lea %1, %%rbx \n\t"
+            "popcnt (%1), %0  \n\t"
+            "again: popcnt 8(%1), %%rax  \n\t"
+            "add %%rax, %0     \n\t"
+	    "shl $8, %0 \n\t "
+            "popcnt 16(%1), %%rax  \n\t"
+            "or %%rax, %0     \n\t"
+            "popcnt 24(%1), %%rax  \n\t"
+            "add %%rax, %0     \n\t"
+	     : "=r" (t)
+	     : "a" (buf)
+                );
+  return t;
+}
+/*
 inline u64 popcount2thinpostinc(const u64 *buf) {
     u64 t;
     const int i = 0;
-    asm("nop; /* dave was here*/");
     __asm__ __volatile__(
             "popcnt %1, %0  \n\t"
             "popcnt %2, %%rax  \n\t"
@@ -106,6 +145,8 @@ inline u64 popcount2thinpostinc(const u64 *buf) {
                 );
   return t;
 }
+
+*/
 
 inline u64 popcount2thin(const u64 *buf) {
     u64 t;
@@ -234,8 +275,10 @@ int main() {
 	printf("pop2cheaper: %d %d\n",t.one, t.two);
 	short s = popcount2thin(&test5);
 	printf("pop2cheapest: %d %d\n",s >> 8, s & 255);
-	s = popcount2thinpostinc(&test5);
-	printf("pop2postinc: %d %d\n",s >> 8, s & 255);
+//	s = popcount2thinpostinc(&test5);
+//	printf("pop2postinc: %d %d\n",s >> 8, s & 255);
+	s = popcount2thinpostinc1(&test5);
+	printf("pop2postinc1: %d %d\n",s >> 8, s & 255);
 	return 0;
 }
 

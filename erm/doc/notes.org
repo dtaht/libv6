@@ -1577,3 +1577,22 @@ VCLZ counts the number of consecutive zeros, starting from the top bit, in each 
 
 * ebusl - ebuse musl
 
+* Sigh. More assembly
+
+#define syscall4( number, _1, _2, _3, _4 )  \
+({                                          \
+    int64_t ret;                            \
+    register int64_t r10 asm("r10") = _4;   \
+    __asm__ volatile                        \
+    (                                       \
+        "syscall\n\t"                       \
+        : "=a"( ret )                       \
+        : "a"( number ),                    \
+          "D"( _1 ),                        \
+          "S"( _2 ),                        \
+          "d"( _3 ),                        \
+          "r"( r10 )                        \
+        : "memory", "rcx", "r11"            \
+    );                                      \
+    ret;                                    \
+})
