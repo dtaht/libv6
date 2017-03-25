@@ -53,9 +53,78 @@ Well, first benchmarking what straightline code does makes the most sense. :)
 #include "simd.h"
 
 typedef struct {
-	u8 one;
-	u8 two;
+	u64 one;
+	u64 two;
 } twocount;
+
+// http://www.felixcloutier.com/x86/POPCNT.html
+
+// ZF is set if all zeros, btw
+
+// https://www.cs.cmu.edu/~fp/courses/15213-s07/misc/asm64-handout.pdf
+// r12 is unused for C? goodie
+
+// %q
+// %rdi = first argument
+// pinsrq
+
+/*    void kcopy (unsigned int src, unsigned int dst,
+                unsigned int nbytes) {
+        __asm__ __volatile__ (
+        "cld \n"
+        "rep \n"
+        "movsb \n"
+        :
+        : "S"(src), "D"(dst), "c"(nbytes)
+        : "%esi", "%edi", "%ecx" );
+    }
+*/
+// If your code modifies the condition code register, “cc”.
+// So the code I pull from the web is wrong....
+
+// asm("sidt %0\n" :
+//   : "m"(loc));
+
+inline twocount popcount2thin(const u64 *buf) {
+    twocount t;
+    const int i = 0;
+    asm("nop; /* dave was here*/");
+    __asm__ __volatile__(
+            "popcnt %2, %0  \n\t"
+            "popcnt %3, %%rax  \n\t"
+            "add %%rax, %0     \n\t"
+            "popcnt %4, %1  \n\t"
+            "popcnt %5, %%rax  \n\t"
+            "add %%rax, %1     \n\t"
+            : "+r" (t.one), "+r" (t.two)
+            : "m"  (buf[i]), "m"  (buf[i+1]), "m"  (buf[i+2]), "m"  (buf[i+3])
+                );
+  return t;
+}
+
+
+// The %q puts it anywhere it feels like
+
+inline twocount popcount2wrong(const u64 *buf) {
+	u64 cnt[1] = {0};
+    const int i = 0;
+    __asm__ __volatile__(
+            "popcnt %q, %2  \n\t"
+            "add %q, %0     \n\t"
+            "popcnt %q, %3  \n\t"
+            "add %q, %0     \n\t"
+            "popcnt %q, %4  \n\t"
+            "add %q, %1     \n\t"
+            "popcnt %q, %5  \n\t"
+            "add %q, %1     \n\t"
+            : "+r" (cnt[0]), "+r" (cnt[1])
+            : "r"  (buf[i]), "r"  (buf[i+1]), "r"  (buf[i+2]), "r"  (buf[i+3])
+                );
+  twocount t;
+  t.one =   cnt[0];
+  t.two =   cnt[1];
+  return t;
+}
 
 inline twocount popcount2cheaper(const u64 *buf) {
     u64 cnt[1] = {0};
@@ -128,6 +197,7 @@ u64 test1[4] = {0};
 u64 test2[4] = {0xff, 0xff, 0xff, 0x7f};
 u64 test3[4] = {0xff7f,0x7fffffff, 0x7f, 0xff };
 u64 test4[4] = {0xff7f,0x7fffffff, 0xff, 0x7f };
+u64 test5[4] = {0xff, 0x7f, 0xff7f,0x7fffffff };
 
 int main() {
 	twocount t = popcount2(&test1);
@@ -138,6 +208,8 @@ int main() {
 	printf("popzero: %d %d\n",t.one, t.two);
 	t = popcount2cheaper(&test4);
 	printf("pop2cheaper: %d %d\n",t.one, t.two);
+	t = popcount2thin(&test5);
+	printf("pop2cheapest: %d %d\n",t.one, t.two);
 	return 0;
 }
 
