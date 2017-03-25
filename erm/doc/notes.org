@@ -1656,3 +1656,93 @@ restored).
   4009f4:       bf 01 00 00 00          mov    $0x1,%edi
   4009f9:       31 c0                   xor    %eax,%eax
   4009fb:       e8 50 fb ff ff          callq  400550 <__printf_chk@plt>
+
+* And... the compiler wins!
+
+The compiler version is 40 bytes.
+
+00000000004005a0 <popcount2generic>:
+  4005a0:       31 d2                   xor    %edx,%edx
+  4005a2:       31 c0                   xor    %eax,%eax
+  4005a4:       39 f2                   cmp    %esi,%edx
+  4005a6:       7d 1d                   jge    4005c5 <popcount2generic+0x25>
+  4005a8:       f3 48 0f b8 0f          popcnt (%rdi),%rcx
+  4005ad:       48 83 c7 10             add    $0x10,%rdi
+  4005b1:       48 c1 e0 08             shl    $0x8,%rax
+  4005b5:       f3 4c 0f b8 47 f8       popcnt -0x8(%rdi),%r8
+  4005bb:       ff c2                   inc    %edx
+  4005bd:       4c 01 c1                add    %r8,%rcx
+  4005c0:       48 01 c8                add    %rcx,%rax
+  4005c3:       eb df                   jmp    4005a4 <popcount2generic+0x4>
+  4005c5:       c3                      retq   
+
+vs mine (36 bytes). (and the two results differed because we go *down*, AND the
+compiler version checks for 0 on entry. Sigh.
+
+0000000000400c40 <popcount2anydest>:
+  400c40:       89 f1                   mov    %esi,%ecx
+  400c42:       48 8d 17                lea    (%rdi),%rdx
+
+0000000000400c45 <popcnt_again133>:
+  400c45:       48 c1 e0 08             shl    $0x8,%rax
+  400c49:       f3 48 0f b8 32          popcnt (%rdx),%rsi
+  400c4e:       48 01 f0                add    %rsi,%rax
+  400c51:       f3 48 0f b8 72 08       popcnt 0x8(%rdx),%rsi
+  400c57:       48 83 c2 10             add    $0x10,%rdx
+  400c5b:       48 01 f0                add    %rsi,%rax
+  400c5e:       e2 e5                   loop   400c45 <popcnt_again133>
+  400c60:       48 89 17                mov    %rdx,(%rdi)
+  400c63:       c3                      retq   
+  400c64:       66 2e 0f 1f 84 00 00    nopw   %cs:0x0(%rax,%rax,1)
+  400c6b:       00 00 00 
+  400c6e:       66 90                   xchg   %ax,%ax
+
+** And mine is still wrong even after fixing the sense of the 
+direction and initializing the total (And coming to the same number of bytes
+now. :())
+
+0000000000400c60 <popcount2anydest>:
+  400c60:       89 f1                   mov    %esi,%ecx
+  400c62:       31 c0                   xor    %eax,%eax
+  400c64:       48 8d 17                lea    (%rdi),%rdx
+
+0000000000400c67 <popcnt_again135>:
+  400c67:       48 c1 e0 08             shl    $0x8,%rax
+  400c6b:       f3 48 0f b8 32          popcnt (%rdx),%rsi
+  400c70:       48 01 f0                add    %rsi,%rax
+  400c73:       f3 48 0f b8 72 f8       popcnt -0x8(%rdx),%rsi
+  400c79:       48 83 c2 10             add    $0x10,%rdx
+  400c7d:       48 01 f0                add    %rsi,%rax
+  400c80:       e2 e5                   loop   400c67 <popcnt_again135>
+  400c82:       48 89 17                mov    %rdx,(%rdi)
+  400c85:       c3                      retq   
+
+(unless the other one is wrong)
+
+There is much to learn here, but I think I'll go with the generic version til I
+"get leveraging the rdi properly.
+
+* Maybe a hand written version still lacking pre-amble?
+
+I don't know why the compiler uses %r8? but I guess that makes for better out of
+order behavior and in a subroutine, it's known to be scratch?
+
+I do begrudge the extra cmp in how I wrote the generic version, and the
+unconditional jump the compiler puts in (2 branches vs 1 on entry)
+
+0000000000400c60 <popcount2anydest>:
+  400c60:       89 f1                   mov    %esi,%ecx
+  400c62:       31 c0                   xor    %eax,%eax
+
+0000000000400c67 <popcnt_again135>:
+  400c67:       48 c1 e0 08             shl    $0x8,%rax
+  400c6b:       f3 48 0f b8 32          popcnt (%rdi),%r8
+  400c70:       48 01 f0                add    %r8,%rax
+  400c73:       f3 48 0f b8 72 f8       popcnt -0x8(%rdi),%r8
+  400c79:       48 83 c2 10             add    $0x10,%rdi
+  400c7d:       48 01 f0                add    %r8,%rax
+  400c80:       e2 e5                   loop   400c67 <popcnt_again135>
+  400c85:       c3                      retq
+
+And this started off as an exercise in getting post-increment addressing modes
+working on another arch entirely, too.
