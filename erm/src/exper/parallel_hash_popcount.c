@@ -126,9 +126,25 @@ inline u64 popcount2thinpostinc1(const u64 *buf) {
 
 */
 
-/* The generic version with less branches */
+/* The cut and pasted from the assembly in my preferred form */
 
-u64 popcount2generic_lessbranchy(const u64* buf, int cnt) COLD;
+u64 popcount2loopasm(const u64* buf, int cnt) {
+__asm__ __volatile__(
+  "xor    %eax,%eax\n\t"
+  "mov    %esi,%ecx\n\t"
+  "poploop%="
+  "shl    $0x8,%rax\n\t"
+  "popcnt (%rdi),%rax\n\t"
+  "add    $0x10,%rdi\n\t"
+  "popcnt -0x8(%rdi),%r8\n\t"
+  "add    %r8,%rax\n\t"
+  "LOOP poploop%=\n\t"
+  :
+  :
+  : "cc", "%rdi", "%rax", "%ecx", "%r8"
+  );
+}
+/* The generic version with less branches */
 
 u64 popcount2generic_lessbranchy(const u64* buf, int cnt)
 {
