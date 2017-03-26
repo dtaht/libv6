@@ -75,6 +75,8 @@ match and store it blindly with the only branch being the counter.
 
 VSTR.EQ[somewhere,data]!
 
+** Splitter
+Essentially the "tee" operation
 ** Spitters
 sends an input to a single output. They are a devolved class of assembler.
 ** Spewers
