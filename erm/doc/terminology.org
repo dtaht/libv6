@@ -22,11 +22,58 @@ I am also seemingly in love with the letter S for no sound reason I can sink of.
 ** Maids
 
 * IO output
+
 ** Sinks
 
 Note that instead of not writing a result to memory, we write it to an unneeded,
 un-contended (per cpu) area of memory (a cacheline-wide wastebin much like
-/dev/null) (and move on).
+/dev/null) (and move on). In some cases, arm NEON conditional instructions can
+be used to avoid the wastebin.
+
+** Flingers
+
+take something, apply a filter, and send it somewhere else. Conceptually they
+are a dma engine that can apply a few fairly simple transforms to the data. They
+can also do joins (assemble data) across multiple sinks to a single dest, using
+multiple dma engines.
+
+They take a ring buffer of tagged jobs as input. Some kinds are allowed to
+complete out of order, others, strictly serial. You have a completion ring,
+rather than cleaning up the tx ring itself.
+
+The tx ring gets cleaned up generationally.
+
+** Assemblers
+
+The fundamental operation here is:
+
+r += match == data[++i];
+
+where r is it matched (And, in a loop, how many times it matched). There are a
+LOT of potential combinations of ways to run forward using this basic operation.
+
+Which ... sadly ... isn't all that efficient without hardware that supports
+these operations in parallel.
+
+In systems that aren't running ahead this degrades to, as an example:
+
+#define OP(a,b) (a == b)
+
+for(int i = datastart; i<segmentsize; ++i) {
+    if(OP(match,data[i])) send (elsewhere, i);
+}
+
+where OP can be any of the boolean operations. At higher conceptual levels it
+can be a function also, but a goal in the data structure designs is that this
+should be the most complex typical matching routing you have, matching against
+potentially very large bitfields.
+
+Hence the need for structure assignment.
+
+in NEON, this gets nice with post increment indexing as you just check for the
+match and store it blindly -
+
+VSTR.EQ[somewhere,data]!
 
 ** Spitters
 sends an input to a single output
