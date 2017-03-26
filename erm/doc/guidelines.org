@@ -6,8 +6,8 @@ Linux process.
 
 As such it has a few conventions that might look odd to normal C language
 programmers. It is helpful to think of it as a highly specialized cpu and
-assembly language for pounding through routing calculations more than anything
-else.
+assembly language for pounding through network related calculations more
+than anything else.
 
 * Oddities
 
@@ -54,7 +54,8 @@ per thread. The call stack and data stack are in different places, too.
 
 Try to use up registers.
 
-Use a separate memory area for transient info too big for registers.
+Use a predefined and sufficiently large separate memory area for
+transient info too big for registers.
 
 ** No recursion
 
