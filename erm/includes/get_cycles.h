@@ -33,6 +33,12 @@ static inline int stop_cycles(int events) { return 0; }
 // For out of order ops you need
 // mfence;rdtsc on AMD platforms and lfence;rdtsc on Intel. If you don't want to
 // bother with distinguishing between these, mfence;rdtsc works.
+ALWAYS_INLINE static inline void memfence() {
+  __asm__ volatile("mfence;"
+                   : 
+                   :
+                   : "memory");
+}
 
 /** Get CPU timestep counter */
 ALWAYS_INLINE static inline int get_bottom_cycles()
