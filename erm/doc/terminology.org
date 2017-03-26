@@ -22,14 +22,6 @@ I am also seemingly in love with the letter S for no sound reason I can sink of.
 ** Maids
 
 * IO output
-
-** Sinks
-
-Note that instead of not writing a result to memory, we write it to an unneeded,
-un-contended (per cpu) area of memory (a cacheline-wide wastebin much like
-/dev/null) (and move on). In some cases, arm NEON conditional instructions can
-be used to avoid the wastebin.
-
 ** Flingers
 
 take something, apply a filter, and send it somewhere else. Conceptually they
@@ -74,6 +66,26 @@ in NEON, this gets nice with post increment indexing as you just check for the
 match and store it blindly with the only branch being the counter.
 
 VSTR.EQ[somewhere,data]!
+
+OP is using 4 valued logic, and there are a special set of preprocessed out
+UTF-8 symbols to express it.
+
+** Sinks
+
+Note that instead of not writing a result to memory, we write it to an unneeded,
+un-contended (per cpu) area of memory (a 4-16 cacheline-wide wastebin much like
+/dev/null) (and move on). In some cases, arm NEON conditional instructions can
+be used to avoid writing the wastebin at all.
+
+In the X86 case we just swap out the dest register:
+
+condition == false ? mov wastebin, %rdi : ++saving;
+
+write(*rdi++,data);
+write(*rdi++,data1);
+write(*rdi++,data2);
+
+then get it back while all that is stalling out
 
 ** Splitter
 Essentially the "tee" operation
@@ -133,7 +145,7 @@ means an error return. 0XXXXX means you have a valid result. 00 means you did
 nothing. mmap returns -1 as the address for a failed pointer attempt. Floating
 point sort of has it - inf, nan, number. (Way too many varieties of NAN!)
 
-Codd and Date struggled with it - the 3rd value of NULL is needed but doesn't
+Codd and Date struggled with a ternary logic - the 3rd value of NULL is needed but doesn't
 fit into the language they designed (SQL) very well. It fit a lot better in later
 attempts like QUEL and GPRE - but those languages failed in the marketplace.
 
@@ -161,6 +173,19 @@ already have it. No need to actually use the global errno type either, just the
 (usually less than -10) specific errors that you are returning for, that you can
 map back to a conventional errno if you need to. Result: straight line code with
 no obvious error checking, jumps, or branches required in many cases.
+
+As used in erm it models closely verilog - 01 is true 00 false 10 don't care 11 error
+(1,0,X,Z). I have to look over dunn/belnap to see how similar it is. I do not
+like their syymbols much: W∗={∅,{⊥},{⊤},{⊥,⊤}},
+
+W∗={∅,{⊥},{⊤},{⊥,⊤}},
+
+https://plato.stanford.edu/entries/logic-manyvalued/#SysManValLog
+
+NAR = don't care
+
+I wish I had a preprocessor that could do infix operators in C, but we don't,
+so...
 
 * Flow model
 
