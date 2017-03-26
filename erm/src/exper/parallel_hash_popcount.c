@@ -139,7 +139,7 @@ u64 popcount2asm(const u64* buf, int cnt) {
   "shl    $0x8,%%rax\n\t"
   "popcnt (%%rdi),%%r8\n\t"
   "add    $0x10,%%rdi\n\t"
-  "add    %%r8,%%rax\n\t"
+  "or     %%r8,%%rax\n\t"
   "popcnt -0x8(%%rdi),%%r8\n\t"
   "add    %%r8,%%rax\n\t"
   "LOOP poploop%=\n\t"
