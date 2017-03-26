@@ -102,6 +102,9 @@ sends an input to as many outputs as are willing to listen
 ** Splitters
 ** Selectors
 ** Skewers
+** Transformers
+Translate one input to an output of the same size. An example of this is
+changing a word from big bit endian to little bit endian.
 
 * Schedulers
 ** Starters
