@@ -44,7 +44,8 @@ gcc and llvm.
 
 ** Tables everywhere
 
-Don't use pointers.
+Don't use pointers. We have a disjoint memory space between cpus. Always
+use an offset from a table's well known address.
 
 ** No stack
 
