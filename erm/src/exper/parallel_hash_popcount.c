@@ -126,6 +126,9 @@ inline u64 popcount2thinpostinc1(const u64 *buf) {
 
 */
 
+/* http://www.agner.org/optimize/instruction_tables.pdf */
+/* popcnt is 1 clock */
+
 u64 popcount2asm(const u64* buf, int cnt) COLD;
 
 /* The cut and pasted from the assembly in my preferred form */
