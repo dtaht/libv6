@@ -71,12 +71,12 @@ potentially very large bitfields.
 Hence the need for structure assignment.
 
 in NEON, this gets nice with post increment indexing as you just check for the
-match and store it blindly -
+match and store it blindly with the only branch being the counter.
 
 VSTR.EQ[somewhere,data]!
 
 ** Spitters
-sends an input to a single output
+sends an input to a single output. They are a devolved class of assembler.
 ** Spewers
 sends an input through a filter to output(s)
 ** Spammers

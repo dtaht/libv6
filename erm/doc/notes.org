@@ -1529,7 +1529,7 @@ Qd
 
 everything takes conditionals
 
-VHADD is not a horizontal ADD (I thought it was). It is a halving add.
+** IMPORTANT: xVHADD is not a horizontal ADD (I thought it was). It is a halving add.
 
 VHADD adds corresponding elements in two vectors, shifts each result right one bit, and places the results in the destination vector. Results are truncated.
 
@@ -1756,3 +1756,9 @@ Because worse is better.
 * try using Ripgrep
 
 in emacs
+
+* Did I just hear %r12 was free for C?
+
+One thing I did years ago was a objdump map of the whole library to see what the
+register usage actually was.
+
