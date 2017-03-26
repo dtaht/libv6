@@ -1762,3 +1762,8 @@ in emacs
 One thing I did years ago was a objdump map of the whole library to see what the
 register usage actually was.
 
+* Wastebin
+
+1MB of memory mapped on itself on the page size. Write only, also.
+
+https://en.wikipedia.org/wiki/Write-only_memory_(joke)

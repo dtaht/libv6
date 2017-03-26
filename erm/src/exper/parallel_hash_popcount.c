@@ -126,8 +126,31 @@ inline u64 popcount2thinpostinc1(const u64 *buf) {
 
 */
 
-/* The cut and pasted from the assembly in my preferred form */
+u64 popcount2asm(const u64* buf, int cnt) COLD;
 
+/* The cut and pasted from the assembly in my preferred form */
+u64 popcount2asm(const u64* buf, int cnt) {
+  register u64 counter asm("%rax");
+//  register u64 counter = 0; // should insert the xor
+  __asm__ __volatile__(
+  "xor    %%eax,%%eax\n\t"
+  "mov    %%esi,%%ecx\n\t"
+  "poploop%=:\n\t"
+  "shl    $0x8,%%rax\n\t"
+  "popcnt (%%rdi),%%r8\n\t"
+  "add    $0x10,%%rdi\n\t"
+  "add    %%r8,%%rax\n\t"
+  "popcnt -0x8(%%rdi),%%r8\n\t"
+  "add    %%r8,%%rax\n\t"
+  "LOOP poploop%=\n\t"
+  : // "+r" (counter)
+  :
+  : "cc", "%rdi", "%rax", "%ecx", "%r8"
+  );
+  return counter;
+}
+
+/*
 u64 popcount2loopasm(const u64* buf, int cnt) {
 __asm__ __volatile__(
   "xor    %eax,%eax\n\t"
@@ -144,6 +167,8 @@ __asm__ __volatile__(
   : "cc", "%rdi", "%rax", "%ecx", "%r8"
   );
 }
+*/
+
 /* The generic version with less branches */
 
 u64 popcount2generic_lessbranchy(const u64* buf, int cnt)
@@ -421,6 +446,8 @@ int main()
   // Generic test
   s = popcount2generic(&test6, 8);
   printf("pop2generic8: %d %d\n", s >> 8, s & 255);
+  s = popcount2asm(&test6, 8);
+  printf("pop2asm: %d %d\n", s >> 8, s & 255);
 
   return 0;
 }
