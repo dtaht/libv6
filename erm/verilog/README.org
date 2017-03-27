@@ -1,0 +1,37 @@
+* Verilog
+
+To keep myself honest I think that sometimes I should write the verilog along
+with the ERM C. If you think my C was rusty, my last bit of verilog was in 2006,
+and the last serious time was in 1992. I do hope all the tools have got as much
+better as C has!
+
+In particular the risc-v is of interest because of the custom synthesis ability
+in it and I have FPGAs that can run it. A risc-v + a few helpful functional
+units - would be quite nice.
+
+I haven't touched a HDL in nearly a decade, either. And they were all so damn
+slow back in the old days - and written in java.
+
+Expect much, much, flailing here in the coming months.
+
+* Chisel
+Looks DAMN attractive... from a distance.
+
+* why not VHDL?
+
+No good reason.
+
+* Why not systemC?
+
+No good reason. it does look to have got MUCH better since last time I tried it.
+
+* Why not opencores
+
+have to look it over.
+
+* Why not [some proprietary cpu]?
+
+don't want to hitch myself to the uBlaze wagon, or any other wagon that I don't
+have total control over. Besides erm should run halfway decently on arm and x86
+in the first place, and there are some new xeon + fpga things coming out worth
+trying.

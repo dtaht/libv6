@@ -1767,3 +1767,26 @@ register usage actually was.
 1MB of memory mapped on itself on the page size. Write only, also.
 
 https://en.wikipedia.org/wiki/Write-only_memory_(joke)
+
+* if only these were wider
+
+http://www.greenarraychips.com/home/documents/greg/DB002-110705-G144A12.pdf
+
+* Parallella simulator is WAY easier
+
+sudo mkdir -p /opt/adapteva
+cd /opt/adapteva
+tar xf esdk.2016.11.x86_64.tar.gz
+sudo ln -s esdk.2016.11 esdk
+
+3.
+
+Append to ~/.bashrc:
+
+EPIPHANY_HOME=/opt/adapteva/esdk
+. ${EPIPHANY_HOME}/setup.sh
+
+
+https://github.com/adapteva/epiphany-sdk/releases/tag/esdk-2016.11
+
+$ e-sim --preset parallella16 --host ./run.sh

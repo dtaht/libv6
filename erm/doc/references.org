@@ -1,0 +1,13 @@
+* 
+* Assemblers
+* CPU architectures
+** Parallella
+** GH-144
+** Propeller
+** Mill
+** Anagram
+* OS designs
+** Capabilities
+** Hard R/T
+* Async logic
+

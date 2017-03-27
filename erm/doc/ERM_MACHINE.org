@@ -34,6 +34,8 @@ FIXME: look over ebpf register map
 ** HWRNG
 
 * System Interfaces
+** Asynchronous Logic
+https://en.wikipedia.org/wiki/Asynchronous_circuit
 ** Network Interfaces
 ** Shared Memory
 ** Generational output tables
