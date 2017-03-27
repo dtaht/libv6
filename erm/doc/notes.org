@@ -1790,3 +1790,141 @@ EPIPHANY_HOME=/opt/adapteva/esdk
 https://github.com/adapteva/epiphany-sdk/releases/tag/esdk-2016.11
 
 $ e-sim --preset parallella16 --host ./run.sh
+
+* SSE equality
+
+Might as well stick with sse4.2
+
+Via:
+http://stackoverflow.com/questions/26880863/sse-testing-equality-between-two-m128i-variables
+
+3 ins:
+if(_mm_test_all_ones(_mm_cmpeq_epi8(v1,v2))) {
+    //v0 == v1
+}
+
+two ins, setting 
+__m128i neq = _mm_xor_si128(v1,v2);
+if(_mm_test_all_zeros(neq,neq)) {
+    //v0 == v1
+}
+
+pxor    %xmm1, %xmm0
+ptest   %xmm0, %xmm0
+
+AVX512 has a cmpneq instruction
+
+if (_mm_testz_si128(vcmp, vcmp))             // PTEST (requires SSE 4.1)
+{
+    // v0 == v1
+}
+
+
+This is similar to the TEST instruction, in that it sets the Z flag to the result of an AND between its operands: ZF is set, if DEST AND SRC is equal to 0. Additionally it sets the C flag if (NOT DEST) AND SRC equals zero.
+This is equivalent to setting the Z flag if none of the bits masked by SRC are
+set, and the C flag if all of the bits masked by SRC are set.
+
+PHMINPOSUW
+Sets the bottom unsigned 16-bit word of the destination to the smallest unsigned
+16-bit word in the source, and the next-from-bottom to the index of that word in
+the source.
+
+	
+@harold I thought _mm_minpos_epu16 was MS specific. I will try that out. – Alexandros Feb 18 '15 at 4:16
+1	 	
+XOR with _mm_set1_epi16(0x8000) if you want to find the signed minimum – harold Feb 18 '15 at 7:32
+
+
+x <s y = (x ^ signbit) <u (y ^ signbit)
+x <u y = (x ^ signbit) <s (y ^ signbit)
+This property transfers directly to min and max, so:
+
+min_s(x, y) = min_u(x ^ signbit, y ^ signbit) ^ signbit
+And then we can use _mm_minpos_epu16 to handle the horizontal minimum, to get, in total, something like
+
+__m128i xs = _mm_xor_si128(x, _mm_set1_epi16(0x8000));
+return _mm_extract_epi16(_mm_minpos_epu16(xs), 0) - 0x8000;
+
+* UTF enhancements
+
+https://en.wikipedia.org/wiki/Mathematical_operators_and_symbols_in_Unicode
+
+https://www.utf8icons.com/character/8817/neither-greater-than-nor-equal-to
+
+≠
+≟
+≡ identical to
+≢ 
+≣ Strictly equivalent to
+≤ 
+≥
+≦
+≧
+≨ less than but not equal to
+≩
+≪ much less than
+
+≬ - between
+
+≭ Not equivalnt to
+≲
+
+≶ less or greater than
+
+≺ precedes
+≻ succeeds
+
+⊀ does not precede
+
+⊂ subset of
+⊃
+
+⊎ multiset union
+
+⊕
+⊖
+⊗
+⊚
+
+𝜶
+
+-fextended-identifiers and pre-process your code to convert the identifiers to
+ UCN. From the linked page:
+
+
+perl -pe 'BEGIN { binmode STDIN, ":utf8"; } s/(.)/ord($1) < 128 ? $1 : sprintf("\\U%08x", ord($1))/ge;' 
+
+* cake
+
+In the home environment - only the bottommost 8 bits
+are used in the src address.
+
+ the dest address - high order 24.
+
+https://github.com/aappleby/smhasher
+
+
+⧝
+
+TIE OVER INFINITY (HTML &#10717;)
+
+__m128i xs = _mm_xor_si128(x, _mm_set1_epi16(0x8000));
+return _mm_extract_epi16(_mm_minpos_epu16(xs), 0) - 0x8000;
+
+
+http://www.agner.org/optimize/optimizing_assembly.pdf
+-finput-charset=UTF-8 -fextended-identifiers
+
+
+ The source operand comes before the destination operand.
+Register names have %% prefix, which is changed to % before the string is passed on to the
+assembler. Constants have $ prefix. Memory operands are also different. For example,
+[ebx+ecx*4+20h] is changed to 0x20(%%ebx,%%ecx,4).
+
+
+The following example finds the minimum of two unsigned numbers: if (b > a) b = a;
+; Example 9.17a, Find minimum of eax and ebx (unsigned):
+sub eax, ebx ; = a-b
+sbb edx, edx ; = (b > a) ? 0xFFFFFFFF : 0
+and edx, eax ; = (b > a) ? a-b : 0
+add ebx, edx ; Result is in ebx
