@@ -82,7 +82,7 @@ be used to avoid writing the wastebin at all.
 
 In the X86 case we just swap out the dest register:
 
-condition == false ? mov wastebin, %rdi : ++saving;
+condition == false ? cmov wastebin, %rdi : ++saving;
 
 write(*rdi++,data);
 write(*rdi++,data1);
@@ -133,6 +133,8 @@ Ringbuffers, when the architecture permits, use mmaped on themselves pages
 so they can free-run. Some ring buffers (like logging errors), are free-running
 entirely with no checks for overrun. Ringbuffers are strongly typed, and report
 high and low watermarks in addition to blocking.
+
+The wastebin is both a ringbuffer and a write only memory.
 
 * [[https://en.wikipedia.org/wiki/Four-valued_logic][Four Valued logic]]
 
