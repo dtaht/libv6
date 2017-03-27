@@ -1,13 +1,43 @@
-* 
+* CPU Timings & instruction sets
+[[http://www.agner.org/optimize/instruction_tables.pdf][x86 - Agner]]
+http://www.felixcloutier.com/x86/PCMPESTRM.html 
 * Assemblers
+** Gas
 * CPU architectures
 ** Parallella
 ** GH-144
 ** Propeller
 ** Mill
 ** Anagram
+** risc-v
+⊖
+
+** Arm8
+** Arm7
+** x86_64
+** Misp
+
+* Verilog solvers* ≠≡
+** Bellman-Ford
+** [[http://www.csit-sun.pub.ro/courses/Masterat/Materiale_Suplimentare/CAM2006.pdf][CAM issues]]
+
 * OS designs
 ** Capabilities
 ** Hard R/T
 * Async logic
+* Algorithms
+** [[http://www.felixcloutier.com/x86/POPCNT.html][Popcount]]
+** Bitreversal
+** CAMs
+
+http://www.ripublication.com/gjpam16/gjpamv12n1_94.pdf
+
+DRAM cam
+
+. DRAM-based CAMs are poised to become the mainstream CAM technology of the
+future. MOSAID Semiconductor has already launched the industry's first
+DRAM-based CAM with a density of 2.3Mbit and will launch even larger and wider
+CAMs in the future. Other vendors are also entering the market, basing future 
+
+https://www.esilicon.com/services-products/products/tcam-and-bcam-compilers/
 

@@ -5,6 +5,9 @@ myself that have gradually grown to a rather distinct dictionary and taxonomy.
 These are not objects. They are message passing functional units with clearly
 defined properties, in most cases, or fuzzy concepts that map to other concepts.
 
+It might be helpful to understand the [[http://www.async.caltech.edu/Pubs/PDF/chpasync2012.pdf][CHP]] hardware design language along the
+way. Among other things, it has a nice concept in it called a "tree buffer".
+
 I am also seemingly in love with the letter S for no sound reason I can sink of.
 
 * System Types
@@ -179,9 +182,7 @@ no obvious error checking, jumps, or branches required in many cases.
 
 As used in erm it models closely verilog - 01 is true 00 false 10 don't care 11 error
 (1,0,X,Z). I have to look over dunn/belnap to see how similar it is. I do not
-like their syymbols much: W∗={∅,{⊥},{⊤},{⊥,⊤}},
-
-W∗={∅,{⊥},{⊤},{⊥,⊤}},
+like their symbols much: W∗={∅,{⊥},{⊤},{⊥,⊤}},
 
 https://plato.stanford.edu/entries/logic-manyvalued/#SysManValLog
 

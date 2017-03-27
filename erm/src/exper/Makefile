@@ -23,7 +23,7 @@ INCLUDES = -I$(INC)
 GENVERSION = $(TOOLS)/generate-version.sh
 
 CFLAGS  = -std=gnu11 -Os -Wall -L../../lib $(INCLUDES) -flax-vector-conversions
-LDFLAGS = -lrt -lm
+LDFLAGS = -lm
 
 OBJDIR_DEBUG = $(CC)
 

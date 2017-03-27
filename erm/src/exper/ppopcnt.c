@@ -64,6 +64,30 @@ typedef struct {
 } twocount;
 
 #ifdef __x86_64__
+
+// return two different crc values
+
+u64 crc128asm2(const u64* buf, int cnt) COLD;
+
+u64 crc128asm2(const u64* buf, int cnt) {
+  register u64 counter asm("%rax");
+  __asm__ __volatile__(
+  "xor    %%eax,%%eax\n\t"
+  "mov    %%esi,%%ecx\n\t"
+  "crcloop%=:\n\t"
+  "shl    $0x20,%%rax\n\t"
+  "crc32 (%%rdi),%%r8\n\t"
+  "add    $0x10,%%rdi\n\t"
+  "or     %%r8,%%rax\n\t"
+  "crc32 -0x8(%%rdi),%%r8\n\t"
+  "crc32  %%r8,%%rax\n\t"
+  "LOOP crcloop%=\n\t"
+  : // "+r" (counter)
+  :
+  : "cc", "%rdi", "%rax", "%ecx", "%r8"
+  );
+  return counter;
+}
 u64 popcount128asm(const u64* buf, int cnt) COLD;
 
 u64 popcount128asm(const u64* buf, int cnt) {
