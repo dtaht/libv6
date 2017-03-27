@@ -15,14 +15,16 @@ working on them more fully.
 One of them is the idea of using lots and lots of very small but very wide cam
 memories.
 
-* Heat, Generational memory and dram cams
+* Heat, generational memory and dram cams
 
-ERM uses generational memory structures throughout, partially to handy nasty
+ERM uses generational memory structures throughout, partially to handle nasty
 concurrency problems, and partially due to being an abstract way to "let die"
-data you don't need anymore. And - cut down on heat consumption. (and - swap in
-only data and programs in the cache on a software arch that you need. At least
-in programs you tend to throw away 80% of the data or more - in a data flow
-architecture - well - actively throw it away and just keep "hot" what you need)
+data you don't need anymore. And - cut down on heat consumption. (and - to swap
+in only data and programs in the cache on a software arch that you need. At
+least in programs you tend to throw away 80% of the data or more - in a data
+flow architecture - well - you just keep actively throwing it away and just
+keep "hot" what you need. Actually, the sense of that is wrong - you "fling"
+forward the data you are going to need, and let die the data you don't.)
 
 One of the old ideas in ERM is the idea of using DRAM based cam, which seemed to
 be a good idea (back in 2000). It had some nice properties - smaller, faster -
