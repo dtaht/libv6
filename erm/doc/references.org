@@ -20,7 +20,7 @@ http://www.felixcloutier.com/x86/PCMPESTRM.html
 ** [[http://apt.cs.manchester.ac.uk/projects/processors/amulet/AMULET3i.php][Amulet3i Y2000 era Arm]] - notably: their [[http://apt.cs.manchester.ac.uk/ftp/pub/amulet/papers/async97_queue.pdf][result forwarding mechanism]]
 ** http://www.nebrija.es/~jmaestro/AT5118/papers/counterflow.pdf 4 valued logic
 
-* Verilog solvers* ≠≡
+* VHDL solvers* ≠≡
 ** Bellman-Ford
 ** [[http://www.csit-sun.pub.ro/courses/Masterat/Materiale_Suplimentare/CAM2006.pdf][CAM issues]]
 

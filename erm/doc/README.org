@@ -267,10 +267,10 @@ be used.
 
 P4 is also of interest.
 
-** Verilog
+** VHDL
 
 To keep myself honest during the design phase I am strongly considering
-simultaneously writing the representation and algorithms in verilog
+simultaneously writing the representation and algorithms in VHDL.
 (more likely scala's chisel).
 
 ** Concurrency
