@@ -63,4 +63,9 @@
 // - Throw caution to the winds.
 // #define WANT_ELEVEN
 
+// Ludicrous mode
+// A place for ideas that are in progress that may not work out
+// - Eventually may migrate to 11 or the base machine
+// #define LUDICROUS
+
 #endif
