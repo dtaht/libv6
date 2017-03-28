@@ -63,10 +63,130 @@ typedef struct {
   u64 two;
 } twocount;
 
+typedef struct {
+ 	u8 v:1;
+} bit1;
+typedef struct {
+ 	u8 v:2;
+} bit2;
+typedef struct {
+ 	u8 v:3;
+} bit3;
+typedef struct {
+ 	u8 v:4;
+} bit4;
+
+u16 popcountv6inlinefold(const u64* buf)
+{
+  u16 t = 0;
+  u16 scratch;
+    scratch  = __builtin_popcountll(*buf++);
+    scratch += __builtin_popcountll(*buf++);
+    t += scratch;
+    t = t << 7;
+    scratch  = __builtin_popcountll(*buf++);
+    scratch += __builtin_popcountll(*buf++);
+    t |= scratch;
+  return t;
+}
+
+u16 popcountv6inline(const u64* buf)
+{
+  u16 t = 0;
+  u16 scratch;
+    scratch  = __builtin_popcountll(*buf++);
+    scratch += __builtin_popcountll(*buf++);
+    t += scratch;
+    t = t << 8;
+    scratch  = __builtin_popcountll(*buf++);
+    scratch += __builtin_popcountll(*buf++);
+    t |= scratch;
+  return t;
+}
+
+u16 popcountb(const u64* buf, bit2 cnt)
+{
+  u16 t = 0;
+  u16 scratch;
+  do {
+    t = t << 8;
+    scratch = __builtin_popcountll(*buf++);
+    scratch += __builtin_popcountll(*buf++);
+    t += scratch;
+  } while(cnt.v--);
+  return t;
+}
+
+u64 popcountb2(const u64* buf, bit3 cnt)
+{
+  u64 t = 0;
+  u64 scratch;
+  for(;cnt.v;cnt.v--) {
+    t = t << 8;
+    scratch = __builtin_popcountll(*buf++);
+    scratch += __builtin_popcountll(*buf++);
+    t += scratch;
+  }
+  return t;
+}
+
+#ifdef __epiphany__
+
+// WIP
+
+#include "e_lib.h"
+
+// Use up 4 cores to do popcount in parallel
+
+u64 lv __attribute__ ((section (“.data_bank3”)));
+u64 pv __attribute__ ((section (“.data_bank3”)));
+
+int eppoppr2(u32 *x)
+{
+int c = 0;
+while(1) {
+	u32 c[4] = {0};
+        e_barrier();
+	for(y=0; y<4; y++) {
+               for (; x[y] > 0; x[y] &= x[y] -1) c[y]++;
+	}
+        send(c);
+	c[]={0};
+        e_barrier();
+        }
+}
+
+u64 epoppr(wg) {
+	while(1) {
+	e_barrier(wg);
+	pv = __builtin_popcountll(lv);
+	e_barrier(wg);
+	}
+}
+
+u64 epopcount64(const u32* buf, int cnt) __attribute__ ((section (“.text_bank0”)));
+
+u64 epopcount64(const u32* buf, int cnt) __attribute__ ((section (“.text_bank0”)));
+{
+  u64 t = 0;
+  u64 scratch;
+  for(int i = 0; i < cnt; i++) {
+	  epopmsg(core, *buf++);
+  }
+  barrier(wg);
+  for(int)
+  for(int i = 0; i < 2; i++) {
+	  
+  return t;
+}
+
+#endif
+
 #ifdef __x86_64__
 
-// return two different crc values
+// return two different crc values and merge them
 
+/*
 u64 crc128asm2(const u64* buf, int cnt) COLD;
 
 u64 crc128asm2(const u64* buf, int cnt) {
@@ -88,6 +208,9 @@ u64 crc128asm2(const u64* buf, int cnt) {
   );
   return counter;
 }
+
+*/
+  
 u64 popcount128asm(const u64* buf, int cnt) COLD;
 
 u64 popcount128asm(const u64* buf, int cnt) {
