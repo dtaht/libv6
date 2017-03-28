@@ -3,7 +3,7 @@
 ERM has a collection of ideas in it that might be foolish, crazy, or impossible
 to implement in hardware - or all three. It is, in many cases, a collection of
 oddball ideas that might or might not actually work in practice. Portions are
-completely unimplementable using the hardware design tools at hand - in 1992
+completely unimplementable using the hardware design tools at hand - in 1990
 when I first started at designing it - and now, in 2016, where the world has
 seemingly moved to massively distributed single clock domains on a very small
 scale with wires being more of the problem than transistors at < 16nm.
@@ -83,14 +83,16 @@ die on the first failure and return "don't care", (stopping power to all the
 extra circuits you would have used to complete that operation), stopping faster
 and cooler, and letting some other part of the chip "win" that result.
 
-Circuits look weird in erm - some look like loops, others, like spirals. The
-data passing on the first part of the loop (or spiral) supplies power (or
-additional power) to the later parts. There are still potentially *enormous*
-metastability problems, but as each bit of logic connecting a loop together can
-be tested individually, and tweaked, and loops built up from smaller operations,
-it seemed feasible to fix each of them, either by hand, or with better design
-tools. Or fall back on conventional clocked logic if that becomes too hard for a
-given subsystem.
+Circuits look weird in erm - some look like loops, others, like spirals, others,
+like fractal patterns. (in todays finfet world, they might be spirals, loops,
+fractals in three dimensions!) The data passing on the first part of the loop
+(or spiral) supplies power (or additional power) to the later parts.
+
+There are still potentially *enormous* metastability problems, but as each bit
+of logic connecting a loop together can be tested individually, and tweaked, and
+loops built up from smaller operations, it seemed feasible to fix each of them,
+either by hand, or with better design tools. Or fall back on conventional
+clocked logic if that becomes too hard for a given subsystem.
 
 Perhaps some decent async design tools now exist, but thus far, I've come up
 empty aside from [[https://github.com/dudecc/chpsim][CHP]]. I came up empty in 92, too!
@@ -118,12 +120,9 @@ asynchronous microprocessor]]. It was fabricated in 1988 by our research group a
 Caltech. (The chip was taped-out in December 1988.) It is a 16-bit RISC machine
 with 16 general-purpose registers. Its peak performance is 5 MIPS at 2V drawing
 5.2mA of current, 18 MIPS at 5V drawing 45mA, and 26 MIPS at 10V drawing 105mA
-in HP 1.6µm CMOS." -
+in HP 1.6µm CMOS." - It's hard to believe [[http://www.async.caltech.edu/Pubs/PDF/25YearsAgo.pdf][that was nearly 30 years ago]]!
 
-
-It's hard to believe [[http://www.async.caltech.edu/Pubs/PDF/25YearsAgo.pdf][that was nearly 30 years ago]]
-
-The language that erm's C implementation sort of looks like is [[http://www.async.caltech.edu/Pubs/PDF/chpasync2012.pdf ]["CHP"]], which is a
+The language that Erm's C implementation sort of looks like is [[http://www.async.caltech.edu/Pubs/PDF/chpasync2012.pdf ]["CHP"]], which is a
 GPLv3 tool nowadays.
 
 When that first async chip came out from caltech back in 1988, I said - "Eureka!
@@ -140,7 +139,7 @@ with his latest 144 Forth processors]] was more apropos.
 There are a bunch of really small adders in the design as well (2-4 bits), and
 there has been work, [[ http://www.cs.columbia.edu/~nowick/nowick-async97-speculation-completion-fin.pdf ][here]] and there, on doing bigger adders with speculative
 logic - which seemed highly desirable to me as you tried to get to 128 bits
-wide.
+wide for data.
 
 * Xilinx vs Altera
 
