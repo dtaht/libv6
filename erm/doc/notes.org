@@ -1927,3 +1927,34 @@ sub eax, ebx ; = a-b
 sbb edx, edx ; = (b > a) ? 0xFFFFFFFF : 0
 and edx, eax ; = (b > a) ? a-b : 0
 add ebx, edx ; Result is in ebx
+
+* bits version
+
+00000000004008b6 <popcountb>:
+  4008b6:       83 e6 07                and    $0x7,%esi
+  4008b9:       31 c0                   xor    %eax,%eax
+  4008bb:       f3 48 0f b8 17          popcnt (%rdi),%rdx
+  4008c0:       48 83 c7 10             add    $0x10,%rdi
+  4008c4:       83 c6 07                add    $0x7,%esi
+  4008c7:       f3 48 0f b8 4f f8       popcnt -0x8(%rdi),%rcx
+  4008cd:       48 c1 e0 08             shl    $0x8,%rax
+  4008d1:       83 e6 07                and    $0x7,%esi
+  4008d4:       48 01 ca                add    %rcx,%rdx
+  4008d7:       48 01 d0                add    %rdx,%rax
+  4008da:       40 80 fe 07             cmp    $0x7,%sil
+  4008de:       75 db                   jne    4008bb <popcountb+0x5>
+  4008e0:       c3                      retq   
+
+  400799:       31 d2                   xor    %edx,%edx
+  40079b:       31 c0                   xor    %eax,%eax
+  40079d:       f3 48 0f b8 0f          popcnt (%rdi),%rcx
+  4007a2:       48 83 c7 10             add    $0x10,%rdi
+  4007a6:       48 c1 e0 08             shl    $0x8,%rax
+  4007aa:       f3 4c 0f b8 47 f8       popcnt -0x8(%rdi),%r8
+  4007b0:       ff c2                   inc    %edx
+  4007b2:       4c 01 c1                add    %r8,%rcx
+  4007b5:       48 01 c8                add    %rcx,%rax
+  4007b8:       39 f2                   cmp    %esi,%edx
+  4007ba:       7c e1                   jl     40079d <popcount128+0x4>
+  4007bc:       c3                      retq   
+  4007bd:       0f 1f 00                nopl   (%rax)
