@@ -14,10 +14,11 @@ working on them more fully.
 
 One of them is the idea of using lots and lots of very small but very wide cam
 memories. And a lot of very small and very narrow cam memories (in addition to
-conventional flip flops)
+conventional flip flops).
 
 * Heat, generational memory and dram cams
 ** Generational Memory
+
 ERM uses generational memory structures throughout, partially to handle nasty
 concurrency problems, and partially due to being an abstract way to "let die"
 data you don't need anymore. And - cut down on heat consumption. (and - to swap
@@ -112,19 +113,18 @@ programming a special unit. This is nuts.)
 
 * Another CAM
 
-"The Caltech Asynchronous Microprocessor (also know as CAM) is the world-first
-asynchronous microprocessor. It was fabricated in 1988 by our research group at
+"The Caltech Asynchronous Microprocessor (also know as CAM) is the [[http://www.async.caltech.edu/cam.html][world-first
+asynchronous microprocessor]]. It was fabricated in 1988 by our research group at
 Caltech. (The chip was taped-out in December 1988.) It is a 16-bit RISC machine
 with 16 general-purpose registers. Its peak performance is 5 MIPS at 2V drawing
 5.2mA of current, 18 MIPS at 5V drawing 45mA, and 26 MIPS at 10V drawing 105mA
 in HP 1.6µm CMOS." -
 
-http://www.async.caltech.edu/cam.html
 
-The language that erm sort of looks like is "CHP":
-http://www.async.caltech.edu/Pubs/PDF/25YearsAgo.pdf
+It's hard to believe [[http://www.async.caltech.edu/Pubs/PDF/25YearsAgo.pdf][that was nearly 30 years ago]]
 
-http://www.async.caltech.edu/Pubs/PDF/chpasync2012.pdf
+The language that erm's C implementation sort of looks like is [[http://www.async.caltech.edu/Pubs/PDF/chpasync2012.pdf ]["CHP"]], which is a
+GPLv3 tool nowadays.
 
 When that first async chip came out from caltech back in 1988, I said - "Eureka!
 this is the answer!" No central clock, in particular, means that the RFI
@@ -134,12 +134,13 @@ slow down magically. You don't have heat problems, you speed up.
 
 Power consumption is less, across the board (the numbers turned in above were
 amazing) but all the async chips since then - and now - never made it out to open
-source. And risc is a poor map for the instruction set - what Moore has done
-with his forth processors was more apropos.
+source. And risc is a poor map for the instruction set - what [[http://www.greenarraychips.com/][Moore has done
+with his latest 144 Forth processors]] was more apropos.
 
-There are a bunch of really small adders in the design as well (2-4 bits).
-
-http://www.cs.columbia.edu/~nowick/nowick-async97-speculation-completion-fin.pdf
+There are a bunch of really small adders in the design as well (2-4 bits), and
+there has been work, [[ http://www.cs.columbia.edu/~nowick/nowick-async97-speculation-completion-fin.pdf ][here]] and there, on doing bigger adders with speculative
+logic - which seemed highly desirable to me as you tried to get to 128 bits
+wide.
 
 * Xilinx vs Altera
 
