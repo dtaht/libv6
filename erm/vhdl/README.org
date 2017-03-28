@@ -1,6 +1,6 @@
 * Verilog
 
-To keep myself honest I think that sometimes I should write the verilog along
+To keep myself honest I think that sometimes I should write the VHDL along
 with the ERM C. If you think my C was rusty, my last bit of verilog was in 2006,
 and the last serious time was in 1992. I do hope all the tools have got as much
 better as C has!
@@ -17,9 +17,13 @@ Expect much, much, flailing here in the coming months.
 * Chisel
 Looks DAMN attractive... from a distance.
 
-* why not VHDL?
+* why not verilog?
 
-No good reason.
+After surveying the landscape since I last thought about this, it appears
+the world has moved to VHDL. Risc-v is vhdl, in particular. I just found
+tools for [[http://tce.cs.tut.fi/documentation.html][Transport triggered]]
+architectures that also generated VHDL. That was the trigger to say, well,
+let's look hard at VHDL.
 
 * Why not systemC?
 

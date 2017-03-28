@@ -104,7 +104,7 @@ u16 popcountv6inline(const u64* buf)
   return t;
 }
 
-u16 popcountb(const u64* buf, bit2 cnt)
+u16 popcountb(const u64* buf, bit1 cnt)
 {
   u16 t = 0;
   u16 scratch;

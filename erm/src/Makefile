@@ -57,6 +57,7 @@ ifeq ($(CC),e-gcc)          # adapteva compiler
 	CFLAGS +=-falign-loops=8
 	CFLAGS +=-falign-functions=8
 	CFLAGS +=-mcmove
+	CFLAGS +=-mfp-mode=int
 	# CFLAGS +=-mnovect-double
 	# CFLAGS +=-mshort-calls
 	# CFLAGS +=-msmall16

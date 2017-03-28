@@ -1958,3 +1958,13 @@ add ebx, edx ; Result is in ebx
   4007ba:       7c e1                   jl     40079d <popcount128+0x4>
   4007bc:       c3                      retq   
   4007bd:       0f 1f 00                nopl   (%rax)
+
+* TTA still exists! 
+
+This is quite far from horrible at first glance.
+
+http://tce.cs.tut.fi/
+
+Aside from that I need to pick up VHDL. And C++. But C++ is a halfway decent map
+to this....
+
