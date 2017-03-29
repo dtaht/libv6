@@ -1888,6 +1888,10 @@ https://www.utf8icons.com/character/8817/neither-greater-than-nor-equal-to
 
 𝜶
 
+←
+
+≠
+
 -fextended-identifiers and pre-process your code to convert the identifiers to
  UCN. From the linked page:
 

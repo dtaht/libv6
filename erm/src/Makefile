@@ -125,6 +125,9 @@ logger.dbg: logger.c $(DLIB) io.o
 %.bpf: $(FILT)/%.filter
 	tcpdump -r $(FILT)/wtf.cap -dd -F $< > $@
 
+#%.h: %.eh
+#	sed s/TTYPE/%%/g $< > $@
+
 #babel.bpf: $(FILT)/babel.filter
 #	tcpdump -r $(FILT)/wtf.cap -dd -F $< > $@
 
