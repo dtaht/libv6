@@ -1,0 +1,22 @@
+* ERM CPU instruction set
+
+One of the weirdest things about ERM is that there is no instruction set.
+
+This doc is a bit unclear on that, there is 
+
+* Big endian vs little endian
+
+Is pretty naturally big endian, rather than little endian.
+
+It's possible - with some enforcement of stronger typing - to make it be little
+endian, if you enforced an underlying word length of the number of tag bits.
+
+You'd have a string type for example - 
+
+char *a;
+char *b;
+
+And these might map down to the same physical memory space, but offset by one.
+
+tagged the data
+

@@ -1,0 +1,36 @@
+* 8087
+
+I made a pile of money challenging bankers to come down with their gnarliest
+spreadsheets and try it on one of my 8087 equipped machines.
+
+Just installed one, but left it disabled.
+
+My chief observation about floating point back then was:
+That when you needed it, you needed a lot of it, but you didn't need it that often.
+
+This is incidentally, why I missed out on the early macs and amigas - no
+floating point, and so I sneered at them. It wasn't until the 68020 appeared
+(with virtual memory) that 
+
+upsell.
+
+I always liked the regular, sane instruction set, the automatic addressing modes
+
+* Racal - Interlan TCP co-processor card
+
+286. Segment registers.
+
+The pain of this experience has faded, somewhat, now
+
+swapped memory in and out based on *signed* aritmetic, so each individual view
+of memory was limited to 32k bytes, not 64k. This made it possible to have a
+semi coherent view on two 32k banks at a time.
+
+
+when the rest of the world had been shipping 32 bit virtual memory arches
+OS/2 came out
+
+* Altos
+* T800
+* Metaflow
+and so, I set off designing my own, that had virtual memory 

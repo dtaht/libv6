@@ -1,0 +1,9 @@
+case EINTR: retry;
+case EAGAIN: yield;
+case 
+
+* Error Handling
+
+trap. trap handlers are created at compile time errors
+ have single function and assignement scope
+ tmmap(address,)

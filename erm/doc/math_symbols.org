@@ -1,0 +1,18 @@
+
+https://en.wikipedia.org/wiki/Inequality_(mathematics)
+
+* solvers
+ TKsolver!
+
+https://en.wikipedia.org/wiki/TK_Solver
+
+
+http://www.sac-home.org/doku.php
+
+
+APL
+
+
+÷
+http://www.cs.colostate.edu/cameron/SACoverview.html
+

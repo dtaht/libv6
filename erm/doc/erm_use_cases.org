@@ -1,0 +1,11 @@
+* ERM use cases
+
+as you might tell from [[history]], erm's been around a while. 
+
+What drove me to start at it again was wrestling with a string of almost but not
+quite compatable bits of code for managing ip addresses, tiring of writing low
+level tcpdump capture scripts (and parsing their results)
+
+** Packet analysis engine
+** routing engine
+** embeddable forwarding engine
