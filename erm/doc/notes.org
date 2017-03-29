@@ -1968,3 +1968,14 @@ http://tce.cs.tut.fi/
 Aside from that I need to pick up VHDL. And C++. But C++ is a halfway decent map
 to this....
 
+* creating custom types and accessor methods in c
+
+I don't know why people go so crazy about C++ templates and the like,
+or try to abuse the C preprocessor to do certain kinds of stuff.
+
+I just use sed.
+
+sed s/OLDTYPE/NEWTYPE/g input.eh > NEWTYPE_header.h
+
+Actually most of the time, I create the whole darn *variable* and its
+associated structures that way.
