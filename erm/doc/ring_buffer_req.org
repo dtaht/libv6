@@ -1,0 +1,339 @@
+* Ringbuffers are one of the most foundational structures in ERM
+I seem to have to write the rant(s) first before writing the code. The first
+time I did this, it was in 80286 assembly. The second time, lisp macros. The
+third, C++. All were kind of broken in one respect or another. I like to think I
+got close with all the linker magic I did on the C++ version.
+
+So here I am trying to write them in C11. While picking up VHDL on the side.
+
+** ringbuffer users are everywhere
+
+logger
+timer
+wastebin
+stuff that is only a few bits wide
+stuff that is very big
+dma engine interface(s)
+joiners
+flingers
+simd
+
+* Rants that I need to get out of my system
+
+** creating custom types and accessor methods in c
+
+I don't know why people go so crazy about C++ templates and the like,
+or try to abuse the C preprocessor to do certain kinds of stuff.
+
+I just use sed.
+
+sed s/OLDTYPE/NEWTYPE/g input.eh > NEWTYPE_header.h
+
+Actually most of the time, I create the whole darn *variable* and its
+associated structures that way.
+
+Ringbuffers are such an important useful structure, that I wish there was a
+specific linker type for them, so you could pack them all into the same tiny
+amount of space, every time - and know, which ones you had.
+
+So... seemingly... all *my* ways of writing a ringbuffer, aren't,
+
+* They use pointers
+** Pointers are really big. Ringbuffers are really small
+** They use mmap
+** They pass pointers to data that is stored elsewhere the system
+if you used the ring to do message passing, instead it
+
+No - pass the whole message
+
+** They aren't strongly typed
+
+It's hot - you just wrote it - it's just on a specialize alternate stack type
+that is FIFO rather than LIFO.
+
+* Everything on the web is mildly wrong
+When I
+Everywhere on the web  
+
+I did threads on the 6502, using the zero page. on the 80286 - using segment
+registers. And on the transputer, using channels.
+
+It wasn't until the early 90s that I got a "conventional" multiple cpu box to
+play with and by then I'd been writing threaded applications for a decade.
+
+** False sharing is not always false
+
+If your two threads are running on the same cpu - "false sharing" - is a GREAT idea.
+
+** Not keeping stuff on the same cpu
+
+And that's great. Except that it's dirt slow. IF your consumer is on another
+cpu, it has to grab data from your cpu's cache, it has to update (Admittedly) a
+different cacheline for the update - and
+
+what you generally want is for the producer and consumer to be running on the
+same cpu. *that often not hard* - you just declare both at the same time and
+lock them to the same cpu - and if your scheduler is designed right, and not
+pre-emptive (per se') -
+
+
+** Filling the ringbuffer completely and blocking
+
+No. You want to fill the ringbuffer to the low watermark (to give the other
+thread or device enough to do) - and then yield. Sometimes you want to go as
+high as the highwater mark - and then yield. In no case, do you want to go all
+the way to the end, and block.
+
+producer() {
+           if(>lowmatermark) YIELDTO(consumer);
+           do {
+           work();
+} 
+           while(!highwatermark);
+           return;
+}
+
+No need to block on anything. just *yield*.
+
+* This 
+
+There's another trick - say the ringbuffer is empty - well, in that case, you
+can just leave your variables in registers and jump to the "pull from the stack"
+portion of the reading thread. You have to kind of be fortunate enough to have a
+language that lets you express this but:
+
+and then it stays empty. Ringbuffers are there for when you need to *temporarily
+stash up work* because it's more efficient to do stuff *temporarily*, in bulk.
+Or the data has to go somewhere that you don't want to understand.
+
+
+
+* The last trick can get done two ways
+
+Ideally - as much inline code as you are generating already, you typically want
+to put your hot indexes fairly close together, and put your memory that you are
+storing to and reading from, elsewhere.
+
+Well, with a bit of code generation, you can do something like this:
+
+struct {
+ringbuf1;
+ringbuf2;
+ringbuf3;
+ringbuf4;
+ringdata1;
+ringdata2;
+ringdata3;
+ringdata4;
+} ringbuffers SECTION (ringbufs);
+
+and your generatated code ends up looking like
+
+write(0x4(ringbuffers), data); - to get to 
+
+Now, this doesn't always work, particularly when you are dealing with a disjoint
+memory space - so another method is
+
+struct {
+ringbuf1;
+ringbuf2;
+ringbuf3;
+ringbuf4;
+} ringbuffers SECTION (ringbufs);
+
+struct {
+ringdata1p;
+ringdata2p;
+ringdata3p;
+ringdata4p;
+} ringdata SECTION (ringdata);
+
+Your code (assuming you've obeyed the joint structure packing rules),
+then basically references offsets from these two base pointers -
+
+or you can have the ring data be actually packed into the struct itself so you
+can ship things around. Let's say you are using *really small* ring buffers -
+well, pack the whole thing into the struct and be done with it.
+
+* Use 'em wrong
+
+great. size the ring buffer big enough big enough to hold at least one major
+unit of work...
+
+and yield.
+
+* Packing a register
+ atomic cmpx inside the processor - you can't be interrupted, and you don't have
+ to touch memory.
+
+* Free running variables
+
+yourtype ringbufentries[256];
+
+u8 index;
+
+There's no need for an index & 255 - it just runs freely.
+
+You don't need a ringbuffer that big very often, so sure, write a version that
+takes 2, 4, 8, 16 or 32 entries and uses & on the mask. but if you don't care,
+why bother doing the extra arithmetic
+
+(and if you are pulling from it when it goes low, anway, you are stomping on
+less ram.
+
+Worse you only write it once, and read it once - you don't ever really need to
+write one back to main ram unless you don't service it fast enough.
+
+
+The LOCK prefix can be prepended only to the following in structions and only to
+those forms of the instructions where the destination operand is a memory
+operand: ADD, ADC, AND, BTC, BTR, BTS, CMPXCHG, CMPXCH8B, CMPXCHG16B, DEC, INC,
+NEG, NOT, OR, SBB, SUB, XOR, XADD, and XCHG
+
+The manual says you can do this on the x86
+LOCK AND reg1 reg2
+
+LOCK CMPXCHG m8,r8 5 ~51
+
+unsigned __int64 _xgetbv( unsigned int);
+
+CR0
+
+FS and GS segment registers?
+
+	EM	Emulation
+3	TS	Task Switched
+
+CR2 contains the virtual address that triggered the page fault
+Not-Write Through
+
+CR3 controls 
+Page-Level Write Through
+
+Physical Base Address of the PML4
+
+
+XSAVE And Processor Extended States Enable
+
+
+CR8
+
+The AMD64 architecture allows software to define up to 15 external interrupt-priority classes. 
+
+
+IA32_EFer
+
+Secure Virtual Machine Enable
+
+
+So, if you're going to use C, do what the rest of the C world does, which is set up a flat-memory model, use paging, and ignore the fact that segmentation even exists.
+
+
+http://wiki.osdev.org/Segment_Limits#Segmentation
+
+For instance, Microsoft Windows on x86-64 uses the GS segment to point to the Thread Environment Block, a small data structure for each thread, which contains information about exception handling, thread-local variables, and other per-thread state. Similarly, the Linux kernel uses the GS segment to store per-CPU data.
+
+
+movl $42, %fs:(%eax)  ; Equivalent to M[fs:eax]<-42) in RTL
+
+
+-fsanitize=bounds
+
+https://github.com/jonasschneider/cor
+
+linker
+
+The OVERLAY command provides an easy way to describe sections which are to be loaded as part of a single memory image but are to be run at the same memory address. At run time, some sort of overlay manager will copy the overlaid sections in and out of the runtime memory address as required, perhaps by simply manipulating addressing bits. This approach can be useful, for example, when a certain region of memory is faster than another.
+
+The OVERLAY command is used within a SECTIONS command. It appears as follows:
+
+  OVERLAY start : [ NOCROSSREFS ] AT ( ldaddr )
+   {
+     secname1 { contents } :phdr =fill
+     secname2 { contents } :phdr =fill
+     ...
+   } >region :phdr =fill
+
+
+The OVERLAY command provides an easy way to describe sections which are to be loaded as part of a single memory image but are to be run at the same memory address. At run time, some sort of overlay manager will copy the overlaid sections in and out of the runtime memory address as required, perhaps by simply manipulating addressing bits. This approach can be useful, for example, when a certain region of memory is faster than another.
+
+The OVERLAY command is used within a SECTIONS command. It appears as follows:
+
+  OVERLAY start : [ NOCROSSREFS ] AT ( ldaddr )
+   {
+     secname1 { contents } :phdr =fill
+     secname2 { contents } :phdr =fill
+     ...
+   } >region :phdr =fill
+
+sbss segment - stuff you can only get at small-ly
+
+gold linker
+
+-fuse-ld=gold.
+
+will only create a .foo section in the output file if there is a .foo section in at least one input file.
+
+If you use anything other than an input section description as an output section command, such as a symbol assignment, then the output section will always be created, even if there are no matching input sections.
+
+The special output section name /DISCARD/ may be used to discard input sections. Any input sections which are assigned to an output section named /DISCARD/ are not included in the output file.
+
+More overlays
+
+https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Using_ld_the_GNU_Linker/sections.html
+
+
+https://people.freebsd.org/~lstewart/articles/cpumemory.pdf
+
+
+
+non temporal memory
+
+void _mm_stream_si32(int *p, int a);
+void _mm_stream_si128(int *p, __m128i a);
+void _mm_stream_pd(double *p, __m128d a);
+#include <xmmintrin.h>
+void _mm_stream_pi(__m64 *p, __m64 a);
+void _mm_stream_ps(float *p, __m128 a);
+#include <ammintrin.h>
+void _mm_stream_sd(double *p, __m128d a);
+void _mm_stream_ss(float *p, __m128 a);
+
+#include <smmintrin.h>
+__m128i _mm_stream_load_si128 (__m128i *p);
+
+
+
+long __builtin_expect(long EXP, long C);
+This construct tells the compiler that the expression EXP
+most likely will have the value C. The return value is EXP.
+__builtin_expect is meant to be used in an conditional
+expression. In almost all cases will it be used in the
+context of boolean expressions in which case it is m
+
+
+-freorder-blocks-andpartition)
+but it has limited usefulness because it does
+
+
+/sys/devices/system/cpu/cpu*/cache
+
+
+he fourth hint, _MM_HINT_NTA, allows telling the processor
+to treat the prefetched cache line specially. NTA
+stands for non-temporal a
+
+
+he fourth hint, _MM_HINT_NTA, allows telling the processor
+to treat the prefetched cache line specially. NTA
+stands for non-temporal a
+
+
+only data) or .data.rel.ro (read-only after relocation)
+section37 No other special action is required. If,
+for some reason, variables cannot be marked correctly
+with const, the programmer can influence their p
+
+The .pushsection and .popsection
+
+http://www.drdobbs.com/cpp/its-not-always-nice-to-share/217600495
