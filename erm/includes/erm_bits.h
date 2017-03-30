@@ -72,11 +72,11 @@ typedef struct {
 } bitd;
 
 typedef struct {
-  u16 v : 14
+  u16 v : 14;
 } bite;
 
 typedef struct {
-  u16 v : 15
+  u16 v : 15;
 } bitf;
 
 typedef struct {
