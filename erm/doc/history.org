@@ -43,33 +43,48 @@ a better platform for the business I was in at the time.
 My ex-college roomate got an amiga. I visited a lot. It crashed a
 lot. It *really needed* virtual memory.
 
-** Altos
-** FOXBASE
-** Metaflow compiler
-** T800
+** Altos Xenix
+** FOXBASE 1983-1989
+** CSP
+** Metaflow bulldog compiler 1986?
+** T400 1986
+** T800 1990
 
-** Anagram
+** Anagram 1992
+
+Aside from not shipping... T800 had got one thing *seriously
+wrong*. It needed virtual memory. The messaging bus needed to address
+virtual memory. It didn't.
 
 and so, I set off designing my own, that had virtual memory, 4 cpus,
 and a shared floating point unit.
 
-** Mill
-
-Up until I'd encountered the mill, I had no idea that you could
-actually build a cpu that used data-flow concepts well.
+** Mill - 2014
 
 The mill is brilliant. 
 
 The day they have a simulator and compiler, I'll be *all* over it.
 
-ERM is not a cpu. There's no actual instruction set.
+ERM is not a cpu. There's no actual instruction set. It's more in
+conception and execution like the Colossus was during WWII. You put
+data in, it starts up, you get data out, and it stops.
+
+Up until I'd encountered the mill, I had no idea that you could
+actually build a cpu that used data-flow concepts well. I'm still kind
+of unsure - static scheduling, as used throughout the mill design,
+seems like a bitch to compile for.
+
+ERM doesn't have any deadlines at all. Every operation is bound by the
+length of the longest suboperation. There's no clock, per se'. You
+could build a mill out of it, or, conversely, it will run like the
+wind on a mill.
 
 * ERM versions
 
 "ERM" is actually a new name for a set of concepts I've wedged into
 various things over the course of several decades.
 
-** Racal-Interlan offloaded TCP card - 1986
+** Racal-Interlan (?) offloaded TCP card - 1986
 
 Back in the 80s, trying to fit TCP into a PC architecture was
 essentially impossible. A full stack typically came to well over 160k,
@@ -83,16 +98,20 @@ stack became managable on ordinary machines - and even then it was
 flaky and a PITA to use, and not til 1995 that things started to work
 halfway reliably.
 
-But, anyway, I got involved a project with a casino that tried to
-graft both SNA and TCP into a DOS co-processing card based on
-the 286. The card would have cost, like 3k - but an sna terminal
-without a PC was MORE. There was only so much desk space.
+But, anyway, I got involved as a sub-sub-sub-contractor with a project
+with a casino that tried to graft both SNA and TCP into a DOS
+co-processing card based on the 286. The card would have cost, like
+3k - but an sna terminal without a PC was MORE. There was only so much
+desk space.
 
 They chose the 286 chip for it (rather than a 68000). For cost reasons. 
 
 Segment registers. Ugh.
 
-The pain of this experience has faded, somewhat, now.
+The pain of this experience has faded, somewhat, now. I only lasted 6
+months before I ran away screaming, and never really did more than
+read the code and architectural documents. (never got paid, either, or
+rather, never billed)
 
 MASM was the nicest assembler I've ever worked with, and the 286, the
 worst CPU I ever worked with.
@@ -101,8 +120,8 @@ You could make a macro DO ANYTHING! Once you had the basic construct,
 you could wedge something else in there and have some hope that the
 whole thing would actually work. It was more fun than forth!
 
-And: you tried really, really hard, to never deal with near, far, or other
-pointers directly.
+And: you tried really, really hard, to never deal with near, far, or
+other pointers directly.
 
 One way to cope with the segments was to incorporate a flag into the
 top part of your index - and you swapped memory in and out based on
@@ -124,9 +143,14 @@ they tried to make it work, either.
 There are bits of this experience littered throughout erm - we have a
 lot of 16 bit (or less) values used as indexes, for one example. I
 keep trying to wedge the segment register idea into a modern flat
-architecture, as another. I keep trying to use all 16 bits and winding
+architecture, as another. It was its own bare metal OS (no C library),
+with lots and lots of traps. It tried to be hard realtime using
+co-operative threading. I keep trying to use all 16 bits and winding
 up with 15, which may well happen in the end. I wish I had 18 bits -
 or 36! to work with.
+
+Despite having "run away" from the project, it was my first encounter
+with packet processing, and I think - dataflow and CSP concepts.
 
 ** Lisp 1985-87
 
@@ -161,15 +185,17 @@ versioning, and so on...
 C++ at the time - sucked! And obtaining a language that expressed
 things well didn't go anywhere for me. I/O was a huge pain. And
 locking was a pain. And - although I'd switched (partially) to working
-with Xenix on the 386 - the assembler was a piece of crap, and there I
-was reaching for MASM, on the 286.
+with Xenix on the 386 (2 wonderful full MB of purely static memory!
+) - the assembler was a piece of crap, and there I was reaching for
+MASM, on the 286, on DOS.
 
-I remember vividly the week I gave up, because, walter brights C++
-compiler didn't support taking pointers to member functions, which I
-had used everywhere - and it was blazingly faster than cfront was. I
+I still remember vividly the week I gave up, because, walter brights
+C++ compiler didn't support taking pointers to member functions, which
+I had used everywhere - and it was blazingly faster than cfront was. I
 was crashing cfront regularly (after watching it compile for an hour)
-at this point, and debugging the dtor output directly, and after a
-few months of looking at mangled function names, you'd give up too!
+at this point, and debugging the dtor output directly when my code
+crashed (which was a lot), and after a few months of looking at
+mangled function names, you'd give up too!
 
 A few weeks later I interviewed at SCO and resolved to never write in
 an immature language again. I put down programming almost entirely for
@@ -188,12 +214,17 @@ era.
 
 I can't even remember the name of the company now.
 
-** C++ v3
+** C++ v3 (also C and assembler)
 
-This was in 2005, where I thought the core concepts would fit into a voip
-engine that had an associated FPGA. 
+This was in 2005, where I thought a dataflow engine needed to be in a
+voip conferencing machine, as in order to get it to 4+ users we needed
+to move an echo canceler into the underdocumented arm coprocessor,
+which was essentially DMA based.
 
-They didn't.
+It never even came close to working. (to this day I'm mad at that
+co-processor company)
+
+We switched to an FPGA. The project was canceled.
 
 ** Long pause 2006-2012
 
