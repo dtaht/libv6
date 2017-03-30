@@ -66,8 +66,8 @@ The mill is brilliant.
 The day they have a simulator and compiler, I'll be *all* over it.
 
 ERM is not a cpu. There's no actual instruction set. It's more in
-conception and execution like the Colossus was during WWII. You put
-data in, it starts up, you get data out, and it stops.
+conception and execution like the Colossus was during WWII. You wire
+it up, you put data in, it starts up, you get data out, and it stops.
 
 Up until I'd encountered the mill, I had no idea that you could
 actually build a cpu that used data-flow concepts well. I'm still kind
@@ -111,7 +111,9 @@ Segment registers. Ugh.
 The pain of this experience has faded, somewhat, now. I only lasted 6
 months before I ran away screaming, and never really did more than
 read the code and architectural documents. (never got paid, either, or
-rather, never billed)
+rather, never billed. Everytime I tried to write something in it, it
+crashed. I later learned that wasn't my fault - it was crashing for
+everybody)
 
 MASM was the nicest assembler I've ever worked with, and the 286, the
 worst CPU I ever worked with.
@@ -236,3 +238,52 @@ project.
 I had trouble with licensing - and a delusional idea that if I ever
 made the stuff work that I'd get rich - there were no public "git"
 repos, it was a spare time project, anyway, and it was just. too. hard.
+
+** Bufferbloat 2012-2013
+
+I dragged out the (abiword!) format version of the design from 1998 or
+so, and started writing up how "fair queuing" solved nearly
+everything...  and then my lab got stolen with all the copies of it,
+and I dropped it. I started a few projects (like twd) to do network
+measurements better, and abandoned them because I simply could not
+express what I wanted to do in the imperative languages so common
+today. Things like message passing, and lisp, had gone the way of the
+dodo - and I was feeling like I'd go that way myself, too.
+
+** Today (march, 2017)
+
+So, I basically got the bufferbloat problem solved "well enough", and
+got some space and time to consider doing something else.
+
+I discovered my C chops had gone to hell (totally bombed a white-board
+interview), and I remembered this project, and didn't want to work in
+the linux kernel for a while... and after fiddling with rust and go,
+discovered that C11 was almost good enough for what I wanted to
+do. And I sat down in late january, after flailing madly at all the
+semi-busted state machines in various ipv6 related daemons in lede,
+and instead of fixing those, piece by piece, I started working on
+this. And, rapidly, much of what I'd sort of had working - or had
+worked out - has been coming back to me - from all directions.
+
+* Conclusion
+
+ERM is a toy. In it, as per the above, is a dismal history of
+failure. But: thinking about it (well, data-flow, primarily) has
+generally turned out useful for me in some unexpected way.
+
+But: from it I hope to finally teach myself some VHDL. Certainly my C
+chops are coming back - (But, boy! are a lot of these commits
+embarrasing!) and remaking the c library has long been on my "change
+the world" todo list. Maybe the ringbuffers will turn out useful. Or
+the packet parser - which I need anyway, I really would like a
+statically declared language to work in more expressive than
+pcap. Maybe I can solve a few nagging embarrasingly parallel problems
+with it, like [[bellman-ford][]], or the other stuff listed in that
+directory. Maybe some new math will come out of it or I'll come up
+with a good set of symbols for four valued logic and a correct subset
+of operations.
+
+Or maybe it will work this time on some problem that I haven't even
+concieved of yet. I don't care. I'm glad that this time, I'm at least
+putting a backup where someone else might come along and get somewhere
+with it.
