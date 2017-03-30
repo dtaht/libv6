@@ -1996,7 +1996,8 @@ use the new bit extraction stuff in the latest intel cpus.
 
 Sigh. Another preprocessor awaits.
 
-1) I don't need (or want) cycle accurate simulation - I want the "simulation" to run as fast as possible in a real cpu.
+1) I don't need (or want) cycle accurate simulation - I want the
+   "simulation" to run as fast as possible in a real cpu.
 1a) Don't got clocks. Don't need no stinking clocks.
 
 2) I DO want things to compile down to hardware.
@@ -2008,3 +2009,14 @@ Anyway, despite me saying that, systemc does look a great deal
 more friendly to my eye than pure vhdl or verilog.
 
 http://www.asic-world.com/systemc/data_types2.html#Example_sc_bit
+
+* Started ebusl
+
+While I'm coping with scary things, I thought I'd take a quick look at
+musl, and see just how big the errno portion of the problem was. So I
+forked it to "ebusl" on my github and did a bit of grepping.
+
+It's AMAZINGLY not as horrible as I thought it would be: only 267 references
+to errno in the whole library.
+
+I guess I have to look into how to do git submodules right.
