@@ -1,0 +1,34 @@
+#!/bin/sh
+# Generate a ringbuffer type and width from a template
+
+NEWRING=$1
+RINGWIDTH=$2
+IN=$3
+OUT=$4
+
+usage() {
+echo $0: RINGTYPE RINGWIDTH TEMPLATE OUTPUTFILE
+exit 1
+}
+
+main() {
+
+
+if [ "$IN" = "$OUT" ]
+then
+  echo cannot overwrite a template file
+  usage
+fi
+
+# Transmorgify the include file
+
+sed s/NEWRING/$NEWRING/g $IN | sed s/RINGSIZE/$RINGWIDTH/g > $OUT
+
+}
+
+if [ $# != 4 ]
+then
+  usage
+fi
+
+main 
