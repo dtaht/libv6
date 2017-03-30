@@ -1,0 +1,80 @@
+* Abusing the linker
+
+ERM really abuses the linker in a variety of ways. Certain bits of
+code *must* get placed in certain places in order to work.
+
+** SECTIONS
+
+There are several additional sections in every erm program. They may
+include a RINGBUFFER and RINGDATA section. A command line section. 
+VERYHOTDATA VERYHOTCODE sections, as well as VERYCOLD equivalents.
+
+OVERLAYS
+
+** Overlays
+
+Overlays are an old concept, very common in small memory systems of
+the past, but rare today. Still, they remain useful. One example is on
+command line parsing, and other forms of user input. You don't need
+anything in the command line parser - including the command line
+itself! - after you are done all that, you can throw away the parser,
+and its data.
+
+
+all linkers have a means to declare overlays.
+
+** OVERLAY command
+
+The OVERLAY command provides an easy way to describe sections which are to be loaded as part of a single memory image but are to be run at the same memory address. At run time, some sort of overlay manager will copy the overlaid sections in and out of the runtime memory address as required, perhaps by simply manipulating addressing bits. This approach can be useful, for example, when a certain region of memory is faster than another.
+
+The OVERLAY command is used within a SECTIONS command. It appears as follows:
+
+  OVERLAY start : [ NOCROSSREFS ] AT ( ldaddr )
+   {
+     secname1 { contents } :phdr =fill
+     secname2 { contents } :phdr =fill
+     ...
+   } >region :phdr =fill
+
+
+The OVERLAY command provides an easy way to describe sections which are to be loaded as part of a single memory image but are to be run at the same memory address. At run time, some sort of overlay manager will copy the overlaid sections in and out of the runtime memory address as required, perhaps by simply manipulating addressing bits. This approach can be useful, for example, when a certain region of memory is faster than another.
+
+The OVERLAY command is used within a SECTIONS command. It appears as follows:
+
+  OVERLAY start : [ NOCROSSREFS ] AT ( ldaddr )
+   {
+     secname1 { contents } :phdr =fill
+     secname2 { contents } :phdr =fill
+     ...
+   } >region :phdr =fill
+
+sbss segment - stuff you can only get at small-ly
+
+gold linker
+
+-fuse-ld=gold.
+
+will only create a .foo section in the output file if there is a .foo section in at least one input file.
+
+If you use anything other than an input section description as an output section command, such as a symbol assignment, then the output section will always be created, even if there are no matching input sections.
+
+The special output section name /DISCARD/ may be used to discard input sections. Any input sections which are assigned to an output section named /DISCARD/ are not included in the output file.
+
+More overlays
+
+https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Using_ld_the_GNU_Linker/sections.html
+
+
+https://people.freebsd.org/~lstewart/articles/cpumemory.pdf
+
+
+http://www.drdobbs.com/cpp/its-not-always-nice-to-share/217600495
+
+
+only data) or .data.rel.ro (read-only after relocation)
+section37 No other special action is required. If,
+for some reason, variables cannot be marked correctly
+with const, the programmer can influence their p
+
+The .pushsection and .popsection
+

@@ -1,0 +1,96 @@
+Sadly:
+
+The LOCK prefix can be prepended only to the following in structions and only to
+those forms of the instructions where the destination operand is a memory
+operand: ADD, ADC, AND, BTC, BTR, BTS, CMPXCHG, CMPXCH8B, CMPXCHG16B, DEC, INC,
+NEG, NOT, OR, SBB, SUB, XOR, XADD, and XCHG
+
+The manual says you can do this on the x86
+LOCK AND reg1 reg2
+
+LOCK CMPXCHG m8,r8 5 ~51
+
+unsigned __int64 _xgetbv( unsigned int);
+
+CR0
+
+FS and GS segment registers?
+
+	EM	Emulation
+3	TS	Task Switched
+
+CR2 contains the virtual address that triggered the page fault
+Not-Write Through
+
+CR3 controls 
+Page-Level Write Through
+
+Physical Base Address of the PML4
+
+
+XSAVE And Processor Extended States Enable
+
+
+CR8
+
+The AMD64 architecture allows software to define up to 15 external interrupt-priority classes. 
+
+
+IA32_EFer
+
+Secure Virtual Machine Enable
+
+
+So, if you're going to use C, do what the rest of the C world does, which is set up a flat-memory model, use paging, and ignore the fact that segmentation even exists.
+
+
+http://wiki.osdev.org/Segment_Limits#Segmentation
+
+For instance, Microsoft Windows on x86-64 uses the GS segment to point to the Thread Environment Block, a small data structure for each thread, which contains information about exception handling, thread-local variables, and other per-thread state. Similarly, the Linux kernel uses the GS segment to store per-CPU data.
+
+
+movl $42, %fs:(%eax)  ; Equivalent to M[fs:eax]<-42) in RTL
+
+
+
+non temporal memory
+
+void _mm_stream_si32(int *p, int a);
+void _mm_stream_si128(int *p, __m128i a);
+void _mm_stream_pd(double *p, __m128d a);
+#include <xmmintrin.h>
+void _mm_stream_pi(__m64 *p, __m64 a);
+void _mm_stream_ps(float *p, __m128 a);
+#include <ammintrin.h>
+void _mm_stream_sd(double *p, __m128d a);
+void _mm_stream_ss(float *p, __m128 a);
+
+#include <smmintrin.h>
+__m128i _mm_stream_load_si128 (__m128i *p);
+
+
+
+long __builtin_expect(long EXP, long C);
+This construct tells the compiler that the expression EXP
+most likely will have the value C. The return value is EXP.
+__builtin_expect is meant to be used in an conditional
+expression. In almost all cases will it be used in the
+context of boolean expressions in which case it is m
+
+
+-freorder-blocks-andpartition)
+but it has limited usefulness because it does
+
+
+/sys/devices/system/cpu/cpu*/cache
+
+
+he fourth hint, _MM_HINT_NTA, allows telling the processor
+to treat the prefetched cache line specially. NTA
+stands for non-temporal a
+
+
+he fourth hint, _MM_HINT_NTA, allows telling the processor
+to treat the prefetched cache line specially. NTA
+stands for non-temporal a
+
