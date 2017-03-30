@@ -151,11 +151,16 @@ I haven't looked at bionic.
 It seems highly likely I'll have to muck with the default C calling
 conventions for the various architectures.
 
-A lot of state does get encoded into a few static registes
+A lot of state does get encoded into a few static registers
 already. And structure return is difficult, yet important.
 
 I'm not looking forward to this - because then I'll have to mod the
-compiler, too.
+compiler, too. I'm already planning on abusing C in lisp-y ways, I am
+tempted very much to already start using a set of UTF-8 characters
+everywhere, like assignment:
+
+←(assignedvalue, operation(x,y,z));
+
 
 * Plan
 
