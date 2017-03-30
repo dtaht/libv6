@@ -169,6 +169,22 @@ parenthesis.
 
 ** TODO foxbase and xenix
 
+** Bit-serial cpu - 1988(ish)
+
+I fiddled around with creating a bit-serial cpu - 1 bit wide. I didn't
+care how slow it was, it just was attractive (in light of the
+connection machine) to see how far (and how small) you could get with
+just a stream of bits. 
+
+Pretty far! I dreamed of a language called "bit" where everything was
+built up out of the basic bit types and you worked up from there to
+floats in regular C.
+
+Not a lot came of that exercise but it convinced me that big-endian
+was the way to go...
+
+... not that the world agreed.
+
 ** Oracle 286 co-processor and 4GL
 
 ** C++ v1
