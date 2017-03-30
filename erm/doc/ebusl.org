@@ -1,8 +1,8 @@
 * Alternate C libraries
 
 Ebusl (pronounced like you think is would be: "E buse l"), is a hacked
-up version of the C library with four major modifications to it
-(planned, thus far).
+up version of the C library with five, maybe six, major modifications
+to it (planned, thus far).
 
 ** End of errno
 
@@ -21,8 +21,8 @@ modern tool (like coccinelle) to manage the patchset and for that
 matter automate the process.
 
 'cause everything that calls these (and there are only few things
-planned so far - tcpdump, libcap being the biggies) also has to
-have all references to errno ripped out.
+planned so far - tcpdump, libcap being the biggies) also has to have
+all references to errno ripped out.
 
 Some of this is easier - a lot of stuff just calls perror without
 referring to the errno at all.
@@ -42,7 +42,7 @@ everything else.
 
 ** Weirder threads
 
--   In POSIX: Threads are pre-emptive, and global, and carry around
+- In POSIX: Threads are pre-emptive, and global, and carry around
   their own state via tls.
 
 - In ERM: Threads are co-operative, and per cpu, and keep their own
@@ -144,9 +144,18 @@ but it is not anywhere near as feature-full or posix compliant as musl.
 
 I haven't looked at bionic.
 
+** Calling convention problems
+
+It seems highly likely I'll have to muck with the default C calling
+conventions for the various architectures.
+
+A lot of state does get encoded into a few static registes
+already. And structure return is difficult, yet important.
+
+I'm not looking forward to this - because then I'll have to mod the
+compiler, too.
+
 * Plan
 
 The plan is to work on that crazy part of the project in a separate repo,
 using git submodules to bring it in.
-
-
