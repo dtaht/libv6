@@ -271,17 +271,25 @@ ERM is a toy. In it, as per the above, is a dismal history of
 failure. But: thinking about it (well, data-flow, primarily) has
 generally turned out useful for me in some unexpected way.
 
-But: from it I hope to finally teach myself some VHDL. Certainly my C
-chops are coming back - (But, boy! are a lot of these commits
-embarrasing!) and remaking the c library has long been on my "change
-the world" todo list. Maybe the ringbuffers will turn out useful. Or
-the packet parser - which I need anyway, I really would like a
-statically declared language to work in more expressive than
-pcap. Maybe I can solve a few nagging embarrasingly parallel problems
-with it, like [[bellman-ford][]], or the other stuff listed in that
-directory. Maybe some new math will come out of it or I'll come up
-with a good set of symbols for four valued logic and a correct subset
-of operations.
+I have a deep knowledge of set theory from database operations,
+boolean logic from just being around computers, and spent much of the
+last 5 years studying the lit on queue theory. (which has a really
+horrible notation that I really should try writing a paper in once)
+
+Between the three of these things I have a truly unique background.
+
+I still don't know where I'm going with this!
+
+From it I hope to finally teach myself some VHDL. Certainly my C chops
+are coming back - (But, boy! are a lot of these commits embarrasing!)
+and remaking the c library has long been on my "change the world" todo
+list. Maybe the ringbuffers will turn out useful. Or the packet
+parser - which I need anyway, I really would like a statically
+declared language to work in more expressive than pcap. Maybe I can
+solve a few nagging embarrasingly parallel problems with it, like
+[[bellman-ford][]], or the other stuff listed in that directory. Maybe
+some new math will come out of it or I'll come up with a good set of
+symbols for four valued logic and a correct subset of operations.
 
 Or maybe it will work this time on some problem that I haven't even
 concieved of yet. I don't care. I'm glad that this time, I'm at least
