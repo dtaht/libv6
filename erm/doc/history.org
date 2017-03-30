@@ -135,13 +135,16 @@ pulled data from the wrong segment - the resulting crash was usually
 not immediate and really difficult to debug.
 
 This was at a time when the rest of the Unix world had been shipping
-32 bit virtual memory arches for a while, and would blithely do a
-malloc(1024*1024) with nary a qualm or by-your-leave. All I could do
-was look enviously on all that, although I was happy with nifty hooks
-like "Sidekick" and "turbo lightning" that provided a great deal of
-interactivity that those guys didn't have. I spent a crazy amount of
-time porting code from those worlds into my 286 based Xenix platforms
-and dealing with all the near and far pointers and memory models.
+32 bit virtual memory arches for a while, and SUN coders, especially,
+would blithely do a malloc(1024*1024) with nary a qualm or
+by-your-leave. For the 3 years following the SNA/IP project all I
+could do was look enviously on all that, although I was happy with
+nifty DOS hooks like "Sidekick" and "turbo lightning" that provided a
+great deal of interactivity that those guys didn't have. I spent a
+crazy amount of time porting code from those worlds into my 286 based
+Xenix platforms and dealing with all the near and far pointers and
+memory models. I got a compaq 386 box up on Xenix when they first came
+out, and never looked back.
 
 When OS/2 came out I steered clear - after this experience I couldn't
 imagine *anyone* trying to deliver reliable code based on such a crazy
@@ -190,7 +193,10 @@ floats in regular C.
 Not a lot came of that exercise but it convinced me that big-endian
 was the way to go...
 
-... not that the world agreed.
+... not that the world agreed. These days, assuming you always use
+aligned data and toss the generic concept of a string (use, say 32 bit
+unicode natively), you *could* use the bottommost bits of a little
+endian pointer as a tag...  but it makes my head hurt.
 
 ** Oracle 286 co-processor and 4GL
 
