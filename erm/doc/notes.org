@@ -1983,3 +1983,28 @@ sed s/OLDTYPE/NEWTYPE/g input.eh > NEWTYPE_header.h
 
 Actually most of the time, I create the whole darn *variable* and its
 associated structures that way.
+* And specc is not dead, but resting
+
+http://www.cecs.uci.edu/~specc/reference/
+
+I simply do not know enough about it or systemC to get anywhere
+at the moment. When last I tried systemC it was horrible.
+
+All I really wanted was to be able to pack clearly defined bit
+structures into other things, and unpack them. Cleanly. And be able to
+use the new bit extraction stuff in the latest intel cpus.
+
+Sigh. Another preprocessor awaits.
+
+1) I don't need (or want) cycle accurate simulation - I want the "simulation" to run as fast as possible in a real cpu.
+1a) Don't got clocks. Don't need no stinking clocks.
+
+2) I DO want things to compile down to hardware.
+
+Another issue I have with C++ is you can't define new operators entirely, 
+you can only overload them. That's fixible, but....
+
+Anyway, despite me saying that, systemc does look a great deal 
+more friendly to my eye than pure vhdl or verilog.
+
+http://www.asic-world.com/systemc/data_types2.html#Example_sc_bit
