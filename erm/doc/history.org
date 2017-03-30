@@ -123,7 +123,7 @@ you could wedge something else in there and have some hope that the
 whole thing would actually work. It was more fun than forth!
 
 And: you tried really, really hard, to never deal with near, far, or
-other pointers directly.
+other pointers directly, but use indexes and arrays.
 
 One way to cope with the segments was to incorporate a flag into the
 top part of your index - and you swapped memory in and out based on
@@ -134,13 +134,20 @@ two bits as your flag... need 56, 3... and so on. God help you if you
 pulled data from the wrong segment - the resulting crash was usually
 not immediate and really difficult to debug.
 
-This was at a time when the rest of the world had been shipping 32 bit
-virtual memory arches for a while. When OS/2 came out I steered
-clear - after this experience I couldn't imagine *anyone* trying to
-deliver reliable code based on such a crazy memory addressing
-scheme. Especially IBM. It was, like they were intentionally crippling
-something so they'd sell more mainframes. I can't believe how long
-they tried to make it work, either.
+This was at a time when the rest of the Unix world had been shipping
+32 bit virtual memory arches for a while, and would blithely do a
+malloc(1024*1024) with nary a qualm or by-your-leave. All I could do
+was look enviously on all that, although I was happy with nifty hooks
+like "Sidekick" and "turbo lightning" that provided a great deal of
+interactivity that those guys didn't have. I spent a crazy amount of
+time porting code from those worlds into my 286 based Xenix platforms
+and dealing with all the near and far pointers and memory models.
+
+When OS/2 came out I steered clear - after this experience I couldn't
+imagine *anyone* trying to deliver reliable code based on such a crazy
+memory addressing scheme. Especially IBM. It was, like they were
+intentionally crippling something so they'd sell more mainframes. I
+can't believe how long they tried to make it work, either.
 
 There are bits of this experience littered throughout erm - we have a
 lot of 16 bit (or less) values used as indexes, for one example. I
@@ -214,6 +221,9 @@ was crashing cfront regularly (after watching it compile for an hour)
 at this point, and debugging the dtor output directly when my code
 crashed (which was a lot), and after a few months of looking at
 mangled function names, you'd give up too!
+
+My code didn't compile at all in Watcom C++, but, in not compiling, it
+didn't compile - really really fast.
 
 A few weeks later I interviewed at SCO and resolved to never write in
 an immature language again. I put down programming almost entirely for
