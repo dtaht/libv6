@@ -1,25 +1,26 @@
 * Ringbuffers are one of the most foundational structures in ERM
+
 I seem to have to write the rant(s) first before writing the code. The first
 time I did this, it was in 80286 assembly. The second time, lisp macros. The
 third, C++. All were kind of broken in one respect or another. I like to think I
 got close with all the linker magic I did on the C++ version.
 
-So here I am trying to write them in C11. While picking up VHDL on the side.
+So here I am trying to write some really fast ones in C11. While
+picking up VHDL on the side.
 
 ** ringbuffer users are everywhere
 
-logger
-timer
-wastebin
-stuff that is only a few bits wide
-stuff that is very big
-dma engine interface(s)
-joiners
-flingers
-simd
+[ ] logger
+[ ] timer
+[ ] wastebin
+[ ] stuff that is only a few bits wide
+[ ] stuff that is very big
+[ ] dma engine interface(s)
+[ ] joiners
+[ ] flingers
+[ ] simd
 
 * Rants that I need to get out of my system
-
 ** creating custom types and accessor methods in c
 
 I don't know why people go so crazy about C++ templates and the like,
@@ -48,65 +49,110 @@ No - pass the whole message
 
 ** They aren't strongly typed
 
-It's hot - you just wrote it - it's just on a specialize alternate stack type
-that is FIFO rather than LIFO.
+It's hot - you just wrote it - it's just on a specialized alternate
+stack type that is FIFO rather than LIFO.
 
 * Everything on the web is mildly wrong
-When I
-Everywhere on the web  
 
-I did threads on the 6502, using the zero page. on the 80286 - using segment
-registers. And on the transputer, using channels.
+Everywhere on the web I go nowadays I see these nice writeups on
+ringbuffers, that all tend to have assumptions about what they should
+look like, based on how threads are done today and with pre-emptive
+schedulers in play, with multiple cpus spinning madly.
 
-It wasn't until the early 90s that I got a "conventional" multiple cpu box to
-play with and by then I'd been writing threaded applications for a decade.
+I did threads on the 6502, using the zero page, and the idx register.
+On the 80286 - using segment registers. And on the transputer, using
+channels. And most recently, in go - and I have no idea how they do
+channels, but it's insanely fast and for all I know, they implemented
+at least some of the same methods I'm going to talking about here.
+
+** Ringbuffers are a message passing construct
+
+Conceptually they don't look a lot different from calling printf with
+a format argument and VARARGS, except that their "stack" can be
+anywhere and the work, deferred for a limited amount of time.
+
+*** Consider printf:
+
+printf(somewhere, "fmt", x, y, z, ...);
+
+What this does it put (potentally a ton of) arguments on the stack,
+and send the printf function a message describing the format of
+everything on the stack, and sends it to an output.
+
+** TODO research gothreads and channels
+
+It wasn't until the early 90s that I got a "conventional" multiple cpu
+box to play with and by then I'd been writing threaded applications
+for a decade.
+
+We didn't do things that way. Threads tended to be co-operative.
+
+There's all this advice on the web giving general guidelines that you can
+violate with abandon, so long as you understand your application.
 
 ** False sharing is not always false
 
-If your two threads are running on the same cpu - "false sharing" - is a GREAT idea.
+If your two threads are running on the same cpu - "false sharing" - is
+a GREAT idea. You really, really, really want to keep both in and out in
+the same bit of cache. In fact, if you can do it, in an on chip register.
 
-** Not keeping stuff on the same cpu
+** Not keeping stuff on the same cpu is stupid
 
-And that's great. Except that it's dirt slow. IF your consumer is on another
-cpu, it has to grab data from your cpu's cache, it has to update (Admittedly) a
-different cacheline for the update - and
+While conceptually a ringbuffer (or messaging system) can send stuff
+from one cpu to another, it's dirt slow if it actually happens, in
+most cases. IF your consumer is on another cpu, it has to grab data
+from your cpu's cache, it has to update (admittedly) a different
+cacheline for the update, and all the benefits you ostensibly got from
+sticking the index into separate cache lines vanish because you have
+to read the data itself out of another cpu's L1 cache.
 
-what you generally want is for the producer and consumer to be running on the
-same cpu. *that often not hard* - you just declare both at the same time and
-lock them to the same cpu - and if your scheduler is designed right, and not
-pre-emptive (per se') -
+You don't want to do that.
 
+What you generally want is for the producer and consumer to be running
+on the same cpu. *That is often not hard* - you just declare both at
+the same time and lock them to the same cpu - and if your scheduler is
+designed right, and not pre-emptive (per se') - you're done. You don't
+even need atomic locks. WIN.
+
+IF you do intend to hand another cpu your data, it generally makes
+sense to write that cpu's cache, not yours.
+
+Moving on...
+
+** TODO rant about the FIFO serial port in the 90s
 
 ** Filling the ringbuffer completely and blocking
 
 No. You want to fill the ringbuffer to the low watermark (to give the other
 thread or device enough to do) - and then yield. Sometimes you want to go as
 high as the highwater mark - and then yield. In no case, do you want to go all
-the way to the end, and block.
+the way to the end, and block. You can (if you want), spin on the lowwatermark,
+or block on it, but it usually makes more sense to just yield.
 
 producer() {
            if(>lowmatermark) YIELDTO(consumer);
            do {
            work();
-} 
-           while(!highwatermark);
-           return;
+           } while(<highwatermark);
+           return; // or YIELDTO(consumer);
 }
 
 No need to block on anything. just *yield*.
 
-* This 
+Note that what the high and low watermark should be is subject to debate
+and analysis, see a later section.
 
-There's another trick - say the ringbuffer is empty - well, in that case, you
-can just leave your variables in registers and jump to the "pull from the stack"
-portion of the reading thread. You have to kind of be fortunate enough to have a
-language that lets you express this but:
+* Bypass the buffer when you can
 
-and then it stays empty. Ringbuffers are there for when you need to *temporarily
-stash up work* because it's more efficient to do stuff *temporarily*, in bulk.
-Or the data has to go somewhere that you don't want to understand.
+There's another trick - say the ringbuffer is empty - well, in that
+case, you can just leave your variables in registers and jump just
+past the "pull from the ringbuffer" portion of the reading thread. You
+have to kind of be fortunate enough to have a language that lets you
+express this but then it stays empty.
 
-
+Ringbuffers are there for when you need to *temporarily stash up work*
+because it's more efficient to do stuff in bulk *temporarily*.  Or the
+data has to go somewhere that you don't want to understand.
 
 * The last trick can get done two ways
 
@@ -129,10 +175,10 @@ ringdata4;
 
 and your generatated code ends up looking like
 
-write(0x4(ringbuffers), data); - to get to 
+write(0x4(ringbuffers), data); - to get to ringbuf2.
 
-Now, this doesn't always work, particularly when you are dealing with a disjoint
-memory space - so another method is
+Now, this doesn't always work, particularly when you are dealing with
+a disjoint memory space - so another method is:
 
 struct {
 ringbuf1;
@@ -149,11 +195,13 @@ ringdata4p;
 } ringdata SECTION (ringdata);
 
 Your code (assuming you've obeyed the joint structure packing rules),
-then basically references offsets from these two base pointers -
+then basically references the same offset from two different
+copies of the two base pointers. (mdsi - multiple data, single instruction)
 
-or you can have the ring data be actually packed into the struct itself so you
-can ship things around. Let's say you are using *really small* ring buffers -
-well, pack the whole thing into the struct and be done with it.
+or you can have the ring data be actually packed into the struct
+itself so you can ship things around. Let's say you are using *really
+small* ring buffers - well, pack the whole thing into the struct and
+be done with it.
 
 * Use 'em wrong
 
@@ -166,174 +214,273 @@ and yield.
  atomic cmpx inside the processor - you can't be interrupted, and you don't have
  to touch memory.
 
+* The in register ringbuffer
+
+this is a ringbuffer of width two bits, of size 32.
+
+u64 statebuf;
+bit2 state;
+
+SHIFT
+
+if you want one that's infinite, ROTATE and AND
+
+* FIXME - bit extract functions in sse4.2?
+
+there is a bit extract function in sse4.2 that looked interesting,
+it would save a shift. I think.
+
+* ATOMIC CMP_EXCH
+
+IF your cmp_exchange on this incredibly compressed set of ringbuffers,
+*fails* - there's information there. Maybe your thread can make an
+informed decision about where to go or what to do next from them.
+
+** TODO example of leveraging shared ringbuffer state
+
 * Free running variables
 
 yourtype ringbufentries[256];
 
 u8 index;
 
-There's no need for an index & 255 - it just runs freely.
+There's no need for an index & 255 - it just appears to run freely.
 
-You don't need a ringbuffer that big very often, so sure, write a version that
-takes 2, 4, 8, 16 or 32 entries and uses & on the mask. but if you don't care,
-why bother doing the extra arithmetic
+That's great. And C has no types actually smaller than that, but you can (if you are careful)
+create a type that is, and use that rigorously.
 
-(and if you are pulling from it when it goes low, anway, you are stomping on
-less ram.
+typedef {
+u8 v:2;
+} bit2;
 
-Worse you only write it once, and read it once - you don't ever really need to
-write one back to main ram unless you don't service it fast enough.
+This is better (maps to hardware better, too) - and furthermore the
+base number of bits is encoded into the declaration, so you can wedge
+those elsewhere if you like (and are careful). 
 
+** TODO - actually I used to do this with defines
 
-The LOCK prefix can be prepended only to the following in structions and only to
-those forms of the instructions where the destination operand is a memory
-operand: ADD, ADC, AND, BTC, BTR, BTS, CMPXCHG, CMPXCH8B, CMPXCHG16B, DEC, INC,
-NEG, NOT, OR, SBB, SUB, XOR, XADD, and XCHG
+(I THINK a packed union now will wedge these together right, but I
+could be dreaming, and need to resort to other methods of declaration and
+packing.)
 
-The manual says you can do this on the x86
-LOCK AND reg1 reg2
+* right size the rings always
 
-LOCK CMPXCHG m8,r8 5 ~51
+You don't need a ringbuffer that big very often, so sure, write a
+version that takes 2, 4, 8, 16 or 32 entries and uses & on the
+mask. but if you don't care, why bother doing the extra arithmetic in
+the code? why do nothing more complicated than specify the allowed
+range?
 
-unsigned __int64 _xgetbv( unsigned int);
+(and if you are pulling from it when it goes low, anway, you are
+stomping on less ram)
 
-CR0
+** Memory impacts of ringbuffers
 
-FS and GS segment registers?
+Worse you only write it once, and read it once - you don't ever really
+need to write one back to main ram unless you don't service it fast
+enough. Ideally, in my world, you'd be able to declare sections of
+high speed memory that you never write back to main memory at all.
 
-	EM	Emulation
-3	TS	Task Switched
+In the hardware world, you do this all the time. All FPGAs have block
+memory that you can organize any way you want, and access any way you
+want, with one or more read and write ports.
 
-CR2 contains the virtual address that triggered the page fault
-Not-Write Through
+*** TODO research new intel means of locking stuff in cache
 
-CR3 controls 
-Page-Level Write Through
+* Managing bounds
 
-Physical Base Address of the PML4
+When you are being this insane about the range of variables, it helps,
+when debugging, to make sure that all your types never overrun their bounds.
 
+It turns out C11 has a new feature to enable that: -fsanitize=bounds
 
-XSAVE And Processor Extended States Enable
+That I intend to use the hell out of.
 
-
-CR8
-
-The AMD64 architecture allows software to define up to 15 external interrupt-priority classes. 
-
-
-IA32_EFer
-
-Secure Virtual Machine Enable
-
-
-So, if you're going to use C, do what the rest of the C world does, which is set up a flat-memory model, use paging, and ignore the fact that segmentation even exists.
-
-
-http://wiki.osdev.org/Segment_Limits#Segmentation
-
-For instance, Microsoft Windows on x86-64 uses the GS segment to point to the Thread Environment Block, a small data structure for each thread, which contains information about exception handling, thread-local variables, and other per-thread state. Similarly, the Linux kernel uses the GS segment to store per-CPU data.
-
-
-movl $42, %fs:(%eax)  ; Equivalent to M[fs:eax]<-42) in RTL
-
-
--fsanitize=bounds
+* Can't remember what this link was
 
 https://github.com/jonasschneider/cor
 
-linker
+* Rules of thumb
 
-The OVERLAY command provides an easy way to describe sections which are to be loaded as part of a single memory image but are to be run at the same memory address. At run time, some sort of overlay manager will copy the overlaid sections in and out of the runtime memory address as required, perhaps by simply manipulating addressing bits. This approach can be useful, for example, when a certain region of memory is faster than another.
+Some of these conflict and are subject to being derived empirically.
 
-The OVERLAY command is used within a SECTIONS command. It appears as follows:
+** Always, always align
 
-  OVERLAY start : [ NOCROSSREFS ] AT ( ldaddr )
-   {
-     secname1 { contents } :phdr =fill
-     secname2 { contents } :phdr =fill
-     ...
-   } >region :phdr =fill
+It (at least used to be) always cheaper to align the edges of the buffer
+on natural processor boundaries for the data type. If you end up underrunning
+the natural size of the ring - say you have a 4 byte int and 8 byte vector
+well, round up to 16 to align things.
 
+** Size ring buffers for 2-4 units of work at max
 
-The OVERLAY command provides an easy way to describe sections which are to be loaded as part of a single memory image but are to be run at the same memory address. At run time, some sort of overlay manager will copy the overlaid sections in and out of the runtime memory address as required, perhaps by simply manipulating addressing bits. This approach can be useful, for example, when a certain region of memory is faster than another.
+If you only are going to do one unit of work, it's far better to do a
+function call. (Within the calling convention). Especially if that
+can get inlined without touching the stack.
 
-The OVERLAY command is used within a SECTIONS command. It appears as follows:
+** Try to flush the registers you are flushing with a minimal number of instructions.
 
-  OVERLAY start : [ NOCROSSREFS ] AT ( ldaddr )
-   {
-     secname1 { contents } :phdr =fill
-     secname2 { contents } :phdr =fill
-     ...
-   } >region :phdr =fill
+The number of registers you have influences the unit of work.
 
-sbss segment - stuff you can only get at small-ly
+Today's world has more registers than I ever dreamed of. I started off life
+with *3* 8 bit wide ones. You kids are lucky.
 
-gold linker
+*** TODO take apart some example code to show the actual register usage
 
--fuse-ld=gold.
+** Read and write full cachelines
 
-will only create a .foo section in the output file if there is a .foo section in at least one input file.
+*** Try to fully write a cacheline
 
-If you use anything other than an input section description as an output section command, such as a symbol assignment, then the output section will always be created, even if there are no matching input sections.
+This avoids having to read the old value back from memory to wipe it
+out. There are actually instructions that force this sort of behavior.
 
-The special output section name /DISCARD/ may be used to discard input sections. Any input sections which are assigned to an output section named /DISCARD/ are not included in the output file.
+*** Try to fully read a cacheline
 
-More overlays
+Same principal applies. You don't have to read it all back at once, but
+a unit of work should rarely exceed a cacheline or four.
 
-https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Using_ld_the_GNU_Linker/sections.html
+** Rarely size a ringbuffer bigger than local (cache/2)/setsize
 
+If you've got *that* much work to do it's probably also better to hand
+off the work as you go along as a call to the other function.
 
-https://people.freebsd.org/~lstewart/articles/cpumemory.pdf
+The T800 transputer had 8k of fully associative cache, so 4k would have
+been a reasonable number. Modern cpus typically have settled on 32k of
+4 way set associative cache, so, um, 4k is a reasonable number.
 
+4k is also a reasonable number for when you map a ringbuffer back on 
+itself.
 
+** Don't over fill the ring buffer
 
-non temporal memory
+My code tends to use a low, fixed value for the low watermark, and
+3/4 the value for the high one. 
 
-void _mm_stream_si32(int *p, int a);
-void _mm_stream_si128(int *p, __m128i a);
-void _mm_stream_pd(double *p, __m128d a);
-#include <xmmintrin.h>
-void _mm_stream_pi(__m64 *p, __m64 a);
-void _mm_stream_ps(float *p, __m128 a);
-#include <ammintrin.h>
-void _mm_stream_sd(double *p, __m128d a);
-void _mm_stream_ss(float *p, __m128 a);
+There's a new idea on the scene that I haven't fully incorporated into
+the design as yet:
 
-#include <smmintrin.h>
-__m128i _mm_stream_load_si128 (__m128i *p);
+** BQL
 
+Keeping track of both the bytes in a ringbuffer and the number of entries
+is nothing new. 
 
+What was new was having a dynamic estimator for the "right amount of
+bytes" between producer and consumer that actually worked. I happen to
+not like the estimator in BQL, preferring AIMD (additive increase,
+multiple decrease) to MIAD (multiple increase, additive
+decrease)... but it does work. And it's nearly in the right place.
 
-long __builtin_expect(long EXP, long C);
-This construct tells the compiler that the expression EXP
-most likely will have the value C. The return value is EXP.
-__builtin_expect is meant to be used in an conditional
-expression. In almost all cases will it be used in the
-context of boolean expressions in which case it is m
+And from that one first innovation, all the other bufferbloat work is
+essentially derived.
 
+That said, if I get as far as netmap this time, I'll fiddle with BQL
+on its ring.
 
--freorder-blocks-andpartition)
-but it has limited usefulness because it does
+** Ringbuffers and Write Only Memory
 
+ERM has a concept of write only memory(WOM).
 
-/sys/devices/system/cpu/cpu*/cache
+It's not strictly necessary, but I keep it in there for three
+reasons.
 
+*** Reason one - (more) fixed execution time
 
-he fourth hint, _MM_HINT_NTA, allows telling the processor
-to treat the prefetched cache line specially. NTA
-stands for non-temporal a
+If your code needs to execute in a fixed amount of time, always
+writing something - even if you aren't using it, takes roughly the
+same amount of time as writing it somewhere you need it. In hardware
+this is way more important than in software. Let's say you needed to
+sometimes copy 4 vectors from one place to another. A normal C
+programmer might write:
 
+if(thisisgooddata) {
+save(somewhere++,data1);
+save(somewhere++,data2);
+save(somewhere++,data3);
+save(somewhere++,data4);
+}
 
-he fourth hint, _MM_HINT_NTA, allows telling the processor
-to treat the prefetched cache line specially. NTA
-stands for non-temporal a
+moveon: // or use goto, if you are a less good c programmer
 
+The compiler will generate a conditional jump to moveon, which
+usually costs 3 clocks - or if you specify the branch as likely,
+none. WIN! you saved all those clocks.
 
-only data) or .data.rel.ro (read-only after relocation)
-section37 No other special action is required. If,
-for some reason, variables cannot be marked correctly
-with const, the programmer can influence their p
+But now that function will complete faster going one way, than the other.
 
-The .pushsection and .popsection
+A way to write it in arm assembly might be different:
 
-http://www.drdobbs.com/cpp/its-not-always-nice-to-share/217600495
+load therightplace, %(somewhere)
+test somecondition
+VSTR.EQ data1,[somewhere]! ; use post indexed addressing
+VSTR.EQ data2,[somewhere]! ; 
+VSTR.EQ data3,[somewhere]! ; 
+VSTR.EQ data4,[somewhere]! ; 
+moveon:
+
+FIXME: I'm not actually sure what happens on the post-indexed
+addressing front with a conditional instruction on arm.
+
+The generated function is shorter (no jumps or branches at all) and
+thus your branch predictor never has to get anything stuffed into it
+for that section of code.
+
+The write is buffered, and you've got other things to do, so it 
+winds up (relatively) invisible to the rest of the architecture.
+
+Lest you think I'm overoptimizing, if you are writing a whole bunch of
+aligned registers, you can do the above in one instruction, with no
+branch.
+
+Intel won't let you do this, and the mental construct I have for it
+looks more like this:
+
+load therightplace, %(somewhere)
+test somecondition
+cmove wastebin, %(somewhere)
+VSTR data1,[somewhere]! ; intel doesn't have post indexed addressing either
+VSTR data2,[somewhere]! ; 
+VSTR data3,[somewhere]! ; 
+VSTR data4,[somewhere]! ; 
+load therightplace, %(somewhere)
+
+I don't like branches. Branches cost logic you don't have.
+
+(I note that the first example is likely to complete in less time than
+ the second, so we are still not getting hard real time here)
+
+(and that it still generally makes WAY more sense to do the compare
+ and jump! But to think about the set of operations in hardware that
+ cannot do this, is helpful)
+
+*** Reason #2
+
+Increasingly there is a need for interprocessor memory protections -
+like an s-box for crypto - and so on, so you do sometimes have a very
+good reason to write data you can't read back.
+
+** TODO can I do WOM right using posix shared memory constructs?
+
+*** WOM Reason #3
+
+WOM is also in there I find the idea insanely funny, given the history
+behind the concept.
+
+*** The wastebin
+
+One of the places WOM shows up is in a general concept called "the
+wastebin" which is an area of memory that you cannot read, but
+write. ANYTHING you want to throw away goes there. It's both a
+ringbuffer (of a fairly large size, but just a bunch of 4k pages
+mapped on themselves), and a mapped in memory area that you can just
+toss junk into. It's the moral equivalent of /dev/null, except that
+it's more general.
+
+Because it's there, and universal, it never eats more than 4k out of your
+dcache, and ideally much less than that. There are a few issues with contention
+and so on, when you get at it (on a per thread per cpu basis), that need to
+get worked out. You don't necessarily want your threads all writing
+to the same area of memory of different sizes.
+
+In a hardware implementation it wouldn't be memory at all, it would
+just be a place you could write to without trapping, and stuff would
+just vanish.  (it's kind of my hope I can co-erce a few registers on
+some architecture to get stuff to just vanish)
