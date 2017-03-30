@@ -18,6 +18,6 @@ typedef struct PACKED {
 int main() {
   printf("in a perfect world, this would be 4 bytes: %u \n", sizeof(bittest));
   printf("in a perfect world, this would be 1 byte: %u \n", sizeof(bittest2));
-  if(sizeof bittest != 4) printf("It is a sadly imperfect world\n");
+  if(sizeof(bittest) != 4) printf("It is a sadly imperfect world\n");
   return 0;
 }
