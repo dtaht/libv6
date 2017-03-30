@@ -1,6 +1,6 @@
 * Alternate C libraries
 
-Ebusl (pronounced like you think is would be: "E buse l", is a hacked
+Ebusl (pronounced like you think is would be: "E buse l"), is a hacked
 up version of the C library with four major modifications to it
 (planned, thus far).
 
@@ -12,10 +12,13 @@ return. So, mmap for example, returns a negative value with the 10
 possible errors encoded into it. There's a side function that can turn
 that new value into a errno and look it up, but that's it.
 
-It looks like I have to re-org something like 80 linux syscalls to do
-things this way, and it's kind of my hope to use a modern tool (like
-coccinelle) to manage the patchset and for that matter automate the
-process.
+The number of error returns in POSIX is standard and stable and hasn't
+changed in decades. Why look up errno?
+
+It looks like I have to re-org wrappers around something like 80 linux
+syscalls to do things this way, and it's kind of my hope to use a
+modern tool (like coccinelle) to manage the patchset and for that
+matter automate the process.
 
 'cause everything that calls these (and there are only few things
 planned so far - tcpdump, libcap being the biggies) also has to
@@ -24,12 +27,25 @@ have all references to errno ripped out.
 Some of this is easier - a lot of stuff just calls perror without
 referring to the errno at all.
 
+Some of this is hard: a lot of code checks for -1, where here we check
+for "-". On all modern 64 bit arches this will cause an invalid
+address trap if it's an address.
+
+Other stuff may just inline an invalid instruction (which gets
+trapped) - or call trap directly.
+
+I've thought about killing NULL this way, also, but try to restrain myself.
+I STILL MAY!
+
+I totally realize that this change makes erm code incompatible with 
+everything else.
+
 ** Weirder threads
 
 -   In POSIX: Threads are pre-emptive, and global, and carry around
   their own state via tls.
 
--   In ERM: Threads are co-operative, and per cpu, and keep their own
+- In ERM: Threads are co-operative, and per cpu, and keep their own
   state in their own declared areas.
 
 To do this, in part, involves killing the biggest user of TLS, dead -
@@ -41,10 +57,13 @@ I HATE errno. It's good for humans, lousy for encoding actual errors.
 
 ERM tends to trap on an error - and not actually do any inline error
 checking. What you do instead is: declare a trapped function to the
-compiler, and on error, you call that trap. You overrun memory - you
+compiler, and on error, you raise a trap. You overrun memory - you
 trap. You fail an operation - you trap.
 
 C++ has exceptions. These aren't it. 
+
+GO went so far as to include a second variable entirely from all
+returns. You then need to handle those inline. Yuck.
 
 C has errnos. Show me *one* program that actually checks for and does
 something correct for every possible errno a function can return, and
@@ -56,7 +75,7 @@ LISP has hooks you can put in front or behind *anything*. Hooks are
 they aren't inline. The linker has a map against the address of that
 bit in the code that it builds a set of error handling hooks into.
 
-"I got an instruction trap from PC counter X - what handler do I call?"
+"I got an instruction trap from PC counter of X - what handler do I call?"
 
 Most ERM traps are statically declared. They MUST handle all possible
 error returns from the function. You can certainly create a set of
@@ -71,8 +90,10 @@ handled. You can more prove it is correct.
 Another advantage (and this is not always feasible) - is that your code
 doesn't get cluttered with inline error handling.
 
-A disadvantage is that traps are slower than branches (unless I really work
-hard to speed them up)
+A disadvantage is that traps are slower than branches (unless I really
+work hard to speed them up). And it's not always obvious what your
+code will do as the trap handler is defined elsewhere from where you
+are handling the error.
 
 I'm not really sure to what extent traps will make it into ebusl. It's
 a really big job to just kill errno.
