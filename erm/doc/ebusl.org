@@ -21,18 +21,20 @@ modern tool (like coccinelle) to manage the patchset and for that
 matter automate the process.
 
 'cause everything that calls these (and there are only few things
-planned so far - tcpdump, libcap being the biggies) also has to have
+planned so far - tcpdump, libpcap being the biggies) also has to have
 all references to errno ripped out.
 
 Some of this is easier - a lot of stuff just calls perror without
 referring to the errno at all.
 
 Some of this is hard: a lot of code checks for -1, where here we check
-for "-". On all modern 64 bit arches this will cause an invalid
-address trap if it's an address.
+for "-". A lot of times we don't need to "check" at all - on all
+modern 64 bit arches this will cause an invalid address trap if it's
+an address. Since we encoded the actual error into the address, it can
+jump to the right thing, also.
 
 Other stuff may just inline an invalid instruction (which gets
-trapped) - or call trap directly.
+trapped) - or call trap directly with an offset.
 
 I've thought about killing NULL this way, also, but try to restrain myself.
 I STILL MAY!
