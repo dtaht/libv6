@@ -1,36 +1,207 @@
-* 8087
+* History, History
 
-I made a pile of money challenging bankers to come down with their gnarliest
-spreadsheets and try it on one of my 8087 equipped machines.
+I sort of was compelled to write this. You are not compelled to read it.
 
-Just installed one, but left it disabled.
+** floating point on the 8087 - 1983-1988
 
-My chief observation about floating point back then was:
-That when you needed it, you needed a lot of it, but you didn't need it that often.
+The 8087 co-processor was a great upsell.
 
-This is incidentally, why I missed out on the early macs and amigas - no
-floating point, and so I sneered at them. It wasn't until the 68020 appeared
-(with virtual memory) that 
+I made a pile of money challenging bankers to come down with their
+gnarliest spreadsheets and try it on one of my 8087 equipped
+machines. They'd try it, and bring in their machine the next day for
+the upgrade. At least once, I ended up upgrading an entire office to
+have 8087s because they fell so in love with it. More than a few
+times, a given box wouldn't take one... and the buyer so desparate to
+have one, they'd buy a whole new machine to have it.
 
-upsell.
+Often, later, on a new sale, we just installed one, but left it
+disabled til they discovered they needed it.
 
-I always liked the regular, sane instruction set, the automatic addressing modes
+My chief observation about floating point back then was: That when you
+needed it, you needed a lot of it, but you didn't need it that often!
 
-* Racal - Interlan TCP co-processor card
+Later on I'd also played with an alternate floating point unit (can't
+remember - weitek?) "that was 3-4 times faster!" - and discovered that
+it didn't matter. You simply did not do enough floating point in any
+application that made a noticible difference - especially when you had
+to either compile it yourself, or have an app that weitek had
+convinced the software developer to make available specially.
 
-286. Segment registers.
+Floating point, is incidentally, why I missed out on the early macs
+and amigas - no floating point, and so I sneered at them. It wasn't
+until the 68020 appeared (with virtual memory) that I started to get
+interested, and even then, macos was crap, compared to xenix. (with a
+fpu installed!)
 
-The pain of this experience has faded, somewhat, now
+Still, on the 68000, I always liked the regular, sane instruction set,
+the automatic addressing modes, etc, and wanted vm in a 68020, and
+dreamed of getting my own sun workstation to work with. The closest I
+ever got (until the 90s) was the radio shack 6000 (68000), which ran
+off of two enormous floppies and was kind of neat, but the altos were
+a better platform for the business I was in at the time.
 
-swapped memory in and out based on *signed* aritmetic, so each individual view
-of memory was limited to 32k bytes, not 64k. This made it possible to have a
-semi coherent view on two 32k banks at a time.
+My ex-college roomate got an amiga. I visited a lot. It crashed a
+lot. It *really needed* virtual memory.
 
+** Altos
+** FOXBASE
+** Metaflow compiler
+** T800
 
-when the rest of the world had been shipping 32 bit virtual memory arches
-OS/2 came out
+** Anagram
 
-* Altos
-* T800
-* Metaflow
-and so, I set off designing my own, that had virtual memory 
+and so, I set off designing my own, that had virtual memory, 4 cpus,
+and a shared floating point unit.
+
+** Mill
+
+Up until I'd encountered the mill, I had no idea that you could
+actually build a cpu that used data-flow concepts well.
+
+The mill is brilliant. 
+
+The day they have a simulator and compiler, I'll be *all* over it.
+
+ERM is not a cpu. There's no actual instruction set.
+
+* ERM versions
+
+"ERM" is actually a new name for a set of concepts I've wedged into
+various things over the course of several decades.
+
+** Racal-Interlan offloaded TCP card - 1986
+
+Back in the 80s, trying to fit TCP into a PC architecture was
+essentially impossible. A full stack typically came to well over 160k,
+and you only had 640k to start with. This is in part, why IPX/SPX
+ruled the world because it fit (barely) into 64K or so. Netbui didn't
+fit well, either. IP? That was a delusion of the pre-ietf, and ISO was
+going to rule the workstation world. Nobody wanted their file-sharing
+lan to connect to anything else - we had modems and BBSes for that! It
+really wasn't until 1992 or so (with "trumpet winsock") that the IP
+stack became managable on ordinary machines - and even then it was
+flaky and a PITA to use, and not til 1995 that things started to work
+halfway reliably.
+
+But, anyway, I got involved a project with a casino that tried to
+graft both SNA and TCP into a DOS co-processing card based on
+the 286. The card would have cost, like 3k - but an sna terminal
+without a PC was MORE. There was only so much desk space.
+
+They chose the 286 chip for it (rather than a 68000). For cost reasons. 
+
+Segment registers. Ugh.
+
+The pain of this experience has faded, somewhat, now.
+
+MASM was the nicest assembler I've ever worked with, and the 286, the
+worst CPU I ever worked with.
+
+You could make a macro DO ANYTHING! Once you had the basic construct,
+you could wedge something else in there and have some hope that the
+whole thing would actually work. It was more fun than forth!
+
+And: you tried really, really hard, to never deal with near, far, or other
+pointers directly.
+
+One way to cope with the segments was to incorporate a flag into the
+top part of your index - and you swapped memory in and out based on
+*signed* aritmetic, so each individual view of memory was limited to
+32k bytes, not 64k. This made it possible to have a semi coherent view
+on two or more 32k banks at a time. If you need 48k, well, use the top
+two bits as your flag... need 56, 3... and so on. God help you if you
+pulled data from the wrong segment - the resulting crash was usually
+not immediate and really difficult to debug.
+
+This was at a time when the rest of the world had been shipping 32 bit
+virtual memory arches for a while. When OS/2 came out I steered
+clear - after this experience I couldn't imagine *anyone* trying to
+deliver reliable code based on such a crazy memory addressing
+scheme. Especially IBM. It was, like they were intentionally crippling
+something so they'd sell more mainframes. I can't believe how long
+they tried to make it work, either.
+
+There are bits of this experience littered throughout erm - we have a
+lot of 16 bit (or less) values used as indexes, for one example. I
+keep trying to wedge the segment register idea into a modern flat
+architecture, as another. I keep trying to use all 16 bits and winding
+up with 15, which may well happen in the end. I wish I had 18 bits -
+or 36! to work with.
+
+** Lisp 1985-87
+
+I got my hands on (a few times) one of the early lisp
+machines. JOY. BLISS. RAPTURE.  That was how things were supposed to
+work! Picked up emacs. Got good at it. Wrote some stuff that used a
+lot of message passing, hooks, and co-operative "threading", sort of.
+
+But I lost access to that machine, and emacs's lisp was all I had to
+fall back on. And gnuemacs was too big so I used uEmacs, which had a
+much more limited lisp in it. Lisp had many other problems - no decent
+FFI, warring concepts of CLOS, in addition to WAY too many
+parenthesis.
+
+** TODO foxbase and xenix
+
+** Oracle 286 co-processor and 4GL
+
+** C++ v1
+
+1989 or so I started work on a generational database engine. Although
+I wasn't aware when I started (I'd read a few papers), I later became
+aware of Interbase, and even went to work for them in 1993. The
+serialization step inherent in codd & date seemed beatable (and today,
+now is thoroughly beaten), if only there was a solid database engine
+that used them, with ACID compliance and so on.
+
+So I gradually built up a non-sql relational ACID compliant language
+(LOOPS! not SETS!) language and back end that tried very hard to use
+versioning, and so on...
+
+C++ at the time - sucked! And obtaining a language that expressed
+things well didn't go anywhere for me. I/O was a huge pain. And
+locking was a pain. And - although I'd switched (partially) to working
+with Xenix on the 386 - the assembler was a piece of crap, and there I
+was reaching for MASM, on the 286.
+
+I remember vividly the week I gave up, because, walter brights C++
+compiler didn't support taking pointers to member functions, which I
+had used everywhere - and it was blazingly faster than cfront was. I
+was crashing cfront regularly (after watching it compile for an hour)
+at this point, and debugging the dtor output directly, and after a
+few months of looking at mangled function names, you'd give up too!
+
+A few weeks later I interviewed at SCO and resolved to never write in
+an immature language again. I put down programming almost entirely for
+a few years, actually. I got a life, instead. It was kind of fun.
+
+** C++ v2
+
+This was around... 1996? or so?
+
+the question was: Is C++ mature enough yet? 
+
+It wasn't. The specific application was trying to write a fast
+database engine for a startup that was going to fit the role amazon
+does today, but on no budget, with no programmers, in the early web
+era.
+
+I can't even remember the name of the company now.
+
+** C++ v3
+
+This was in 2005, where I thought the core concepts would fit into a voip
+engine that had an associated FPGA. 
+
+They didn't.
+
+** Long pause 2006-2012
+
+I'd written up the whole transport triggered, descriptive data flow
+ideas a couple times, but never felt confident enough to publish them,
+particularly, as I'd never got more than bits working for any given
+project.
+
+I had trouble with licensing - and a delusional idea that if I ever
+made the stuff work that I'd get rich - there were no public "git"
+repos, it was a spare time project, anyway, and it was just. too. hard.
