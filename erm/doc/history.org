@@ -7,10 +7,10 @@ I sort of was compelled to write this. You are not compelled to read it.
 The 8087 co-processor was a great upsell.
 
 I made a pile of money challenging bankers to come down with their
-gnarliest spreadsheets and try it on one of my 8087 equipped
+gnarliest spreadsheet and try it on one of my 8087 equipped
 machines. They'd try it, and bring in their machine the next day for
 the upgrade. At least once, I ended up upgrading an entire office to
-have 8087s because they fell so in love with it. More than a few
+have 8087s because the boss fell so in love with it. More than a few
 times, a given box wouldn't take one... and the buyer so desparate to
 have one, they'd buy a whole new machine to have it.
 
@@ -229,7 +229,7 @@ crashed (which was a lot), and after a few months of looking at
 mangled function names, you'd give up too!
 
 My code didn't compile at all in Watcom C++, but, in not compiling, it
-didn't compile - really really fast.
+*didn't compile really really fast*. Discouraging.
 
 A few weeks later I interviewed at SCO and resolved to never write in
 an immature language again. I put down programming almost entirely for
