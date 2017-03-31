@@ -3,6 +3,57 @@
 #include "shared.h"
 #include "erm_bits.h"
 
+/* Lets see if I can describe variants better to myself.
+   I am now conflating scheduling with dataflow to some
+   extent. This took a long time to work out last time too.
+
+   I keep wondering if I can write the regs directly on
+   on the parallella...
+
+   */
+
+/* Splay */
+
+typedef struct {
+  u64 cpu0_out:4; // actually you'd just call this cpu and use
+  u64 cpu1_out:4; // it for in and out
+  u64 cpu2_out:4;
+  u64 cpu3_out:4;
+  u64 cpu4_out:4;
+  u64 cpu5_out:4;
+  u64 cpu6_out:4;
+  u64 cpu7_out:4;
+  u64 cpu8_out:4;
+  u64 cpu9_out:4;
+  u64 cpua_out:4;
+  u64 cpub_out:4;
+  u64 cpuc_out:4;
+  u64 cpud_out:4;
+  u64 cpue_out:4;
+  u64 cpuf_out:4;
+} splay;
+
+/* Multi */
+
+typedef struct {
+  u16 cpu0_out:4;
+  u16 cpu1_out:4;
+  u16 cpu0_in:4;
+  u16 cpu1_in:4;
+} multi;
+
+/* In some dream arch where I could write 32 cpus in every direction
+   based on a 128 bit address register "splaying" */
+
+typedef multi VECTOR(16);
+
+/* In a world where I could go looking for the first free cpu with
+   ffs on the bitfield - out of 1024 vcpus */
+
+u8 ubercpus[128];
+
+/* Version 1 */
+
 typedef u8 msg8 VECTOR(16);
 
 msg8 msg8_r[2*2*2*2*2]; //  SECTION("ringdata");
