@@ -20,6 +20,27 @@ msg8_ring_t msg8_i;  // SECTION("ringbufs");
 
 #include "../gen/ring_msg8.h"
 
+static int counter = 0;
+
+void pushme();
+
+void popme()
+{
+  while (!msg8_is_lowater()) {
+    printf("popped: %d\n", msg8_dequeue());
+  }
+  pushme(); 
+}
+
+void pushme()
+{
+  while (!msg8_is_hiwater()) {
+    msg8_enqueue(++counter);
+  }
+  popme();
+}
+
+
 int main() {
   msg8_enqueue(1);
   msg8_enqueue(2);
@@ -34,6 +55,10 @@ int main() {
   for(int i = 0; i < 4; i++) {
     printf("run again on ring: %d\n", msg8_dequeue());
   }
+
+  // Hi and low water test (runs forever)
+
+  pushme();
 
 }
   

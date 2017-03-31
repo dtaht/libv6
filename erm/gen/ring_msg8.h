@@ -31,12 +31,12 @@ inline bool msg8_is_empty() { return (msg8_i.in.v - msg8_i.out.v) == 0; }
 
 inline bool msg8_is_hiwater()
 {
-  return (msg8_i.in.v - msg8_i.out.v) > (3 * 256 / 4);
+  return ! ((msg8_i.in.v - msg8_i.out.v) < 5);
 }
 
 inline bool msg8_is_lowater()
 {
-  return (msg8_i.in.v - msg8_i.out.v) > (256 / 4);
+  return ((msg8_i.in.v - msg8_i.out.v) > 2) ;
 }
 
 inline u8 msg8_size() { return (msg8_i.in.v - msg8_i.out.v); }
