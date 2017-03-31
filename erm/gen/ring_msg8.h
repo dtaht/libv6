@@ -25,13 +25,13 @@
 
 // void msg8_init() { msg8_r[] = { 0 }; }
 
-inline bool msg8_is_full() { return (msg8_i.in.v - msg8_i.out.v ) == -1; }
+inline bool msg8_is_full() { return (msg8_i.out.v - msg8_i.in.v ) == 1; }
 
 inline bool msg8_is_empty() { return (msg8_i.in.v - msg8_i.out.v) == 0; }
 
 inline bool msg8_is_hiwater()
 {
-  return ! ((msg8_i.in.v - msg8_i.out.v) < 5);
+  return ((msg8_i.in.v - msg8_i.out.v) > 3);
 }
 
 inline bool msg8_is_lowater()
@@ -45,7 +45,8 @@ inline u8 msg8_size() { return (msg8_i.in.v - msg8_i.out.v); }
 
 inline void msg8_enqueue(msg8 value)
 {
-  msg8_r[(atomic_inc(msg8_i.in.v))] = value;
+  msg8_r[msg8_i.in.v] = value;
+  msg8_i.in.v++;
 }
 
 msg8 msg8_dequeue()

@@ -5,12 +5,12 @@
 
 typedef u8 msg8 VECTOR(16);
 
-msg8 msg8_r[8]; //  SECTION("ringdata");
+msg8 msg8_r[2*2*2*2*2]; //  SECTION("ringdata");
 
 typedef struct
 {
-  bit3 in;
-  bit3 out;
+  bit5 in;
+  bit5 out;
 } msg8_ring_t;
 
 msg8_ring_t msg8_i;  // SECTION("ringbufs");
@@ -29,10 +29,12 @@ const msg8 fours = {4};
 
 void pushme();
 
+// Pop me until we hit the low water mark
+
 void popme()
 {
   int c = 0;
-  while (!msg8_is_lowater()) {
+  while (msg8_is_lowater()) {
    msg8 toss =  msg8_dequeue();
    c++;
   }
@@ -65,6 +67,7 @@ void duffme()
   popme();
 }
 
+// Push me until we hit the hi water mark
 
 void pushme()
 {
