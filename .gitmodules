@@ -1,0 +1,9 @@
+[submodule "erm/aux/tcpdump"]
+	path = erm/aux/tcpdump
+	url = git@github.com:dtaht/tcpdump.git
+[submodule "erm/aux/libpcap"]
+	path = erm/aux/libpcap
+	url = git@github.com:dtaht/libpcap.git
+[submodule "erm/aux/ebusl"]
+	path = erm/aux/ebusl
+	url = git@github.com:dtaht/ebusl.git
