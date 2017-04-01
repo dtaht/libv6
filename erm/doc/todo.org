@@ -1,0 +1,16 @@
+* My todo list has grown unmanageable
+
+* TODO code
+** Get reliable timers
+** measure a single cpu threaded ringbuffer
+* TODO doc
+** Try to get a better introduction
+* TODO infrastructure
+** Abstract some commonality into the makefile
+* TODO measurements
+** measure register usage by function in the std c libs
+
+f the web
+
+
+root@archer-2600:/tmp/run/mountd/sdd1/d/blogconvert# 
