@@ -248,6 +248,17 @@ era.
 
 I can't even remember the name of the company now.
 
+** VxWorks
+People tried *Really Hard* to make a hard realtime OS scale up to meet the needs
+of networked computing environment. Largely, they failed. I failed (1997 or so),
+and realized that making a virtual memory based OS scale down was way more
+feasible than making one that had no vm scale up, and thus one of the first
+embedded linux wireless routers was born.
+
+You gave up truly hard realtime capabilities, though.
+
+It really scares me to be peripherally aware of all the microcontroller code out
+there that has only the most basic of memory protections in it.
 ** C++ v3 (also C and assembler)
 
 This was in 2005, where I thought a dataflow engine needed to be in a
@@ -258,8 +269,8 @@ which was essentially DMA based.
 It never even came close to working. (to this day I'm mad at that
 co-processor company)
 
-We switched to an FPGA. The project was canceled.
-
+We switched to an FPGA. The project was canceled just after we got the first
+boards back.
 ** Long pause 2006-2012
 
 I'd written up the whole transport triggered, descriptive data flow
@@ -297,6 +308,28 @@ and instead of fixing those, piece by piece, I started working on
 this. And, rapidly, much of what I'd sort of had working - or had
 worked out - has been coming back to me - from all directions.
 
+* Life Lessons
+** A little hardware floating point goes a long way
+I imagine that the FPU is 99.99% idle on most systems today. Even the integer
+vector sides are underused. It *used* to be very expensive to slew stuff back
+and forth between these sides of a processor.
+** Strong memory protections are good
+Full blown virtual memory, however, may not be. And virtual memory could be used
+a much fuller extent than it is today, with virtualized machines.
+** Segmented memory had a few benefits
+Naturally encompassing a non-shared memory space
+** Indexes are sometimes cheaper than pointers
+64 bit pointers for an 8 entry array is silly (there is an ongoing [[ringbuffer
+rant]] elsewhere)
+** C doesn't do bits well
+Which is too. friggen. bad. If it wasn't so distinct from digital logic, it
+would be a better world.
+** 18 bits wasn't all bad
+Overflow is a PITA. Tags were a great way to do garbage collection.
+** Big endian was better in some major ways
+It let you make major decisions on the way into the computing unit.
+** It doesn't hurt to try and re-invent things at a low level
+(sometimes)
 * Conclusion
 
 ERM is a toy. In it, as per the above, is a dismal history of
