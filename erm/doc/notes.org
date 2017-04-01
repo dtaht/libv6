@@ -2119,11 +2119,43 @@ isn't crazy in the first place). Hmm. musl also suports x32.
  2ae:   f2 0f 10 44 24 10       movsd  0x10(%rsp),%xmm0
  2b4:   e8 00 00 00 00          callq  2b9 <csinh+0x2b9>
 
-** heh. 80 bits is still better than 64
+** heh. 80 bits is still better than 64... or so I thought
 ./blanusa_powint_64.dbg | grep inf | wc -l
 226
 ./blanusa_powint_80.dbg | grep inf | wc -l
 214
 
-This makes me worry about all the arithmetic out there today.
+This made me worry about all the arithmetic out there today, but I'd 
+got it wrong - using random numbers...
+
+So I checked harder. :whew: For starters the compiler insisted on
+vectorizing the math where it could (heh), until I recompiled with
+-Os, which forced a call to the x87 function and the calling
+convention sucks that way.
+
+Oh what short opcodes there used to be for things like matrix
+multiply!
+
+ w  DB F1     F4X4            IIT only: 4 by 4 matrix multiply
+
+
+Read more: http://www.intel-assembler.it/portale/5/The-8087-Instruction-Set/A-one-line-description-of-x87-instructions.asp#ixzz4cyO3yy59
+
+* Hmm
+
+I *was* obsessed by speed. Still am. On the other hand, I'm having
+trouble expressing what I'm trying to express and perhaps switching
+to lisp might help. There's three choices there - clojure is popular,
+sbcl I knew best... and... emacs.
+
+I have a lot of compelling reasons to want to launch back into emacs
+for a while.  I feel as though my hands are cut off sometimes. I hate
+switching to browsers where I used to have a keystroke for
+something. There are bunch of little tools - example, I really want to
+convert between an url and org and a md format thing with a keystroke,
+I can never switch syntaxes.... gnugol could use some love... and so
+on.
+
+And the idea of doing packet processing in emacs just makes me
+chortle.
 
