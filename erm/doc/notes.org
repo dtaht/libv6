@@ -2020,3 +2020,102 @@ It's AMAZINGLY not as horrible as I thought it would be: only 267 references
 to errno in the whole library.
 
 I guess I have to look into how to do git submodules right.
+** Register usage in libc
+
+As I suspected, 6 xmm registers are essentially unused and it would be
+straightforward to kill two more. And maybe - if we can switch to
+old style floating point elsewhere - use 'em all up. :) 
+
+And we get back hardware sin, cos.
+
+dave@nemesis:~/git/ebusl/lib$ for i in `seq 0 15`; do echo -n "xmm$i "
+; objdump -d libc.a | grep xmm$i | wc -l; done
+
+xmm0 3274 xmm1 2598 xmm2 1802 xmm3 1103 xmm4 726 xmm5 417 xmm6 281
+xmm7 207 xmm8 30 xmm9 12 xmm10 6 xmm11 0 xmm12 0 xmm13 0 xmm14 0 xmm15
+0
+
+it's a bit less encouraging on the regular register front. I didn't go
+looking for the short versions of these. They are used a lot, too.
+
+%rax 8394 rbx 4902 rcx 2312 rdx 4202
+
+%rdi rsp esi rbp
+
+%r8 1764 r9 937 r10 598 r11 317 r12 2836 r13 2119 r14 1606 r15 1408
+
+While I'm thinking about abusing floating point in general
+
+-fno-trapping-math, -fno-signaling-nans
+
+https://gcc.gnu.org/wiki/FloatingPointMath
+
+And I just hopefully got rid of another errno headache:
+
+-fno-errno-math disables setting of the errno variable as required by C89/C99 on calling math library routines. For Fortran this is the default. 
+
+And:
+
+gcc -mfpmath=387 -ffast-math -O3 -fverbose-asm -S ssevs87.c -lm
+
+        movsd   %xmm0, -8(%rsp) # a, %sfp
+        fldl    -8(%rsp)        # %sfp
+        movsd   %xmm1, -8(%rsp) # b, %sfp
+        fldl    -8(%rsp)        # %sfp
+        fmul    %st(0), %st     #,
+        faddp   %st, %st(1)     #,
+        fsin
+        fadds   .LC0(%rip)      #
+        fstpl   -8(%rsp)        # %sfp
+        movsd   -8(%rsp), %xmm0 # %sfp,
+
+If I can just get rid of printf.
+
+musl recompiled with those options (I'm scared to try it)
+
+xmm0 2197
+xmm1 1089
+xmm2 693
+xmm3 401
+xmm4 244
+xmm5 111
+xmm6 62
+xmm7 48
+xmm8 11
+xmm9 0
+xmm10 0
+xmm11 0
+xmm12 0
+xmm13 0
+xmm14 0
+xmm15 0
+
+Calling it with omit-regs didn't do what I thought it would do. What I think I'm seeing is some inline
+assembly or something that uses this up on the crypto front.
+
+xmm0 2013
+xmm1 969
+xmm2 424
+xmm3 301
+xmm4 245
+xmm5 23
+xmm6 110
+xmm7 123
+xmm8 60
+xmm9 61
+xmm10 49
+xmm11 38
+xmm12 35
+xmm13 21
+xmm14 70
+xmm15 43
+
+And with changing the calling convention I'm pretty sure this
+kind of crazyness goes inline. (Not that what I'm talking about
+isn't crazy in the first place). Hmm. musl also suports x32.
+
+ 2a3:   48 89 6c 24 10          mov    %rbp,0x10(%rsp)
+ 2a8:   f2 0f 11 44 24 08       movsd  %xmm0,0x8(%rsp)
+ 2ae:   f2 0f 10 44 24 10       movsd  0x10(%rsp),%xmm0
+ 2b4:   e8 00 00 00 00          callq  2b9 <csinh+0x2b9>
+

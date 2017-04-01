@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Quick and dirty counter for register usage.
+#dave@nemesis:~/git/ebusl/lib$ for i in `seq 0 15`; do echo -n "xmm$i " ; objdump -d libc.a | grep xmm$i | wc -l; done
+
+for i in `seq 0 15`; do echo -n "xmm$i " ; objdump -d libc.a | grep xmm$i | wc -l; done
+
+echo "Was originally:
+xmm0 3274
+xmm1 2598
+xmm2 1802
+xmm3 1103
+xmm4 726
+xmm5 417
+xmm6 281
+xmm7 207
+xmm8 30
+xmm9 12
+xmm10 6
+xmm11 0
+xmm12 0
+xmm13 0
+xmm14 0
+xmm15 0"
+
