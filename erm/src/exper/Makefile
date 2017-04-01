@@ -22,7 +22,7 @@ VERSION = version.h
 INCLUDES = -I$(INC)
 GENVERSION = $(TOOLS)/generate-version.sh
 
-CFLAGS  = -msse4.2 -std=gnu11 -Os -Wall -L../../lib $(INCLUDES) -flax-vector-conversions
+CFLAGS  = -msse4.2 -std=gnu11 -Os -Wall -L../../lib $(INCLUDES)
 LDFLAGS = -lm
 
 ifeq ($(CC),musl-gcc)
@@ -42,7 +42,7 @@ ifeq ($(CC),musl-gcc)
 	OMIT_REGS += -ffixed-r11
 	OMIT_REGS += -ffixed-r12
 	CFLAGS += $(OMIT_REGS)
-	CRAZED = -mfpmath=387 -ffast-math -O3
+	CRAZED = -mfpmath=387 -ffast-math -Os
 	CFLAGS += $(CRAZED)
 endif
 
@@ -98,7 +98,7 @@ endif
 #	tcpdump -r $(FILT)/wtf.cap -dd -F $< > $@
 
 %.s: %.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -fverbose-asm -S $< -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -fverbose-asm -S $< -o $@
 
 # Construct objects and added SRCS
 

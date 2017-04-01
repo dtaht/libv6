@@ -115,7 +115,8 @@ int main()
     LOGGER_INFO(PERF, "Blanusa %d: %g: %g\n", i, f, blanusa_powintfloat(f));
   }
 
-  double d;
+  double d = 0.0;
+  asm("nop; /* start of test; */");
   for(int i = -0xffffff; i < 0xffffff; i++) {
     d += blanusa_powintdouble(i);
     //printf("Start: %d Val: %g \n", i, d);
