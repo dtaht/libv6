@@ -1,0 +1,30 @@
+* What was so wrong with 18 bits?
+
+or 24? or 28?
+
+I keep trying to wedge tags and generational stuff into 15 or 16 bits
+and failing.
+
+Take time, for example.
+
+IF I wanted to split the cycle timer into a 28 bit and a 4 bit portion,
+(or 14 bits and 2), I'd have a LOT less harder problem checking for
+overflow. Keep global time as 112 bits spread out over four vectors
+in an SSE reg. 
+
+I'd intended to use saturating arithmetic a lot, anyway, but this is 
+more fun. And, if I only end up with 4 way rather than 8 way out
+of a given SSE register, but can make up the time (sic), by being
+able to use simple boolean operations to deal with overflow, so be it.
+
+checking for any possible overflow becomes a big and of the same width
+as the rest of the data.
+
+checking for a generational problem, another.
+
+The parallella wedges the cpu grid into 6 bits in the first place.
+
+While I'm going off into the weeds like this, what was so wrong
+with base 10? or base 4? Hell, base blanusa where 0 = 3.
+
+
