@@ -116,10 +116,12 @@ int main()
   }
 
   double d;
-  for(int i = -0xff; i < 0xff; i++) {
-    d = blanusa_powintdouble(i);
-    LOGGER_INFO(PERF, "Blanusa %d: %g: %g\n", i, d, blanusa_powintdouble(d));
+  for(int i = -0xffffff; i < 0xffffff; i++) {
+    d += blanusa_powintdouble(i);
+    //printf("Start: %d Val: %g \n", i, d);
+    //LOGGER_INFO(PERF, "Blanusa %d: %g: %g\n", i, d, blanusa_powintdouble(d));
   }
+  printf("d = %g\n", d);
 
   u16 c;
   for(int i = -0xff; i < 0xff; i++) {
@@ -146,6 +148,7 @@ int main()
     res[i + 1] = blanusa_powintfloat(vals[i + 1]);
     res[i + 2] = blanusa_powintfloat(vals[i + 2]);
     res[i + 3] = blanusa_powintfloat(vals[i + 3]);
+    //printf("Val: %g %g %g %g\n", res[i],res[i+1], res[i+2],res[i+3]);
   }
   GET_CYCLES_STOP(collect, start, end);
   GET_CYCLES_ASSIGN(simdversion, collect);

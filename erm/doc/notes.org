@@ -2119,3 +2119,11 @@ isn't crazy in the first place). Hmm. musl also suports x32.
  2ae:   f2 0f 10 44 24 10       movsd  0x10(%rsp),%xmm0
  2b4:   e8 00 00 00 00          callq  2b9 <csinh+0x2b9>
 
+** heh. 80 bits is still better than 64
+./blanusa_powint_64.dbg | grep inf | wc -l
+226
+./blanusa_powint_80.dbg | grep inf | wc -l
+214
+
+This makes me worry about all the arithmetic out there today.
+

@@ -25,6 +25,27 @@ GENVERSION = $(TOOLS)/generate-version.sh
 CFLAGS  = -msse4.2 -std=gnu11 -Os -Wall -L../../lib $(INCLUDES) -flax-vector-conversions
 LDFLAGS = -lm
 
+ifeq ($(CC),musl-gcc)
+	OMIT_REGS = -ffixed-xmm5
+	OMIT_REGS += -ffixed-xmm6
+	OMIT_REGS += -ffixed-xmm7
+	OMIT_REGS += -ffixed-xmm8
+	OMIT_REGS += -ffixed-xmm9
+	OMIT_REGS += -ffixed-xmm10
+	OMIT_REGS += -ffixed-xmm11
+	OMIT_REGS += -ffixed-xmm12
+	OMIT_REGS += -ffixed-xmm13
+	OMIT_REGS += -ffixed-xmm14
+	OMIT_REGS += -ffixed-xmm15
+	OMIT_REGS += -ffixed-r9
+	OMIT_REGS += -ffixed-r10
+	OMIT_REGS += -ffixed-r11
+	OMIT_REGS += -ffixed-r12
+	CFLAGS += $(OMIT_REGS)
+	CRAZED = -mfpmath=387 -ffast-math -O3
+	CFLAGS += $(CRAZED)
+endif
+
 OBJDIR_DEBUG = $(CC)
 
 #$(OBJ_DEBUG): $(OBJDIR_DEBUG)/%.o: %.c
