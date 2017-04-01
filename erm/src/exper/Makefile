@@ -22,7 +22,7 @@ VERSION = version.h
 INCLUDES = -I$(INC)
 GENVERSION = $(TOOLS)/generate-version.sh
 
-CFLAGS  = -msse4.2 -std=gnu11 -Os -Wall -L../../lib $(INCLUDES)
+CFLAGS  = -msse4.2 -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES)
 LDFLAGS = -lm
 
 ifeq ($(CC),musl-gcc)

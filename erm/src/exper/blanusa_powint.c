@@ -117,7 +117,7 @@ int main()
 
   double d = 0.0;
   asm("nop; /* start of test; */");
-  for(int i = -0xffffff; i < 0xffffff; i++) {
+  for(double i = -0xffffff; i < 0xffffff; i++) {
     d += blanusa_powintdouble(i);
     //printf("Start: %d Val: %g \n", i, d);
     //LOGGER_INFO(PERF, "Blanusa %d: %g: %g\n", i, d, blanusa_powintdouble(d));
