@@ -1,4 +1,78 @@
+* Math symbols
 
+I am very tempted to abuse the UTF-8 capability of the modern world throughout.
+
+This is not just because I liked APL, but because there is a set of boolean
+operators in erm that have a different truth table than normal. Also, as a
+message passing system, it seems nice to use arrows.
+
+People seem to understand feynman diagrams, so, what's wrong with circles and
+arrows and a paragraph of doc on each one to hold as evidence against us?
+
+I think a lot of stuff could compile down with mere #defines if we
+use more lispy notation.
+
+And others need an editor assist - != would turn automagically into
+≠
+
+** there are several basic character sets
+*** Math set
+*** Arrow set: https://www.w3schools.com/charsets/ref_utf_arrows.asp
+
+IN particular left arrow seems to mean assignment.
+
+⇛
+⇢
+
+*** Boolean operations
+*** Set theory
+
+https://en.wikipedia.org/wiki/Set_(mathematics)
+
+https://en.wikipedia.org/wiki/Set-builder_notation
+
+*** Queue operations
+
+
+https://en.wikipedia.org/wiki/Logical_equality
+
+n mathematics, the plus sign "+" almost invariably indicates an operation that satisfies the axioms assigned to addition in the type of algebraic structure that is known as a field. For boolean algebra, this means that the logical operation signified by "+" is not the same as the inclusive disjunction signified by "∨" but is actually equivalent to the logical inequality operator signified by "≠", or what amounts to the same thing, the exclusive disjunction signified by "XOR" or "⊕". Naturally, these variations in usage have caused some failures to communicate between mathematicians and switching engineers over the years. At any rate, one has the following array of corresponding forms for the symbols associated with logical inequality:
+{\displaystyle {\begin{aligned}x&+y&x&\not \equiv y&Jxy\\x&\mathrm {~XOR~} y&x&\neq y\end{aligned}}} {\displaystyle {\begin{aligned}x&+y&x&\not \equiv y&Jxy\\x&\mathrm {~XOR~} y&x&\neq y\end{aligned}}}
+This explains why "EQ" is often called "XNOR" in the combinational logic of
+circuit engineers, since it is the negation of the XOR operation; NXOR is a less
+commonly used alternative.[1] Another rationalization of the admittedly
+circuitous name "XNOR" is that one begins with the "both false" operator NOR and
+then adds the eXception "or both true".
+
+** inequality and equality and approximations
+
+https://en.wikipedia.org/wiki/Equals_sign
+
+In PHP, the triple equals sign (===) denotes identity,[4] meaning that not only
+do the two expressions evaluate to equal values, they are also of the same data
+type. For instance, the expression 0 == false is true, but 0 === false is not,
+because the number 0 is an integer value whereas false is a Boolean value.
+≈ (U+2248, LaTeX \approx)
+≃ (U+2243, LaTeX \simeq), a combination of ≈ and =, also used to indicate asymptotic equality
+≅ (U+2245, LaTeX \cong), another combination of ≈ and =, which is also sometimes used to indicate isomorphism or congruence
+∼ (U+223C), which is also sometimes used to indicate proportionality, being related by an equivalence relation, or to indicate that a random variable is distributed according to a specific probability distribution
+∽ (U+223D), which is also used to indicate proportionality
+≐ (U+2250, LaTeX \doteq), which can also be used to represent the approach of a variable to a limit
+≒ (U+2252), commonly used in Japanese, Taiwanese and Korean
+≓ (U+2253)
+
+
+The triple bar symbol "≡" (U+2261, Latex \equiv) is often used to indicate an
+identity, a definition (which can also be represented by U+225D "≝" or U+2254
+"≔"), or a congruence relation in modular arithmetic. The symbol "≘" can be used
+to express that an item corresponds to another.
+
+
+
+
+
+
+* In equality
 https://en.wikipedia.org/wiki/Inequality_(mathematics)
 
 * solvers
