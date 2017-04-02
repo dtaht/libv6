@@ -37,22 +37,44 @@ Ringbuffers are such an important useful structure, that I wish there was a
 specific linker type for them, so you could pack them all into the same tiny
 amount of space, every time - and know, which ones you had.
 
-So... seemingly... all *my* ways of writing a ringbuffer, aren't,
+So... seemingly... all *my* ways of writing a ringbuffer, aren't, what
+anyone seems to be publishing. 
 
-* They use pointers
-** Pointers are really big. Ringbuffers are really small
-** They use mmap
+* They use pointers for no good reason.
+
+Pointers are really big (8 bytes each nowadays).
+
+Ringbuffers are really small (in my case, never more than 4k, addressed
+using the data type size - so your indexes can be bytes).
+
+It makes way more sense to have a global pointer to your ringbuffer set, and
+really small indexes.
+
+** They use mmap on itself
+
+Which is a GREAT trick. If you have vm in the first place.
+
 ** They pass pointers to data that is stored elsewhere the system
-if you used the ring to do message passing, instead it
 
-No - pass the whole message
+*** Which doesn't work when making a virtual memory to virtual memory
+transition
+
+... like you do when talking to hardware.
+
+*** if you used the ring to do message passing...
+
+pass the whole message!
 
 ** They aren't strongly typed
 
-It's hot - you just wrote it - it's just on a specialized alternate
-stack type that is FIFO rather than LIFO.
+** Nobody gives guidelines for sizing a ringbuffer
 
-* Everything on the web is mildly wrong
+Keep 'em small, but small enough!
+
+It's hot - you just wrote it - it's just on a specialized alternate
+stack type that is FIFO rather than LIFO. Keep it hot!
+
+* Everything on the web is mildly wrong about ringbuffers
 
 Everywhere on the web I go nowadays I see these nice writeups on
 ringbuffers, that all tend to have assumptions about what they should
@@ -64,6 +86,13 @@ On the 80286 - using segment registers. And on the transputer, using
 channels. And most recently, in go - and I have no idea how they do
 channels, but it's insanely fast and for all I know, they implemented
 at least some of the same methods I'm going to talking about here.
+
+I worked on a couple variants of ringbuffer, the one that I was happiest
+with was the one that is in jackd (and used by ardour and many audio
+applications).
+
+With it - in 2000 - and linux compiled for realtime - we could reliably
+get below 2.7ms for sampling audio data and mixing it. That was 32 buffers.
 
 ** Ringbuffers are a message passing construct
 
@@ -79,7 +108,12 @@ What this does it put (potentally a ton of) arguments on the stack,
 and send the printf function a message describing the format of
 everything on the stack, and sends it to an output.
 
-** TODO research gothreads and channels
+I'd MUCH rather (in this case) that it put it onto "somewhere"'s ring buffer,
+and let it deal with it in due time.
+
+*** TODO research gothreads and channels
+
+** Old style threading ideas.
 
 It wasn't until the early 90s that I got a "conventional" multiple cpu
 box to play with and by then I'd been writing threaded applications
