@@ -51,6 +51,17 @@ $(OBJDIR):
 
 CLIENTDEPS = erm_client.o commands.o debug.o traps.o
 
+packing: aligned maxaligned wire
+
+aligned: packing.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DPACK_ALIGNED $< -o $@
+
+maxaligned: packing.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DPACK_ALIGNED -DUNPACK $< -o $@
+
+wire: packing.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DWIRE $< -o $@
+
 # search uint4? two? :)
 
 searches: search_uint8.o search_uint16.o search_uint32.o search_uint64.o # search_v6addr.o search_uint128.o
