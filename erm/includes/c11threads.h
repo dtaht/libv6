@@ -10,6 +10,7 @@ Main project site: https://github.com/jtsiomb/c11threads
 
 #ifndef C11THREADS_H_
 #define C11THREADS_H_
+#if !defined(HAVE_NATIVE_C11_THREADS)
 
 #include <errno.h>
 #include <pthread.h>
@@ -249,4 +250,5 @@ static inline int timespec_get(struct timespec* ts, int base)
 }
 #endif /* not C11 */
 
+#endif
 #endif /* C11THREADS_H_ */

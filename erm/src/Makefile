@@ -28,10 +28,10 @@ INC = ../includes
 FILT = ../filters
 
 VERSION = version.h
-INCLUDES = -I$(INC) -I../../includes
+INCLUDES = -I$(INC) -I../../includes # -I/usr/include/linux -I/usr/include/asm
 GENVERSION = $(TOOLS)/generate-version.sh
 
-CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES) -ftree-vectorize
+CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES) -ftree-vectorize -DHAVE_NATIVE_C11_THREADS
 LDFLAGS = -lrt
 
 OBJDIR_DEBUG = $(CC)

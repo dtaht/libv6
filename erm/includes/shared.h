@@ -8,6 +8,8 @@
 #ifndef SHARED_H
 #define SHARED_H
 
+#define C11THREADS_NO_TIMED_MUTEX
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdbool.h>
@@ -24,6 +26,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
+/*
 #include <asm/types.h>
 #include <linux/bpf.h>
 #include <linux/fib_rules.h>
@@ -33,7 +36,7 @@
 #include <linux/rtnetlink.h>
 #include <net/if_arp.h>
 #include <netinet/in.h>
-#include <sys/socket.h>
+*/
 
 #include "erm_common.h"
 
