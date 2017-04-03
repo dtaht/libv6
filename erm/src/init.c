@@ -30,12 +30,21 @@ v6table sources;
 ip_addr* addresses;
 addrflags_t* addrdata;
 
-//static int default_perms = (MAP_SHARED | MAP_HUGETLB);
+// static int default_perms = (MAP_SHARED | MAP_HUGETLB);
 static int default_perms = (MAP_SHARED | MAP_HUGETLB | MAP_ANONYMOUS);
 
-#define MACHINE_MEMORY (1024*1024) // massive overallocation
-#define MACHINE_LOC NULL // stick it anywhere for now (not the case for parallella)
+#ifndef MACHINE_MEMORY
+#define MACHINE_MEMORY (1024 * 1024) // massive overallocation
+#endif
+
+#ifndef MACHINE_LOC
+#define MACHINE_LOC                                                          \
+  NULL // stick it anywhere for now (not the case for parallella)
+#endif
+
+#ifndef ERM_GROUP
 #define ERM_GROUP 84
+#endif
 
 void* place_tables(void* mem)
 {
@@ -128,7 +137,7 @@ int create_files(char* base, dirs_t* p)
   while(p->name != NULL) {
     sprintf(buf, "%s/%s", base, p->name);
     TRAP_WEQ((fd = open(buf, O_CREAT, p->mode)), -1, buf);
-    fchown(fd,-1,ERM_GROUP);
+    fchown(fd, -1, ERM_GROUP);
     p++;
     close(fd);
   }
@@ -179,14 +188,13 @@ int create_default_dirs(char* instance)
   return 0;
 }
 
-int erm_fs(char *instance) {
-	return create_default_dirs(instance);
-}
+int erm_fs(char* instance) { return create_default_dirs(instance); }
 
-void * erm_start(char * shmem) {
+void* erm_start(char* shmem)
+{
   char buf[255];
-  u32 *mem;
-  u32 memsize;
+  u32* mem;
+  u32 memsize = MACHINE_MEMORY;
 
   sprintf(buf, ERM_SHARED_DIR_PATTERN, shmem);
   TRAP_WERR(setegid(ERM_GROUP), "Can't switch to erm group");
@@ -200,10 +208,10 @@ void * erm_start(char * shmem) {
       goto err;
     }
     struct stat s;
-    fstat(fd,&s);
+    fstat(fd, &s);
     memsize = s.st_size;
   } else {
-	  memsize = ftruncate(fd, MACHINE_MEMORY); // allocate a mb
+    if(ftruncate(fd, MACHINE_MEMORY) != 0) memsize = 0;
   }
   printf("Machine Attached: %s\n", buf);
 
@@ -211,13 +219,14 @@ void * erm_start(char * shmem) {
             "Couldn't change shared memory mode"); // rw root, r group
   TRAP_WERR((fchown(fd, -1, ERM_GROUP)),
             "Couldn't change shared memory group");
-  TRAP_WEQ((mem = mmap(MACHINE_LOC, MACHINE_MEMORY, PROT_READ | PROT_WRITE, default_perms, fd, 0)),
+  TRAP_WEQ((mem = mmap(MACHINE_LOC, memsize, PROT_READ | PROT_WRITE, default_perms, fd, 0)),
            (void*)-1, "Couldn't mmap shared huge page memory");
   if(mem == (void*)-1) {
     default_perms &= ~MAP_HUGETLB;
-    TRAP_EQ((mem = mmap(MACHINE_LOC, MACHINE_MEMORY, PROT_READ | PROT_WRITE, default_perms, fd, 0)),
+    TRAP_EQ((mem = mmap(MACHINE_LOC, memsize, PROT_READ | PROT_WRITE, default_perms, fd, 0)),
             (void*)-1, "Couldn't mmap shared memory - aborting");
   }
+
   return mem;
 
 err:
@@ -247,6 +256,5 @@ int main(int argc, char** argv)
     usleep(333333);
   }
   mem[8] = 0;
-
 }
 #endif
