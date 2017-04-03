@@ -61,7 +61,6 @@ void rng_fill()
 #define LOGGER_INFO(where, fmt, ... ) fprintf(where, fmt, __VA_ARGS__)
 
 #include "erm_logger.h"
-#include "get_cycles.h"
 
 void rng_fill_stupid(int c)
 {
@@ -90,7 +89,6 @@ int main()
                     " u64: %ld\n u64: %ld\n u64: %ld\n u64: %ld\n",
 	  get_rng_bytes8(),get_rng_bytes8(),get_rng_bytes8(), get_rng_bytes8());
 
-  // FIXME, use lfence
   return 0;
 }
 
