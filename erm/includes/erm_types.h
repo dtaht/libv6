@@ -50,6 +50,16 @@ typedef u8 gc_t; // Garbage collection could be 4 bits
 
 typedef u32 ttime_t; // time in usec
 
+// this is a bird-ism
+
+typedef struct net_addr {
+  u8 type;
+  u8 pxlen;
+  u16 length;
+  u8 data[16];
+  u64 align[0];
+} net_addr;
+
 // typedef ttable * address_p;
 /* Unified metric table too, expressable as a vector */
 
