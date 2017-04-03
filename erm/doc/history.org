@@ -1,8 +1,24 @@
 * History, History
 
 I sort of was compelled to write this. You are not compelled to read it.
+** Logo & Forth - 1979-84
+
+Logo and forth were my first language loves. No basic for me! I didn't much care
+for C, either.
+
+Both of these languages had an incremental, build your machine up from scratch
+sort of concept in them. Forth also had the very valuable (now kind of lost)
+concept of a separate data and call stack, and logo had lisp-like string
+processing and a concept of movement in a 2d environment and "pen up/down" in
+the 3d space.
+
+One of the architectures I'm playing with today has the concept of movement
+between cpus in the east/west/north/south directions.
 
 ** floating point on the 8087 - 1983-1988
+
+I worked for a computer store from age 16 to 19 or so, and then a company that
+sold Xenix based accounting applications.
 
 The 8087 co-processor was a great upsell.
 
@@ -20,12 +36,13 @@ disabled til they discovered they needed it.
 My chief observation about floating point back then was: That when you
 needed it, you needed a lot of it, but you didn't need it that often!
 
-Later on I'd also played with an alternate floating point unit (can't
-remember - weitek?) "that was 3-4 times faster!" - and discovered that
-it didn't matter. You simply did not do enough floating point in any
-application that made a noticible difference - especially when you had
-to either compile it yourself, or have an app that weitek had
-convinced the software developer to make available specially.
+Later on I'd also played with an alternate floating point unit (weitek) "that
+was 3-4 times faster!" - I'd thought that given the success we'd had with 8087s,
+we'd have another upsell - and discovered that it didn't matter. You simply did
+not do enough floating point in any application that made a noticeable
+difference - especially when you had to either compile it yourself, or have an
+app that weitek had convinced the software developer to make available
+specially.
 
 Floating point, is incidentally, why I missed out on the early macs
 and amigas - no floating point, and so I sneered at them. It wasn't
@@ -44,7 +61,22 @@ My ex-college roomate got an amiga. I visited a lot. It crashed a
 lot. It *really needed* virtual memory.
 
 ** Altos Xenix
+Was my first encounter with a unix. Compared to DOS, it was a revelation. I was
+hooked for life - and at the same time, already battling upstream against the PC
+and Mac revolution. It cost a lot to get involved with unix, and serial
+terminals were not very sexy (even though keystroke based apps with lots of
+function keys seemed more productive to me)
+
 ** FOXBASE 1983-1989
+I made my living primarily programming foxbase applications. When I think of the
+ease in which a basic database could be created and manipulated then - compared
+to the horrific mess of mis-matched abstractions that is sql + html + javascript
+today - I get a mite frustrated.
+
+There are public domain implementations of dbase/clipper/etc now. Every so often
+I look at all the infrastructural mess required to deal with a sql database and
+want to reach for foxbase again.
+
 ** CSP
 ** Metaflow bulldog compiler 1986?
 ** T400 1986
