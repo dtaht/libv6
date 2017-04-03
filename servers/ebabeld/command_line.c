@@ -58,7 +58,7 @@ static const output_types_t output_type[] = {
 int usage(char* err)
 {
   if(err) fprintf(stderr, "%s\n", err);
-  printf("tabelb %s [options]\n", TABELB_VERSION);
+  printf("ebabeld %s [options]\n", EBABELD_VERSION);
   printf("-V --version                  print the version and exit\n"
          "-m --multicast_address  \n"
          "-p --port number    \n"
