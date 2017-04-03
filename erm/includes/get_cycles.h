@@ -35,7 +35,7 @@ static inline int stop_cycles(int events) { return 0; }
 // bother with distinguishing between these, mfence;rdtsc works.
 ALWAYS_INLINE static inline void memfence() {
   __asm__ volatile("mfence;"
-                   : 
+                   :
                    :
                    : "memory");
 }
@@ -58,14 +58,15 @@ ALWAYS_INLINE static inline cycles_t get_cycles()
 {
   volatile u64 r;
   /** Not recommended to use rdtsc on old multicore machines */
-  __asm__ volatile("rdtsc;"
+  __asm__ volatile("mfence;"
+		   "rdtsc;"
                    "shl $32, %%rdx;"
                    "or %%rdx,%%rax"
                    : "=a"(r)
                    :
                    : "%rcx", "%rdx", "memory");
 
-  return r;
+  return r - 44;
 }
 #endif
 

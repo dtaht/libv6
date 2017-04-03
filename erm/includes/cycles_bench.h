@@ -98,34 +98,29 @@
 
 #define GET_CYCLES_START(collect, start, end)                                \
   do {                                                                       \
-    memfence();                                                              \
     collect = 0;                                                             \
     start = end = get_cycles();                                              \
   } while(0)
 
 #define GET_CYCLES_STOP(collect, start, end)                                 \
   do {                                                                       \
-    memfence();                                                              \
     end = get_cycles();                                                      \
     collect += end > start ? end - start : start - end;                      \
   } while(0)
 
 #define GET_CYCLES_PAUSE(collect, start, end)                                \
   do {                                                                       \
-    memfence();                                                              \
     end = get_cycles();                                                      \
     collect += end > start ? end - start : start - end;                      \
   } while(0)
 
 #define GET_CYCLES_RESUME(collect, start, end)                               \
   do {                                                                       \
-    memfence();                                                              \
     end = start = get_cycles();                                              \
   } while(0)
 
 #define GET_CYCLES_COLLECT(collect, start, end)                              \
   do {                                                                       \
-    memfence();                                                              \
     end = get_cycles();                                                      \
     collect += end > start ? end - start : start - end;                      \
     start = end;                                                             \
