@@ -10,6 +10,10 @@ implementation. While you can't compile ERM down to verilog, it tries to use
 tools that do, and perhaps eventually will have a higher level language in it
 that will get you closer to "there".
 
+It is a simulator, first, and a real world engine, second, but hopefully
+the added shims to deal with simulated time won't interfere with actually
+being useful as a real world engine.
+
 ** ERM works from higher level mini-descriptive languages
 
 - It uses code generators for code that needs to be fast and tight
@@ -43,10 +47,10 @@ being an initial target.
 
 ** ERM is fast
 
-I kind of hope it will be 10-1000s faster than anything that exists today for
+I kind of hope it will be faster than anything that exists today for
 managing route tables and the like. But we'll see.
 
-- Hard real time is a goal throughout
+- Hard(er) real time is a goal throughout
 
 ** ERM is lightweight
 

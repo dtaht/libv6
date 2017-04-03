@@ -4,7 +4,29 @@ as you might tell from [[history]], erm's been around a while.
 
 What drove me to start at it again was wrestling with a string of almost but not
 quite compatable bits of code for managing ip addresses, tiring of writing low
-level tcpdump capture scripts (and parsing their results)
+level tcpdump capture scripts (and parsing their results), and hitting a
+variety of problems that needed simulated time to see.
+
+* Scars
+** counter overflow
+
+We once hit a bug where dhcpv6 overflowed a counter in 51 days and then
+went mad flooding the network.
+
+A (possibly better!) thought would be to come up with a way to run a whole
+linux vm in faster than real time.
+
+** rtod - Routing Tables of Death
+
+Observing what happened to a network when it got overloaded was rather
+devestating to the network itself.
+
+** routing and addressing interdependencies
+
+Between various daemons managing them - RA vs babel as one example,
+dhcp-pd vs everything as another - has been a pain to find.
+
+* Goals
 
 ** Packet analysis engine
 ** routing engine

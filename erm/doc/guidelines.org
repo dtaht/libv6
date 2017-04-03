@@ -1,8 +1,8 @@
 * erm guidelines
 
 The "Embedded Routing Machine" - ERM - is intended to be able to run on bare
-metal, a coprocessor, within a vm or container, and... also... as a regular
-Linux process.
+metal, a coprocessor, within a vm or container, with or without simulated time
+and... also... as a regular Linux process.
 
 As such it has a few conventions that might look odd to normal C language
 programmers. It is helpful to think of it as a highly specialized cpu and

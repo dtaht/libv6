@@ -254,10 +254,9 @@ this is a ringbuffer of width two bits, of size 32.
 
 u64 statebuf;
 bit2 state;
+SHIFT $2
 
-SHIFT
-
-if you want one that's infinite, ROTATE and AND
+if you want one that's infinite, ROTATE $2 and AND.
 
 * FIXME - bit extract functions in sse4.2?
 
