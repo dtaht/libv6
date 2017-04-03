@@ -1,3 +1,13 @@
+* Overview
+
+This readme is not much of a readme. Other documents in this dir are
+much more coherent (try guidelines or philosophy for starters).
+
+It was just the outline of notes as to how to go about (maybe) better solving a
+set of problems I've had for a long time.
+
+I'll make this better at some point, after everything settles down.
+
 * Features
 ** Listener mode
 Try to see what's going on on the network and infer what other routers
