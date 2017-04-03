@@ -30,6 +30,13 @@ v6table sources;
 ip_addr* addresses;
 addrflags_t* addrdata;
 
+//static int default_perms = (MAP_SHARED | MAP_HUGETLB);
+static int default_perms = (MAP_SHARED | MAP_HUGETLB | MAP_ANONYMOUS);
+
+#define MACHINE_MEMORY (1024*1024) // massive overallocation
+#define MACHINE_LOC NULL // stick it anywhere for now (not the case for parallella)
+#define ERM_GROUP 84
+
 void* place_tables(void* mem)
 {
   // do some mmap magic here
@@ -121,7 +128,7 @@ int create_files(char* base, dirs_t* p)
   while(p->name != NULL) {
     sprintf(buf, "%s/%s", base, p->name);
     TRAP_WEQ((fd = open(buf, O_CREAT, p->mode)), -1, buf);
-    //    fchgrp(fd,babel_group);
+    fchown(fd,-1,ERM_GROUP);
     p++;
     close(fd);
   }
@@ -135,7 +142,6 @@ int create_dirs(char* base, dirs_t* p)
     sprintf(buf, "%s/%s", base, p->name);
     TRAP_WEQ(mkdir(buf, p->mode), -1, buf);
     p++;
-    //    if(errno && errno != EEXIST)
   }
   return 0;
 }
@@ -173,63 +179,74 @@ int create_default_dirs(char* instance)
   return 0;
 }
 
-#ifdef DEBUG_MODULE
-#define MYMEM "/tabeld-test3"
-#define babel_group 84
-static int default_perms = (MAP_SHARED | MAP_HUGETLB);
+int erm_fs(char *instance) {
+	return create_default_dirs(instance);
+}
 
-int main(int argc, char** argv)
-{
-  char* shmem = argc == 2 ? argv[1] : MYMEM;
-  int fd;
-  int tsize = BASE * 16;
-  u32* mem = NULL;
-  unsigned char* tables = NULL;
+void * erm_start(char * shmem) {
   char buf[255];
-  sprintf(buf, ERM_SHARED_DIR_PATTERN, shmem);
-  TRAP_WERR(setgid(babel_group), "Can't switch to erm group");
-  create_default_dirs(buf);
+  u32 *mem;
+  u32 memsize;
 
-  sprintf(buf, ERM_SHARED_MEM_PATTERN, shmem); // Works
-  //  sprintf(buf, "%s/mach", shmem); // doesnt. use symlink?
-  // Now attach the virtual machine to that bit of shared mem
-  printf("Attach machine: %s\n", buf);
-  fd = shm_open(buf, O_CREAT | O_RDWR, 0);
+  sprintf(buf, ERM_SHARED_DIR_PATTERN, shmem);
+  TRAP_WERR(setegid(ERM_GROUP), "Can't switch to erm group");
+  erm_fs(buf);
+
+  sprintf(buf, ERM_SHARED_MEM_PATTERN, shmem);
+  int fd = shm_open(buf, O_CREAT | O_RDWR, 0);
   if(fd < 0) {
     if((fd = shm_open(buf, O_RDWR, 0)) == -1) {
       perror("Couldn't attach shared memory");
       goto err;
     }
+    struct stat s;
+    fstat(fd,&s);
+    memsize = s.st_size;
+  } else {
+	  memsize = ftruncate(fd, MACHINE_MEMORY); // allocate a mb
   }
-  TRAP_WERR((fchmod(fd, S_IRUSR | S_IWUSR | S_IRGRP)),
+  printf("Machine Attached: %s\n", buf);
+
+  TRAP_WERR((fchmod(fd, perms)),
             "Couldn't change shared memory mode"); // rw root, r group
-  TRAP_WERR((fchown(fd, -1, babel_group)),
+  TRAP_WERR((fchown(fd, -1, ERM_GROUP)),
             "Couldn't change shared memory group");
-  // hmm. if it exists we fail?
-  ftruncate(fd, BASE * 16 * 4);
-  TRAP_WEQ((mem = mmap(NULL, BASE * 16, PROT_READ | PROT_WRITE, default_perms, fd, 0)),
+  TRAP_WEQ((mem = mmap(MACHINE_LOC, MACHINE_MEMORY, PROT_READ | PROT_WRITE, default_perms, fd, 0)),
            (void*)-1, "Couldn't mmap shared huge page memory");
   if(mem == (void*)-1) {
     default_perms &= ~MAP_HUGETLB;
-    TRAP_EQ((mem = mmap(NULL, BASE * 16, PROT_READ | PROT_WRITE, default_perms, fd, 0)),
+    TRAP_EQ((mem = mmap(MACHINE_LOC, MACHINE_MEMORY, PROT_READ | PROT_WRITE, default_perms, fd, 0)),
             (void*)-1, "Couldn't mmap shared memory - aborting");
-    //	        TRAP_WLEQ(mem = mmap(NULL,BASE*16,PROT_READ |
-    // PROT_WRITE,default_perms , fd , 0)), (void *) -1, err, "Couldn't mmap
-    // shared memory - aborting");
   }
+  return mem;
+
+err:
+  TRAP_WERR(munmap(mem, MACHINE_MEMORY), "Couldn't unmap shared memory");
+  sprintf(buf, ERM_SHARED_DIR_PATTERN, shmem);
+  TRAP_WERR(shm_unlink(buf), "Couldn't close shared memory");
+  printf("exiting\n");
+  return NULL;
+}
+
+#ifdef DEBUG_MODULE
+#define MYMEM "/erm-test"
+
+int main(int argc, char** argv)
+{
+  char* shmem = argc == 2 ? argv[1] : MYMEM;
+  int fd;
+  unsigned char* tables = NULL;
+  u32* mem = erm_start(shmem);
+
   tables = place_tables(mem);
   load_tables(mem);
   fill_tables(mem);
-  printf("success!\n");
+  printf("Machine initialized: !\n");
   for(int i = 60; i > 0; --i) {
     mem[8] = i;
     usleep(333333);
   }
   mem[8] = 0;
-  TRAP_WERR(munmap(mem, tsize), "Couldn't unmap shared memory");
-// err:
-err:
-  TRAP_WERR(shm_unlink(buf), "Couldn't close shared memory");
-  printf("exiting\n");
+
 }
 #endif
