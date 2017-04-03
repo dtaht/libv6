@@ -133,8 +133,8 @@ arch.c: $(INC)/arch/arch_detect.h
 
 # This must run using the local cc
 
-extract_keys: commands.c includes/commands.h
-	 cc -Iincludes -DCMD_DUMP $< -o extract_keys
+extract_keys: commands.c $(INC)/commands.h
+	 cc -I$(INC) -DCMD_DUMP $< -o extract_keys
 
 cmds.gp: commands.c extract_keys
 	 ./extract_keys > cmds.gp
