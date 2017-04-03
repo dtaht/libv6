@@ -2159,3 +2159,9 @@ on.
 And the idea of doing packet processing in emacs just makes me
 chortle.
 
+* Fuschia
+
+has a few things very like what I've been thinking about - capabilities,
+and ha! has a threaded architecture that actually reads thread "regs"
+
+https://fuchsia.googlesource.com/magenta/+/HEAD/docs/syscalls/thread_read_state.md

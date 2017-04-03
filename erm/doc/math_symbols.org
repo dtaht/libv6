@@ -2,9 +2,9 @@
 
 I am very tempted to abuse the UTF-8 capability of the modern world throughout.
 
-This is not just because I liked APL, but because there is a set of boolean
-operators in erm that have a different truth table than normal. Also, as a
-message passing system, it seems nice to use arrows.
+This is not just because I liked APL (I DID!), but because there is a set of
+boolean operators in erm that have a different truth table than normal. Also, as
+a message passing system, it seems nice to use arrows.
 
 People seem to understand feynman diagrams, so, what's wrong with circles and
 arrows and a paragraph of doc on each one to hold as evidence against us?
@@ -68,8 +68,9 @@ identity, a definition (which can also be represented by U+225D "≝" or U+2254
 to express that an item corresponds to another.
 
 
+APL keymap
 
-
+https://directory.fsf.org/wiki/Apl
 
 
 * In equality
@@ -89,4 +90,31 @@ APL
 
 ÷
 http://www.cs.colostate.edu/cameron/SACoverview.html
+
+
+* formal specification language
+
+https://en.wikipedia.org/wiki/Z_notation
+
+* APL keymap
+
+https://en.wikipedia.org/wiki/APL_(programming_language)
+
+
+heh
+
+Chasing Men Who Stare at Arrays" Catherine Lathwell's Film Diaries; 2014, film synopsis - "people who accept significantly different ways of thinking, challenge the status quo and as a result, created an invention that subtly changes the world. And no one knows about it. And a Canadian started it all… I want everyone to know about it."[34]
+"The Origins of APL - 1974 - YouTube", YouTube video, 2012, uploaded by Catherine Lathwell; a talk show style interview with the original developers of APL
+
+
+Although a technological success, The APL Machine was a marketing failure. The
+initial version supported a single process at a time. At the time the project
+was discontinued, the design had been completed to allow multiple users. As an
+aside, an unusual aspect of The APL Machine was that the library of workspaces
+was organized such that a single function or variable that was shared by many
+workspaces existed only once in the library. Several of the members of The APL
+Machine project had previously spent a number of years with Burroughs
+implementing APL\700.
+
+x[⍋x←6?40]
 
