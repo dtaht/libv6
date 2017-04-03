@@ -1,0 +1,134 @@
+include ../../support.mk
+
+VERSION = version.h
+OBJDIR_DEBUG = $(CC)
+
+#$(OBJ_DEBUG): $(OBJDIR_DEBUG)/%.o: %.c
+#	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c $< -o $@
+
+# GCC Notes:
+
+# Computed gotos for readonly static code:
+# https://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html#Labels-as-Values
+# static const int array[] = { &&foo - &&foo, &&bar - &&foo,
+#                              &&hack - &&foo };
+# goto *(&&foo + array[i]);
+
+# Arch specific things - still rather fragile
+
+# FIXME if CROSSCC is defined, reinvoke self with that as we do all the work with CC
+# Worse, these methods break down when using lede's cross compiler regardless
+
+parser.dbg: parser.c $(DLIB)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< $(LINENOISE) $(DLIB) $(LDFLAGS) -o $@
+
+logger.dbg: logger.c $(DLIB) io.o
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< $(DLIB) io.o $(LDFLAGS) -o $@
+
+# We can't link core lib .dbg objects to themselves
+
+traps.dbg: traps.c debug.o
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DDEBUG_MODULE -g $< debug.o $(LDFLAGS) -o $@
+
+HEADERS += $(patsubst %.h,$(INC)/%.h,$(BHEADERS))
+
+# uniq -- dont-verify-checksums ? is that a bpf option?
+# -Q direction in?
+
+$(DOBJS): $(HEADERS) $(SRCS) $(VERSION)
+
+# Will this bit of crazyness work?
+# BUILDS = $(shell $(make) -C $(C) CC=$(C))
+# COMPILERS := gcc aarch-bla adapteva arm7 mips
+# RESULT := $(foreach C, $(COMPILERS), $(BUILDS))
+# What I basically want to do is convince make
+# to fire off builds for all the cross compilers 
+# I have defined
+
+OBJDIR := $(TARGET) # ./?
+TOBJS  := $(addprefix $(OBJDIR)/,$(OBJS))
+
+all: $(PROGS)
+	echo $(OBJS)
+
+$(OBJDIR)/%.o : %.c
+	$(CROSSCC) $(CFLAGS) $<
+
+# I did not know about the | trick
+# https://www.gnu.org/software/make/manual/html_node/Prerequisite-Types.html#Prerequisite-Types
+
+$(TOBJS): | $(OBJDIR)
+
+$(OBJDIR):
+	mkdir $(OBJDIR)
+
+# local shared memory command line client
+
+CLIENTDEPS = erm_client.o commands.o debug.o traps.o
+
+germ: germ.c $(CLIENTDEPS) $(OBJS)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< $(CLIENTDEPS) $(LDFLAGS) -o $@
+
+# noize version
+
+berm: berm.c $(CLIENTDEPS)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< $(CLIENTDEPS) $(LDFLAGS) -o $@
+
+# Stress Tester
+
+sqerm: sqerm.c $(CLIENTDEPS)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< $(CLIENTDEPS) $(LDFLAGS) -o $@
+
+# Warnings and monitoring tool
+
+werm: werm.c $(CLIENTDEPS)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< $(CLIENTDEPS) $(LDFLAGS) -o $@
+
+# daemons
+
+tabeld: $(HEADERS) $(SRCS) $(VERSION)
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) $(LDFLAGS) -o $@
+
+tabeld-whole.c: $(HEADERS) $(SRCS)
+	cat $(SRCS) > $@
+
+tabeld-whole.s: tabeld-whole.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $< -S -o $@
+
+tabeld-whole: tabeld-whole.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -fwhole-program $< -o $@
+
+tabeld-$(ARCH): $(HEADERS) $(SRCS)
+	$(CROSSCC) $(CFLAGS) $(EXTRA_DEFINES) $(SRCS) -o $@
+
+# Search code generation
+
+# search uint4? two? :)
+
+searches: search_uint8.o search_uint16.o search_uint32.o search_uint64.o # search_v6addr.o search_uint128.o
+
+search_uint16.o: tables_search.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=u16 $< -c -o $@
+
+search_uint32.o: tables_search.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=u32 $< -c -o $@
+
+search_uint64.o: tables_search.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=u64 $< -c -o $@
+
+search_uint128.o: tables_search.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=uint128_t $< -c -o $@
+
+search_v6addr.o: tables_search.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=ip_addr $< -c -o $@
+
+search_uint8.o: tables_search.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DGEN_TYPE=u8 $< -c -o $@
+
+# Helper tools
+
+# FIXME: enable full warnings (need to shut printf up)
+
+plugins:
+	$(MAKE) -C plugins
+
