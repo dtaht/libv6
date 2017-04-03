@@ -39,10 +39,10 @@
 
 #define default_protocol_config_file "/etc/babeld.conf"
 
-#define default_protocol_pid_file "/var/run/tabelb.pid"
-#define default_protocol_state_file "/var/run/tabelb.pid"
-#define default_protocol_id_file "/var/run/tabelb.id"
-#define default_config_local_mux "/tmp/tabelb.sock"
+#define default_protocol_pid_file "/var/run/ebabeld.pid"
+#define default_protocol_state_file "/var/run/ebabeld.pid"
+#define default_protocol_id_file "/var/run/ebabeld.id"
+#define default_config_local_mux "/tmp/ebabeld.sock"
 #define default_config_allowed_gid 0
 
 // FIXME, insert my timebase here
