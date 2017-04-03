@@ -123,6 +123,14 @@ static inline int donothing_false() { return 0; }
 #define PACKED __attribute__((packed))
 
 // A variety of additional attributes
+// Tell erm that this item has a max size of X
+
+#ifdef SIZE_CHECK
+#define VMAXSIZE(max_size) (max_size)
+#else
+#define VMAXSIZE(max_size)
+#endif
+
 // Tell the Pointer Bounds Checker that this variable can be variably sized
 // (used at the end of variable length structures
 
