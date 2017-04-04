@@ -1,0 +1,54 @@
+* Sorting and packing in ERM.
+
+The concept of routing is independent of the underlying address, and erm uses
+abstractions and notations about address characteristics to reduce the size of
+its internal route tables as much as possible.
+
+As one example, ipv6 addresses are stored with a flag indicating their type and
+tightly packed into available memory, with the actual address itself stored
+elsewhere.
+
+Presently that flag is popcount (as an initial best guess as to where to find
+the data), and flags indicating the type, then the (16 bit) index itself.
+
+nexthop addresses are typically quite sparse - no more than 10-30 per
+interface, so those are packed first, onto onchip memory.
+
+As another example, we typically keep two collections of data, one ordered, one
+not, and merge sort them back together as part of the periodic garbage
+collection step.
+
+Aside from addresses themselves, there seems to be nearly no reason why any
+other static data needs to exist in offchip memory. Packets themselves need to
+be dma'd into a work area, and data going offchip (to control the external OS),
+as well.
+
+It is my hope to be able to create a routing table update using multiple
+processors to walk their shared indexes and fill in the blanks (e.g - one
+processor fills in the network, another the nexthop), and then when all are
+complete (in external memory), signal the main processor to flush the table to
+the OS.
+
+In the case of the parallella it is my hope to be able to express the indexes as
+disjoint indexes into separate memory spaces, where overrunning an index causes
+a memory trap and forces a a dma load of the relevant data into a relevant place
+(and cpu). The memory address space of the parallella is very fragmented, using
+a 32k segment of a 16MB address space per cpu. (and it's unclear what happens if
+you try to write an undefined segment - hopefully it is a memory trap)
+
+Given the limited range, regardless, of the indexes, when the range of the index
+is exceeded, a way to split the work across multiple virtual machines needs to
+exist. Eventually. Presently I project a minimum of 32k routes per instance,
+which is well in excess of what I've seen babel do, and with things like route
+folding, may be "good enough".
+
+* Message passing and dma
+
+Message passing is used throughout. DMA is used (transparently as possible), for
+larger message types (such as packets themselves).
+
+* Atomic operations
+
+The parallella has a weak memory model for external writes and only a single
+atomic test and set operation to work with. 
+
