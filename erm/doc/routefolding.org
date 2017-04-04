@@ -1,0 +1,126 @@
+* Route folding
+
+Over time, networks tend to grow, and become dis-organized and in need of
+renumbering in order to get to an optimal (minimal and hiearchial) distribution.
+
+Usually the pain point for renumbering is when devices start overflowing
+(cisco's limited amount of memory for BGP as a decade old example), or when the
+routing protocol starts failing under load (rtod). Generally, in no case does
+the need to renumber arise at a convent time!
+
+Achieving an optimal route distribution is often the domain of painful manual
+intervention - either renumbering, or careful application of custom filters to
+filter out what is not needed.
+
+There may be a way to automatically reduce the burden both of carrying more
+routes, and calculating route metrics, by automatically putting a bit more of
+a "V" into DV.
+
+Adjacent routes with the same metric and routerid can be folded into one route,
+automatically.
+
+Adjacency is defined simply: Two (or more) routes that can be expressed as one
+with no information loss about metric or routerid are adjacent.
+
+|fd00::4/128|512|XX:XX:XX:XX|
+|fd00::5/128|512|XX:XX:XX:XX|
+
+can be expressed as fd00::4/127 with no loss of information, and adding
+fd00::6/128 and fd00::7/128 to the mix can further be reduced to fd::4/126.
+
+A more common case is where an automated address distribution tool (dhcpv6,
+hnet) does not attempt to do the work to fold announcements into smaller
+prefixes. DHCP, in particular, tends to assign addresses in sequence.
+
+Similarly, current routers (lede), tend to take each /64 from their /60 or /56
+distribution and announce each separately, when announcing their /60 would
+suffice.
+
+* A folded route is NOT a "covering" route
+
+An example of a non-foldable route set would be:
+
+fd00::/64
+fd00::1/128
+
+Where - although the /64 could be interpreted as a superset (covering route) of
+that network, it is best left to the system administrator(s) to ensure that that
+is indeed true and create filters that are appropriate. A new covering route MAY
+be announced as a folding route type, however, which means that as the older
+routes are allowed to expire, no network disconnectivity occurs as the older
+smaller routes expire. (Presently announcing a covering route involves retracting
+the older routes and a two minute hold time before the network recovers)
+
+* Current daemon behaviors
+** On startup existing routes are pulled from the kernel
+And may be aggregateble from the get-go
+** Route updates are buffered until there are enough to re-announce within the next hello
+So time exists to detect if two routes can be folded together before being reannounced
+** They are sometimes sorted (Bird, erm - babeld for some operations)
+** Falling over completely with large numbers of routes
+
+* Benefits
+
+- Routing calculations for folded routes can be done once, instead of once per
+subroute.
+- lowered traffic overall
+- Automatic tuning for larger numbers of routes
+
+* Unfolding routes
+
+In the case where a recieving router is known not to be folding capable, unicast
+route transfers to that router MUST be encoded using the original ae numbers for
+unfolded routes. In the case of multicast shared route transfers with a mix of
+routers both capable and incapable, a folding capable router must include the
+unfolded routes and at least one folded route to indicate folding capability.
+
+* Route retractions
+
+- if all routers are capable of folding routes, a route retraction of just the
+folded route will accomplish the same thing.
+
+- if one route out of a folded route is retracted, the same rules apply as to
+  more specific routes - a covering route of fd00::4/126 with a fd00::5/128
+  unreachable, will be just as unreachable as it was in the first place. If all
+  routes out of a folded route are retracted, the folded route is retracted
+  also, and the process of creating a folded route begins again.
+
+- Routing loop detection. Folded routes modify the current behavior of loop
+  detection. If a more specific route is adequately covered by a folded route,
+  and all routers listening on that interface are folding capable, it is allowed
+  to expire and will NOT be rendered unreachable by the daemon while doing so.
+
+* Drawbacks
+
+- added complexity to the daemons (merge sort on route tables very helpful)
+- some negotiation capability added to the protocol by having to observe what
+  aes are being sent (routerid_has_folded_route_capability)
+
+* Examples of use
+
+* Folding in the protocol
+
+Initially,  a folded route is encoded into an new (set of) ae numbers that are
+set alongside announcements of the same routes, unfolded, as usual.
+
+As existing routers *ignore* unknown ae numbers and thus will not reannounce
+"folded" routes, things continue to work as usual. Routers capable of
+interpreting the new ae number will reannounce also using that ae number.
+
+* Folding in the daemon itself
+
+Folding has more benefits than just reducing the size of a protocol
+announcement.
+
+For example, a stubby router would progressively apply the folding code while
+generating its kernel route table, eventually solving the number of potential
+next hops down to a bare minimum, and sometimes, only a default route (when only
+one other speaker is present), would suffice.
+
+* New AE numbers
+
+It is unlikely that that fe80 addresses can be successfully folded this way.
+However the 3 other encodings would need to be mirrored by the folding versions.
+
+As there is also a change to source specific routing pending, that too, would
+probably required a folded ae number.
