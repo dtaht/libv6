@@ -83,6 +83,7 @@ At least, I hope it will be.
 - Generational Garbage collection
 - tagged memory
 - mmap rather rather than stdio
+- message passing rather than stacks
 - Linker magic to swap in and out critical sections
 
 * Negatives
