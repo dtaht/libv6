@@ -70,8 +70,9 @@
 #endif
 
 #ifndef LOGGER
+#include <stdio.h>
 #warning "no logger defined, using fprintf"
-#define LOGGER(where, fmt, ...) fprintf(where, fmt, __VA_ARGS__)
+#define LOGGER(...) fprintf(__VA_ARGS__)
 #endif
 
 #ifndef LOGGER_INFO
@@ -134,6 +135,22 @@
 #define GET_CYCLES_PRINT_DIFFERENCE(where, title, v1, v2)                    \
   LOGGER(where, title ": Cycles: %ld Improvement: %20.20g\n", v2 - v1,       \
          (double)(v2) / (double)(v1))
+
+#ifdef __epiphany__
+
+// no sleep on epiphany
+
+#undef GET_CYCLES_AVAIL
+
+#define GET_CYCLES_AVAIL(start, end)                                         \
+  do {                                                                       \
+    start = get_cycles();                                                    \
+    end = get_cycles();                                                      \
+    LOGGER(PERF, "cycle counter: active\n");    \
+  } while(0)
+
+#endif
+
 #endif
 
 #endif

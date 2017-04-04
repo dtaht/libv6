@@ -159,13 +159,24 @@ static inline int stop_cycles(int events)
 #endif
 
 #ifdef __epiphany__
+#include "e_ctimers.h"
 #define CYCLES_FMT "%u"
 typedef u32 cycles_t;
 
-static inline int init_cycles() { return 0; }
-static inline int stop_cycles() { return 0; }
-static inline cycles_t get_cycles() { return 0L; }
-static inline cycles_t get_all_cycles() { return 0L; }
+static inline int init_cycles() {
+	e_ctimer_set(E_CTIMER_1, E_CTIMER_CLK);
+	return 0;
+}
+
+// do I need to set it to some value?
+
+static inline int start_cycles() { return e_ctimer_start(E_CTIMER_1, E_CTIMER_CLK); }
+static inline int stop_cycles() { return e_ctimer_stop(E_CTIMER_1); }
+static inline cycles_t get_cycles() { return e_ctimer_get(E_CTIMER_1); }
+
+// unimplemented
+
+static inline cycles_t get_all_cycles() { return 0; } // e_ctimers_get(E_CTIMER_1); }
 
 #endif
 
