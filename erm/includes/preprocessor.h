@@ -125,7 +125,7 @@ static inline int donothing_false() { return 0; }
 // A variety of additional attributes
 // Tell erm that this item has a max size of X
 
-#ifdef SIZE_CHECK
+#ifdef CHECK_SIZE
 #define VMAXSIZE(max_size) (max_size)
 #else
 #define VMAXSIZE(max_size)
@@ -142,6 +142,10 @@ static inline int donothing_false() { return 0; }
 #define STOREBE __attribute__((scalar_storage_order("big-endian")))
 
 #define TRANSUNION __attribute__ ((__transparent_union__))
+
+// must go in the static void INTERRUPT func()
+
+#define INTERRUPT __attribute__((interrupt))
 
 // Intel compiler specific extension used in function declarations
 
