@@ -1,0 +1,139 @@
+* Epiphany notes
+
+It is not so much that the original chip is all that capable. It has 16 cores,
+that have 32k bytes each. The next generation has 1024 cores, with 64KB each -
+64MB of memory! which is an amount far larger than most routers have today.
+
+* Memory Map
+
+[[https://www.parallella.org/wp-content/uploads/2015/02/1.png]][memory]]
+
+Each core has a local map
+Each individual core has four internal
+memory banks starting at all 0000s,
+2000, 4000, 6000, and at the very top,
+ 0xF0000 is the register map.
+
+I've been trying to figure out if you can write the registers directly.
+
+Then, each core is mapped into memory on
+0x00100000, 0x00200000 so you can write another core's 
+memory given thse things
+
+THEN, there's the map to main memory,
+which starts at 
+
+*
+rrupt Vector
+Table
+0x00 0x3F 64 Local Memory
+Bank 0 0x40 0x1FFF 8KB-64 Local Memory Bank
+Bank 1 0x2000 0x3FFF 8KB Local Memory Bank
+Bank 2 0x4000 0x5FFF 8KB Local Memory Bank
+Bank 3 0x6000 0x7FFF 8KB Local Memory Bank
+Reserved 0x8000 0xEFFFF n/a Reserved for future
+memory expansion
+Memory Mapped
+Registers
+0xF0000 0xF07FF 2048 Memory mapped
+register access
+Reserved 0xF0800 0xFFFFF n/a N/A
+
+* Atomic operations
+
+** Local memory is per cpu
+
+All read and write transactions from local memory follow a strong memory-order model. This
+means that the transactions complete in the same order in which they were dispatched by the
+program sequencer.
+
+* Read vs write speed. 
+
+
+* -ffunction-sections puts eats function
+in it's own section
+
+I've read it's not supported right now, but AFAICT, only data access use absolute address and the JR/JALR instructions which can be avoided by ' -mshort-calls ', so it might be doable to replace every function by a 'stub' that:
+
+* SECTIONS
+
+https://github.com/coduin/epiphany-bsp/wiki/Memory-on-the-parallella
+
+* Dual issue
+
+Secondary Signed Integer Instructions
+The basic floating point instruction set can be substituted with a set of signed integer instructions
+by setting the appropriate mode bits in the CONFIG register [19:16]. These instructions use the
+same opcodes as the floating-point instructions and include: IADD, ISUB, IMUL, IMADD,
+IMSUB.
+
+* Interrupt table
+
+Sync 0 (highest) 0x0 Sync hardware signal asserted
+Software Exception 1 0x4 Floating-point exception, invalid instruction,
+alignment error
+Memory Fault 2 0x8 Memory protection fault
+Timer0 Interrupt 3 0xC Timer0 has expired
+Timer1 Interrupt 4 0x10 Timer1 has expired
+Message 5 0x14 Message interrupt
+DMA0 Interrupt 6 0x18 Local DMA channel-0 finished data transfer
+DMA1 Interrupt 7 0x1C Local DMA channel-1 finished data transfer
+WAND Interrupt 8 0x20 Wired-AND signal interrupt
+User Interrupt 9 (lowest) 0x24 Software generated user interrupt
+
+
+* Fused multiply/add
+
+IMADD
+
+* TRAP <IMM5)
+
+0-2 = reserved
+3 = program exit indicator
+4 = indicates success, can be used to indicate “test passed”
+5 = indicates assertion, test “failed”
+6 = reserved
+7 = initiates system call
+In the case of TRAP 7, a system call is initiated. In this case, 
+
+
+[19:17] ARITHMODE Selects the operating mode of the data path unit.(“FPU”)
+000 = 32bit IEEE float point mode
+100 = 32bit signed integer mode
+All other modes reserved.
+
+
+*
+
+Attach a special message to the last data item of a DMA
+channel transfer. If the destination address is local memory,
+then the transition to DMA_IDLE only occurs after the last
+data item has returned. If the destination address is in
+another core, then a message interrupt (IRQ5) is sent along 
+
+*
+
+https://github.com/coduin/epiphany-bsp/wiki/Memory-on-the-parallella
+
+* External memory map:
+
+0x8e000000 - 0x8fffffff
+
+* Speeds (Megabytes/sec)
+
+Testing SRAM speed.
+Host -> SRAM: Write speed =   14.62 MBps
+Host <- SRAM: Read speed  =   17.85 MBps
+
+Testing ERAM speed.
+Host -> ERAM: Write speed =  100.71 MBps
+Host <- ERAM: Read speed  =  135.42 MBps
+
+Testing chip speed (@ 600Mz)
+Core -> SRAM: Write speed = 1286.01 MBps   clocks = 3645
+Core <- SRAM: Read speed  =  406.80 MBps   clocks = 11523
+Core -> ERAM: Write speed =  235.88 MBps   clocks = 19872
+Core <- ERAM: Read speed  =   85.99 MBps   clocks = 54514
+
+
+https://arxiv.org/pdf/1608.03545.pdf
