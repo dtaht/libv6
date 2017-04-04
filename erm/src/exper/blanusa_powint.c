@@ -71,6 +71,10 @@
 #undef generic
 #undef blanusa_powint
 
+#ifndef DEBUG_MODULE
+#define DEBUG_MODULE
+#endif
+
 #ifdef DEBUG_MODULE
 // #define NO_PERF
 

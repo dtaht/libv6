@@ -1,7 +1,7 @@
 #PROGS = structpassing bitendian
-PROGS = bitendian blanusa packing
+PROGS = bitendian blanusa_powint packing
 
-SRCS  = structpassing.c bitendian.c blanusa.c packing.c
+SRCS  = blanusa_powint.c structpassing.c bitendian.c packing.c
 
 DLIB  = ../debug.o ../traps.o
 DSRCS = ../debug.c ../traps.c
@@ -22,7 +22,7 @@ VERSION = version.h
 INCLUDES = -I$(INC)
 GENVERSION = $(TOOLS)/generate-version.sh
 
-CFLAGS  = -msse4.2 -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES)
+CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES)
 LDFLAGS = -lm
 
 ifeq ($(CC),musl-gcc)
@@ -60,6 +60,7 @@ ifeq ($(CC),e-gcc)          # adapteva compiler
 	CFLAGS +=-m1reg-r63 # use reg -63 for negative constants
 	CFLAGS +=-falign-loops=8
 	CFLAGS +=-falign-functions=8
+	LDFLAGS +=-le-lib
 endif
 
 # Intel - use cpuid? have patch at run time?
@@ -260,7 +261,7 @@ parallella:
 	$(MAKE) CC=e-gcc $(filter-out parallella,$@)
 
 par:
-	$(MAKE) CC=e-gcc $(filter-out par,$@)
+	$(MAKE) CC=e-gcc -DDEBUG_MODULE $(filter-out par,$@)
 
 # Basic helpers
 

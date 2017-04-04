@@ -2,23 +2,20 @@
 
 #include <stdint.h>
 #include <stdio.h>
-
-typedef struct {
-  u32 a;
-} global_flags_t;
-
-global_flags_t tflags;
-
 #include "preprocessor.h"
+#include "erm_types.h"
 #include "simd.h"
+
+//typedef struct {
+//  u32 a;
+//} global_flags_t;
+
+//global_flags_t tflags;
+
 
 typedef struct {
   u32 flags;
 } flags_t;
-
-typedef struct {
-  u8 a VECTOR(16);
-} ip_addr;
 
 typedef struct {
   ip_addr a;
@@ -26,8 +23,6 @@ typedef struct {
 } compound_struct_t;
 
 // These should do the right thing.
-
-#define REGCALL __attribute__((regcall))
 
 #define R REGCALL
 
