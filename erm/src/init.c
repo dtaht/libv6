@@ -190,6 +190,12 @@ int create_default_dirs(char* instance)
 
 int erm_fs(char* instance) { return create_default_dirs(instance); }
 
+// wastebin
+// regs
+// cpu areas
+// memory areas
+
+
 void* erm_start(char* shmem)
 {
   char buf[255];

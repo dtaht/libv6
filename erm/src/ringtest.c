@@ -90,7 +90,7 @@ void popme()
    c++;
   }
   printf("popped: %d\n", c);
-  pushme(); 
+  pushme();
 }
 
 // With profuse apologies to tom duff
@@ -104,7 +104,7 @@ void duffme()
   o[3] = fours;
   int i = 0;
   switch(i = msg8_size() & 3) {
-  case 3: 
+  case 3:
     msg8_enqueue(o[i++]);
   case 2:
     msg8_enqueue(o[i++]);
@@ -114,7 +114,7 @@ void duffme()
     msg8_enqueue(o[i++]);
   default: break;
   }
-  
+
   popme();
 }
 
