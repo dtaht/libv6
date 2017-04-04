@@ -14,17 +14,33 @@
 #include <string.h>
 #include <sys/socket.h>
 
-#ifdef DEBUG_MODULE
-int main(void)
-{
 #define VLEN 10
 #define BUFSIZE 200
 #define TIMEOUT 1
+
+// fast.ldf linkerscript.
+// Epiphany has heap_dream and shared_dram sections
+// currently
+// shared
+// Location: 0x8f800000 - 0x8fffffff
+
+//External memory using section labels
+//int my_integer SECTION("shared_dram"); //section at 0x8f000000
+//float my_float SECTION("heap_dram"); //section at 0x8f800000
+//External memory using hardcoded addresses
+//int *my_other_integer = (int*)0x8f000000;
+//float *my_other_float = (float*)0x8f800000;
+
+
+struct mmsghdr msgs[VLEN] SECTION("shared_dram");
+struct iovec iovecs[VLEN];
+char bufs[VLEN][BUFSIZE + 1];
+
+#ifdef DEBUG_MODULE
+int main(void)
+{
   int sockfd, retval, i;
   struct sockaddr_in addr;
-  struct mmsghdr msgs[VLEN];
-  struct iovec iovecs[VLEN];
-  char bufs[VLEN][BUFSIZE + 1];
   struct timespec timeout;
 
   sockfd = socket(AF_INET, SOCK_DGRAM, 0);
