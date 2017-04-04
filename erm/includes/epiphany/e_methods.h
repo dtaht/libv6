@@ -26,6 +26,13 @@ ALWAYS_INLINE unsigned _e_get_ctimer0()
   return tmp;
 }
 
+ALWAYS_INLINE unsigned _e_get_ctimer1()
+{
+  register unsigned tmp asm("r0");
+  asm volatile ("movfs %0, ctimer1;" : "=r" (tmp) :: );
+  return tmp;
+}
+
 ALWAYS_INLINE unsigned _e_reg_read_config( void )
 {
   register unsigned tmp asm("r0");
