@@ -51,13 +51,16 @@ $(OBJDIR):
 
 CLIENTDEPS = erm_client.o commands.o debug.o traps.o
 
+.PHONY: packing aligned maxaligned wire
+
 packing: aligned maxaligned wire
+
 
 aligned: packing.c
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DPACK_ALIGNED $< -o $@
 
 maxaligned: packing.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DPACK_ALIGNED -DUNPACK $< -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DPACK_ALIGNED -DSIZE_CHECK -DUNPACK $< -o $@
 
 wire: packing.c
 	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -DWIRE $< -o $@

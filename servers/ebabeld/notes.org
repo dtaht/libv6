@@ -1,8 +1,10 @@
 * Ebabeld design notes
 ** Designed to run in the real world OR in simulation
+** Uses posix shared memory throughout
 ** Intended to be as small as possible
 ** Intended to be able to offload into a co-processor
 ** Uses overlays so as to fit into smaller OSes
 ** Able to use plugins
 ** Able to monitor various statistics
 ** Has a few extensions over the base protocol
+** Allows the use of ACLS
