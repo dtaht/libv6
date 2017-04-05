@@ -4,16 +4,55 @@ Ebusl (pronounced like you think is would be: "E buse l"), is a hacked
 up version of the C library with five, maybe six, major modifications
 to it (planned, thus far).
 
-** End of errno
+** The End of errno
 
 The biggest change to musl is that errno is killed, dead. Everything
 makes an error return embeds the error return as part of the
 return. So, mmap for example, returns a negative value with the 10
 possible errors encoded into it. There's a side function that can turn
-that new value into a errno and look it up, but that's it.
+that new value into the moral equivalent of errno and look it up, but
+that's it.
+
+*** errnos are (too) stable
 
 The number of error returns in POSIX is standard and stable and hasn't
-changed in decades. Why look up errno?
+changed in decades. But they are semantically separate (the return
+from the function indicates a simple error, the more complex error is
+encoded, sometimes badly, into an errno), and incomplete.
+
+Why look up errno? why store it in a weird place (via TLS) that's
+expensive to get to? Why do it in two phases? I really don't know much
+about the history of errno, I think it is done the way it is because:
+
+- we had very narrow architectures with limited address space and registers
+- twos complement arithmetic had not swept the world
+- it seemed like a good idea at the time
+
+*** the errnos are weakly defined and depend on context
+
+And often are a poor map to what actually went wrong. Take sched_yield
+as one example. In a hard(er) real time system, it means "put me to
+the back of the run queue". But that's not what happens when called as
+a regular Linux process.
+
+What you do with an EAGAIN errno varies depending on your underlying
+system architecture. EWOULDBLOCK (What it is currently mapped into),
+is semantically more clear - but the two return types are (currently)
+mapped to the same thing. An EWOULDBLOCKWHY message would often be
+helpful - "out of cpu?", and in more than a few cases ENOSPC would be a
+better return than a mere EAGAIN.
+
+Stuff like EINTR is usually easy - just retry immediately.
+
+Bugs accumulate in the gaps between interfaces, and work on improving
+the rigor of those interface standards in face of changing reality is
+often needed.
+
+*** errno was designed to work with down to 8 bit systems
+
+Where today we are moving to 64 bits and beyond.
+
+*** TODO kill the errno
 
 It looks like I have to re-org wrappers around something like 80 linux
 syscalls to do things this way, and it's kind of my hope to use a
@@ -25,22 +64,31 @@ planned so far - tcpdump, libpcap being the biggies) also has to have
 all references to errno ripped out.
 
 Some of this is easier - a lot of stuff just calls perror without
-referring to the errno at all.
+referring to the errno at all, and in this case "eerror" would just be
+passed the return from the function.
 
 Some of this is hard: a lot of code checks for -1, where here we check
 for "-". A lot of times we don't need to "check" at all - on all
-modern 64 bit arches this will cause an invalid address trap if it's
-an address. Since we encoded the actual error into the address, it can
+modern 64 bit arches an invalid address causes an invalid address trap. 
+
+Since we encoded the actual error into the address, it can
 jump to the right thing, also.
 
 Other stuff may just inline an invalid instruction (which gets
 trapped) - or call trap directly with an offset.
 
-I've thought about killing NULL this way, also, but try to restrain myself.
-I STILL MAY!
+I've thought about killing NULL this way, also, but try to restrain
+myself. Watch out! I STILL MAY!
 
 I totally realize that this change makes erm code incompatible with 
-everything else.
+everything else, but there are already other things like a separate call
+and data stack that do that, too.
+
+At the very least, seeing the range of errnos start to evolve again in
+mainline posix to better represent new realities would be a goodness,
+I think. Instead of arguing about which posix errno to return in the
+case of ambiguity, we'd be trying to resolve the ambiguity with a new
+error definition.
 
 ** Weirder threads
 
@@ -100,23 +148,68 @@ are handling the error.
 I'm not really sure to what extent traps will make it into ebusl. It's
 a really big job to just kill errno.
 
+** Separate call and data stacks
+
+This makes ERM more resistant to ROP, in particular.
+
+There already isn't much of a data stack (the hope is that nearly 100%
+of the time args are passed in registers, and most other communication
+is via message passing), and while the call stack doesn't expressly
+forbid recursion, nothing more than tail recursion is encouraged.
+
+** Message passing
+
+Message passing, as defined in the 80s and 90s, was easy due to a paucity of
+registers. It is hard to use up the modern plethora of registers if all
+your functions do is send(somewhere, data);
+
+ERM has a lot of intentionally disjoint memory spaces, where message
+passing is the only way to get data in or out, and DMA is used on bigger
+stuff rather than involving the main cpu.
+
+*** Structure passing
+
+The C compiler (due to C++) has got a lot better at packing structures
+into registers.
+
+*** Structure return
+
+It's considerably less good at packing structures into registers on
+a return.
+
+*** Bitwide types
+
+It rather bugs me that bitwide types cannot (still) be easily packed
+together. Ideally C would have developed a bitsX type by now instead
+of always promoting things to a "natural" quantity, and you'd be able
+to arbitrarily declare (and pass) a complex variable with a:2, b:4,
+c:5 without having to resort to #defines. Specialized versions of C
+(and C++) exist (specc, systemC) that can do this, and more than a few
+times I've been tempted to just start writing in those...
+
+... but unwilling to give up so much performance and compatability for
+the sake of simulation.
+
 ** printf
 
 I don't know what to do about printf and varargs in a message passing
-system, as yet.
+system, as yet. I certainly would like to have a drop in message passing
+replacement for printf.
 
-as written, however, there is no floating point in erm, at all, and that's
+As written, however, there is no floating point in erm, at all, and that's
 a whole lot of code that can be compiled out.
 
 Someday FP might land back in it, though.
 
+And printf is really well defined, and bloody useful.
+
 ** Shared memory timers
 
-The only thing that really bugs me about musl is that they didn't copy
-glibc's WONDERFUL shared kernel memory timer implementation. I would
-like to do that (for mainline musl as well) as it shaves MANY
-nanoseconds off of getting timers - like orders of magnitude - and
-doesn't trap to the kernel at all.
+The only thing that really bugs me about musl itself is that they
+didn't copy glibc's WONDERFUL shared kernel memory timer
+implementation. I would like to do that (for mainline musl as well) as
+it shaves MANY nanoseconds off of getting timers - like orders of
+magnitude - and doesn't trap to the kernel at all.
 
 ** Other problems
 
