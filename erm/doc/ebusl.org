@@ -51,14 +51,16 @@ Stuff like EINTR is usually easy - just retry immediately.
 If you think about it, there are all sorts of weaknesses and oddities
 in many posix calls, that we're just used to, that could be improved.
 
-A few more examples - nearly everywhere a value of 0 means I didn't do anything,
-and a negative result is an error. There are a few interfaces (qsort comes
-to mind) where -1 is valid. Others that perhaps should return 0 - "I couldn't
-open stderr because it's mapped to null", or "I didn't write anything just now"
-don't, they consider it an error.
+A few more examples - nearly everywhere a value of 0 means I didn't do
+anything (write) OR "the call succeeded" - and a negative result is an
+error. A 1 or greater creates a handle to an opaque data type. There are
+a few interfaces (qsort comes to mind) where -1 is valid. Others that
+perhaps should return 0 - "I couldn't open stderr because it's mapped
+to null", or "I didn't write anything just now" don't, they consider
+it an error.
 
-Asynchronity is a big problem, also - I can allocate 8GBs but when I run out of
-swap, bad things happen.
+Asynchronous operations are a big problem, also - I can allocate 8GBs
+but when I run out of swap, bad things happen.
 
 Same goes for atomicity.
 
