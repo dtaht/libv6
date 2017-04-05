@@ -2165,3 +2165,11 @@ has a few things very like what I've been thinking about - capabilities,
 and ha! has a threaded architecture that actually reads thread "regs"
 
 https://fuchsia.googlesource.com/magenta/+/HEAD/docs/syscalls/thread_read_state.md
+* Separate call and data stacks
+
+The more I think about it, the idea of separate call and data stacks appeals
+more - (virtually) eliminating ROP, as one objective. ERM doesn't have much
+of a call or data stack as it is - args are passed in registers, messages
+via ringbuffers, there's a lot of jumpy code (tail recursion). and so on.
+
+But I wanted to stick with C as a base.
