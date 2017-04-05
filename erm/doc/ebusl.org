@@ -13,6 +13,9 @@ possible errors encoded into it. There's a side function that can turn
 that new value into the moral equivalent of errno and look it up, but
 that's it.
 
+There's a somewhat misplaced errno related rant in the "traps" section
+of this document.
+
 *** errnos are (too) stable
 
 The number of error returns in POSIX is standard and stable and hasn't
