@@ -4,11 +4,15 @@ It is not so much that the original chip is all that capable. It has 16 cores,
 that have 32k bytes each. The next generation has 1024 cores, with 64KB each -
 64MB of memory! which is an amount far larger than most routers have today.
 
+What follows are some notes to myself in order to more deeply understand
+the architecture.
+
 * Memory Map
 
 [[https://www.parallella.org/wp-content/uploads/2015/02/1.png]][memory]]
 
-Each core has a local map
+Each core has a local map.
+
 Each individual core has four internal
 memory banks starting at all 0000s,
 2000, 4000, 6000, and at the very top,
@@ -18,40 +22,38 @@ I've been trying to figure out if you can write the registers directly.
 
 Then, each core is mapped into memory on
 0x00100000, 0x00200000 so you can write another core's 
-memory given thse things
+memory given these things
 
 THEN, there's the map to main memory,
 which starts at 
 
-*
-rrupt Vector
-Table
+* Interrupt Vector Table
 0x00 0x3F 64 Local Memory
+
+* Local memory banks
 Bank 0 0x40 0x1FFF 8KB-64 Local Memory Bank
 Bank 1 0x2000 0x3FFF 8KB Local Memory Bank
 Bank 2 0x4000 0x5FFF 8KB Local Memory Bank
 Bank 3 0x6000 0x7FFF 8KB Local Memory Bank
-Reserved 0x8000 0xEFFFF n/a Reserved for future
-memory expansion
-Memory Mapped
-Registers
+* Reserved memory
+Reserved 0x8000 0xEFFFF n/a Reserved for future memory expansion
+
+* Memory Mapped Registers
 0xF0000 0xF07FF 2048 Memory mapped
 register access
 Reserved 0xF0800 0xFFFFF n/a N/A
 
+Then each CPU is indexed off of the next 6 bits
+
 * Atomic operations
+
+Only a local test and set operation is available.
 
 ** Local memory is per cpu
 
-All read and write transactions from local memory follow a strong memory-order model. This
-means that the transactions complete in the same order in which they were dispatched by the
-program sequencer.
+All read and write transactions from local memory follow a strong memory-order model. This means that the transactions complete in the same order in which they were dispatched by the program sequencer.
 
-* Read vs write speed. 
-
-
-* -ffunction-sections puts eats function
-in it's own section
+* -ffunction-sections puts each function in it's own section
 
 I've read it's not supported right now, but AFAICT, only data access use absolute address and the JR/JALR instructions which can be avoided by ' -mshort-calls ', so it might be doable to replace every function by a 'stub' that:
 
@@ -59,13 +61,12 @@ I've read it's not supported right now, but AFAICT, only data access use absolut
 
 https://github.com/coduin/epiphany-bsp/wiki/Memory-on-the-parallella
 
-* Dual issue
+* Dual issue for integer if you configure it that way
 
 Secondary Signed Integer Instructions
 The basic floating point instruction set can be substituted with a set of signed integer instructions
 by setting the appropriate mode bits in the CONFIG register [19:16]. These instructions use the
-same opcodes as the floating-point instructions and include: IADD, ISUB, IMUL, IMADD,
-IMSUB.
+same opcodes as the floating-point instructions and include: IADD, ISUB, IMUL, IMADD, IMSUB.
 
 * Interrupt table
 
@@ -81,8 +82,25 @@ DMA1 Interrupt 7 0x1C Local DMA channel-1 finished data transfer
 WAND Interrupt 8 0x20 Wired-AND signal interrupt
 User Interrupt 9 (lowest) 0x24 Software generated user interrupt
 
+I guess you can use up to 0x40 interrupts in a later version of the
+architecture - So you can soft interrupt 10,11,12,13,14,15 - but the
+defined width of the ILAT register is only 10 bits, so... no.
 
-* Fused multiply/add
+Can you send that interrupt elsewhere? It looks like you can write
+the interrupt bit from another cpu.
+
+When does the memfault happen? Can it happen to invalid ram within the
+per cpu memory map?
+
+** Status 19:16 -
+
+0100=unimplemented 
+0001=swi
+0010=unaligned
+0101=illegal access
+0011=fpu exception
+
+* Fused integer multiply/add
 
 IMADD
 
@@ -96,14 +114,14 @@ IMADD
 7 = initiates system call
 In the case of TRAP 7, a system call is initiated. In this case, 
 
+* config register
 
 [19:17] ARITHMODE Selects the operating mode of the data path unit.(“FPU”)
 000 = 32bit IEEE float point mode
 100 = 32bit signed integer mode
 All other modes reserved.
 
-
-*
+* dma messaging
 
 Attach a special message to the last data item of a DMA
 channel transfer. If the destination address is local memory,
@@ -111,7 +129,7 @@ then the transition to DMA_IDLE only occurs after the last
 data item has returned. If the destination address is in
 another core, then a message interrupt (IRQ5) is sent along 
 
-*
+* More elaborate memory notes
 
 https://github.com/coduin/epiphany-bsp/wiki/Memory-on-the-parallella
 
@@ -119,7 +137,7 @@ https://github.com/coduin/epiphany-bsp/wiki/Memory-on-the-parallella
 
 0x8e000000 - 0x8fffffff
 
-* Speeds (Megabytes/sec)
+* Read vs write speed in various circumstances (Megabytes/sec)
 
 Testing SRAM speed.
 Host -> SRAM: Write speed =   14.62 MBps
@@ -135,5 +153,6 @@ Core <- SRAM: Read speed  =  406.80 MBps   clocks = 11523
 Core -> ERAM: Write speed =  235.88 MBps   clocks = 19872
 Core <- ERAM: Read speed  =   85.99 MBps   clocks = 54514
 
-
 https://arxiv.org/pdf/1608.03545.pdf
+
+* Used in scheduling grids of cpus - hilbert curves
