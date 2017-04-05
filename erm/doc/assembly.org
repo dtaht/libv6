@@ -1,0 +1,73 @@
+* Exploring modern assembly
+
+I seem to want to be writing efficient assembly code, and perhaps it's
+time I sit down with the essential data structures and figure out the
+best way to move them around, fast. 
+
+- What is the best way to do message passing in a modern architecture
+with lots of registers?
+- How can you cope with atomic operations?
+- How can you upgrade to DMA when appropriate?
+- What sort of useful work can you do while DMA is going on?
+
+A mental problem I seem to have had is that I seem to have 68000 and
+x86 addressing modes stuck in my head, so I'd assumed certain things
+about how the assembly would come out, that didn't, in a modern risc
+architecture.
+
+Since I am trying to use indexes throughout, rather than pointers,
+everything is an offset from the base pointer register to start with.
+
+So for example:
+
+ip6addresses = baseptr+4 
+
+And has a stride of 16 bytes. So to walk that table, looks like this:
+
+loop: load wide, INDIRECT(baseptr+4) + index*16
+do stuff
+index++
+goto loop;
+
+...
+
+And mentally I'd had old style DSP-like loop and x86 c registers doing
+the looping - with interrupts disabled so it was garunteed to complete
+in fixed time.
+
+Oops.
+
+...
+
+Anyway, it looks more like this:
+
+newbase = load(baseptr+4)
+newidx = index * 16
+loop: load(newbase + newidx)
+      do stuff
+      index++
+      newidx = index * 16
+      goto loop:
+
+But it is different than that, in that it's a 16 byte quantity. If you don't 
+have 16 byte registers in the first place. 
+
+what actually happens is more like:
+
+* ARM
+
+* Parallella
+** Dual issue - but the load store unit eats the ALU
+
+One thing I was not aware of was that the load/store unit in the parallella eats
+the ALU - no integer math is possible on that side while the load is 
+in progress.
+
+// These are 16 bit wide instructions tho
+
+ldrd R0, [R7], R6; Load R0 from the address in R7, add R6 - say r6 is 8
+ldrd R2, [R7], R6; This would load an ipv6 address
+
+With the fused imul add, we could instead
+
+ldrd R0, 
