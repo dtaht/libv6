@@ -53,7 +53,8 @@ in many posix calls, that we're just used to, that could be improved.
 
 A few more examples - nearly everywhere a value of 0 means I didn't do
 anything (write) OR "the call succeeded" - and a negative result is an
-error. A 1 or greater creates a handle to an opaque data type. There are
+error. Often, a 1 or greater is a handle to an opaque data type, and
+ghu help you if you pass that handle to the wrong function. There are
 a few interfaces (qsort comes to mind) where -1 is valid. Others that
 perhaps should return 0 - "I couldn't open stderr because it's mapped
 to null", or "I didn't write anything just now" don't, they consider
