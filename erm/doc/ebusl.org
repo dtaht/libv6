@@ -77,7 +77,9 @@ Other stuff may just inline an invalid instruction (which gets
 trapped) - or call trap directly with an offset.
 
 I've thought about killing NULL this way, also, but try to restrain
-myself. Watch out! I STILL MAY! (more likely, try to fold in NIL)
+myself. Watch out! I STILL MAY! It is more likely, that I'll try to
+fold in NIL, and NAR (not a result) - as a more comprehensive four valued
+logic.
 
 I totally realize that this change makes erm code incompatible with 
 everything else, but there are already other things like a separate call
