@@ -35,8 +35,9 @@ about the history of errno, I think it is done the way it is because:
 
 And often are a poor map to what actually went wrong. Take sched_yield
 as one example. In a hard(er) real time system, it means "put me to
-the back of the run queue". But that's not what happens when called as
-a regular Linux process.
+the back of the run queue". But that's not what happens when called
+within regular Linux process, nor does the call actually return a
+value that said - yes - some other thread or process ran.
 
 What you do with an EAGAIN errno varies depending on your underlying
 system architecture. EWOULDBLOCK (What it is currently mapped into),
@@ -46,6 +47,20 @@ helpful - "out of cpu?", and in more than a few cases ENOSPC would be a
 better return than a mere EAGAIN.
 
 Stuff like EINTR is usually easy - just retry immediately.
+
+If you think about it, there are all sorts of weaknesses and oddities
+in many posix calls, that we're just used to, that could be improved.
+
+A few more examples - nearly everywhere a value of 0 means I didn't do anything,
+and a negative result is an error. There are a few interfaces (qsort comes
+to mind) where -1 is valid. Others that perhaps should return 0 - "I couldn't
+open stderr because it's mapped to null", or "I didn't write anything just now"
+don't, they consider it an error.
+
+Asynchronity is a big problem, also - I can allocate 8GBs but when I run out of
+swap, bad things happen.
+
+Same goes for atomicity.
 
 *** errno was designed to work with down to 8 bit systems
 
@@ -78,8 +93,8 @@ trapped) - or call trap directly with an offset.
 
 I've thought about killing NULL this way, also, but try to restrain
 myself. Watch out! I STILL MAY! It is more likely, that I'll try to
-fold in NIL, and NAR (not a result) - as a more comprehensive four valued
-logic.
+fold in NIL, and NAR (not a result) - as a more comprehensive four
+valued logic.
 
 I totally realize that this change makes erm code incompatible with 
 everything else, but there are already other things like a separate call
