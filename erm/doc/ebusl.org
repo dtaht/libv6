@@ -261,6 +261,19 @@ has quite a few compelling advantages - it's small. It's used a
 lot. It's the default lib on the parallella.
 
 but it is not anywhere near as feature-full or posix compliant as musl.
+** Linux
+
+I can say, without cynicism, that Linux is the greatest C library ever
+invented.  There are so many things that are easier to do within the
+linux kernel than in userspace, that the concept of folding in
+concepts from erm into into the kernel instead always remains
+tempting.
+
+However - although I keep thinking I'll utilize librcu or something
+like it at some point, getting at advanced processor features (like
+the SSE registers) tends towards being suited only for bulky, higher
+latency operations there. Other forms of hardware assistance are also
+hard to do.
 
 ** Other libcs
 
