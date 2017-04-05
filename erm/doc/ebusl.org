@@ -13,7 +13,7 @@ possible errors encoded into it. There's a side function that can turn
 that new value into the moral equivalent of errno and look it up, but
 that's it.
 
-There's a somewhat misplaced errno related rant in the "traps" section
+There's an increasingly misplaced errno related rant in the "traps" section
 of this document.
 
 *** errnos are (too) stable
@@ -31,7 +31,7 @@ about the history of errno, I think it is done the way it is because:
 - twos complement arithmetic had not swept the world
 - it seemed like a good idea at the time
 
-*** the errnos are weakly defined and depend on context
+*** The errnos are weakly defined and depend on context
 
 And often are a poor map to what actually went wrong. Take sched_yield
 as one example. In a hard(er) real time system, it means "put me to
@@ -47,15 +47,11 @@ better return than a mere EAGAIN.
 
 Stuff like EINTR is usually easy - just retry immediately.
 
-Bugs accumulate in the gaps between interfaces, and work on improving
-the rigor of those interface standards in face of changing reality is
-often needed.
-
 *** errno was designed to work with down to 8 bit systems
 
 Where today we are moving to 64 bits and beyond.
 
-*** TODO kill the errno
+*** TODO Kill the errno
 
 It looks like I have to re-org wrappers around something like 80 linux
 syscalls to do things this way, and it's kind of my hope to use a
@@ -87,11 +83,19 @@ I totally realize that this change makes erm code incompatible with
 everything else, but there are already other things like a separate call
 and data stack that do that, too.
 
+There are only 277 direct references to errno in musl.
+
+** A better future for errnos?
+
 At the very least, seeing the range of errnos start to evolve again in
 mainline posix to better represent new realities would be a goodness,
 I think. Instead of arguing about which posix errno to return in the
 case of ambiguity, we'd be trying to resolve the ambiguity with a new
-error definition.
+error definition in posix.
+
+Bugs accumulate in the gaps between interfaces, and work on improving
+the rigor and expressiveness of those interface standards in face of
+changing reality is increasingly needed.
 
 ** Weirder threads
 
