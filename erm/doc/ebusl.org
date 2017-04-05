@@ -77,7 +77,7 @@ Other stuff may just inline an invalid instruction (which gets
 trapped) - or call trap directly with an offset.
 
 I've thought about killing NULL this way, also, but try to restrain
-myself. Watch out! I STILL MAY!
+myself. Watch out! I STILL MAY! (more likely, try to fold in NIL)
 
 I totally realize that this change makes erm code incompatible with 
 everything else, but there are already other things like a separate call
