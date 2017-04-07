@@ -34,7 +34,7 @@ GENVERSION = $(TOOLS)/generate-version.sh
 OMIT_REGS += -ffixed-q11
 OMIT_REGS += -ffixed-q10
 
-CFLAGS  = -std=gnu11 -Os -Wall -L../../lib $(INCLUDES) -ftree-vectorize -DHAVE_NATIVE_C11_THREADS $(OMIT_REGS) $(NNATIVE)
+CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES) -ftree-vectorize -DHAVE_NATIVE_C11_THREADS $(OMIT_REGS) $(NNATIVE)
 LDFLAGS = -lrt
 
 OBJDIR_DEBUG = $(CC)

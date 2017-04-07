@@ -340,7 +340,9 @@ register volatile u32 v4_stuff2 asm("q11") VECTOR(16);
 //register volatile int32x4_t v4_stuff asm("q10") VECTOR(16) ;
 //register volatile int32x4_t v4_stuff2 asm("q11") VECTOR(16);
 
-int32x4_t parse_kernel_route4_neon(struct rtmsg* rtm, int len)
+int32x4_t parse_kernel_route4_neon(struct rtmsg* rtm, int len) COLD;
+
+int32x4_t parse_kernel_route4_neon(struct rtmsg* rtm, int len) 
 {
   int32x4_t addrs = {0};
   int32x4_t metric = {0};
