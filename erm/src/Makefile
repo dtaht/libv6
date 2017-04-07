@@ -77,7 +77,7 @@ ARCH = $(shell uname -m)
 
 # https://software.intel.com/sites/default/files/m/4/8/8/2/a/31848-CompilerAutovectorizationGuide.pdf
 
-NNATIVE = -mfpu=neon -DHAVE_NEON
+NNATIVE = -mfpu=neon -DHAVE_NEON -flax-vector-conversions
 
 ifeq ($(CC),arm-linux-gnueabhf-gcc-5)       # arm cross compiler
 	SRCS += knetlink.c
