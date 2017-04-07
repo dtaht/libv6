@@ -31,7 +31,10 @@ VERSION = version.h
 INCLUDES = -I$(INC) -I../../includes # -I/usr/include/linux -I/usr/include/asm
 GENVERSION = $(TOOLS)/generate-version.sh
 
-CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES) -ftree-vectorize -DHAVE_NATIVE_C11_THREADS
+OMIT_REGS += -ffixed-q11
+OMIT_REGS += -ffixed-q10
+
+CFLAGS  = -std=gnu11 -Os -Wall -L../../lib $(INCLUDES) -ftree-vectorize -DHAVE_NATIVE_C11_THREADS $(OMIT_REGS) $(NNATIVE)
 LDFLAGS = -lrt
 
 OBJDIR_DEBUG = $(CC)
@@ -75,6 +78,11 @@ ARCH = $(shell uname -m)
 # https://software.intel.com/sites/default/files/m/4/8/8/2/a/31848-CompilerAutovectorizationGuide.pdf
 
 NNATIVE = -mfpu=neon -DHAVE_NEON
+
+ifeq ($(CC),arm-linux-gnueabhf-gcc-5)       # arm cross compiler
+	SRCS += knetlink.c
+	CFLAGS += $(NNATIVE) $(OMIT_REGS)              # tell it we have neon
+endif
 
 ifeq ($(CC),arm-linux-gnueabhf-gcc)       # arm cross compiler
 	CFLAGS += $(NNATIVE)              # tell it we have neon
@@ -132,7 +140,10 @@ logger.dbg: logger.c $(DLIB) io.o
 #	tcpdump -r $(FILT)/wtf.cap -dd -F $< > $@
 
 %.s: %.c
-	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -fverbose-asm -S $< -o $@
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) -fverbose-asm -S $< -c -o $@
+
+ksock.s: ksock.c
+	$(CC) $(CFLAGS) $(EXTRA_DEFINES) $(NNATIVE) -flax-vector-conversions -fverbose-asm -S $< -c -o $@
 
 # Construct objects and added SRCS
 
@@ -314,6 +325,9 @@ aarch64:
 
 arm:
 	$(MAKE) CC=arm-linux-gnueabihf-gcc $(filter-out arm,$@)
+
+arm8:
+	$(MAKE) CC=arm-linux-gnueabihf-gcc-5 $(filter-out arm8,$@)
 
 parallella:
 	$(MAKE) CC=e-gcc $(filter-out parallella,$@)

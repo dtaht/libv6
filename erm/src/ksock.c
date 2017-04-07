@@ -334,49 +334,50 @@ u32 onemasks[5][4] =
  
  */
 
-register volatile u32 v4_stuff asm("q10") VECTOR(16) ;
-register volatile u32 v4_stuff2 asm("q11") VECTOR(16);
+// register volatile u32 v4_stuff asm("q10") VECTOR(16) ;
+// register volatile u32 v4_stuff2 asm("q11") VECTOR(16);
 
-void parse_kernel_route4_neon(struct rtmsg* rtm, int len)
+int32x4_t parse_kernel_route4_neon(struct rtmsg* rtm, int len)
 {
-  usimd addrs = {0};
-  usimd metric = {0};
+  int32x4_t addrs = {0};
+  int32x4_t metric = {0};
 
   len -= NLMSG_ALIGN(sizeof(*rtm));
   struct rtattr* rta = RTM_RTA(rtm);
 
-  vld1q_lane_s32(&rtm->rtm_protocol, metric,1);
-  vld1q_lane_s32(&rtm->rtm_table, metric,3);
+  vld1q_lane_s32((int *) &rtm->rtm_protocol, metric,1);
+  vld1q_lane_s32((int *) &rtm->rtm_table, metric,3);
 
   while(RTA_OK(rta, len)) {
     switch(rta->rta_type) {
     case RTA_DST:
-      vld1q_lane_s16(&rtm->rtm_dst_len,metric,0);
-      vld1q_lane_s32((int*)RTA_DATA(rta),addrs,0);
+      //      vld1q_lane_s16((short *)&rtm->rtm_dst_len,metric,0);
+      vld1q_lane_s32(RTA_DATA(rta),addrs,0);
       break;
     case RTA_SRC:
-      vld1q_lane_s16(&rtm->rtm_src_len,metric,1);
-      vld1q_lane_s32((int*)RTA_DATA(rta),addrs,1);
+      // vld1q_lane_s16((short *)&rtm->rtm_src_len,metric,1);
+      vld1q_lane_s32(RTA_DATA(rta),addrs,1);
       break;
     case RTA_GATEWAY:
-      vld1q_lane_s32((int*)RTA_DATA(rta),addrs,2);
+      vld1q_lane_s32(RTA_DATA(rta),addrs,2);
       break;
     case RTA_OIF:
-      vld1q_lane_s32((int*)RTA_DATA(rta),addrs,3);
+      vld1q_lane_s32(RTA_DATA(rta),addrs,3);
       break;
     case RTA_PRIORITY:
-      vld1q_lane_s32((int*)RTA_DATA(rta),metric,2);
+      vld1q_lane_s32(RTA_DATA(rta),metric,2);
       break;
     case RTA_TABLE:
-      vld1q_lane_s32((int*)RTA_DATA(rta),metric,3);
+      vld1q_lane_s32(RTA_DATA(rta),metric,3);
       break;
     default:
       break;
     }
     rta = RTA_NEXT(rta, len);
   }
-  v4_stuff = addrs;
-  v4_stuff2 = metric;
+  // v4_stuff = addrs;
+  // v4_stuff2 = metric;
+  return addrs;
 }
 
 #endif
