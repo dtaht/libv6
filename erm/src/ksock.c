@@ -348,7 +348,7 @@ int32x4_t parse_kernel_route4_neon(struct rtmsg* rtm, int len)
   int32x4_t metric = {0};
 
   len -= NLMSG_ALIGN(sizeof(*rtm));
-  struct rtattr* volatile rta = RTM_RTA(rtm);
+  struct rtattr* rta = RTM_RTA(rtm);
 
   metric = vld1q_lane_s32((int *) &rtm->rtm_protocol, metric,1);
   metric = vld1q_lane_s32((int *) &rtm->rtm_table, metric,3);
