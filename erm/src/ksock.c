@@ -198,39 +198,45 @@ typedef union {
   u32 a[8];
 } V4;
 
-register u32 v4_stuff VECTOR(16) asm("xmm9");
-register u32 v4_stuff2 VECTOR(16) asm("xmm10");
+typedef union {
+  u32 p VECTOR(16);
+  u32 a[4];
+} V21;
+
+register u32 v4_stuff asm("xmm9") VECTOR(16) ;
+register u32 v4_stuff2 asm("xmm10") VECTOR(16);
+
 
 void parse_kernel_route_vta4(struct rtmsg* rtm, int len)
 {
-  V4 route;
-  route.p = v4_stuff;
-  route.a[7] = rtm->rtm_table;
+  V21 route;
+  V21 route2;
+  route2.a[3] = rtm->rtm_table;
   struct rtattr* rta = RTM_RTA(rtm);
   len -= NLMSG_ALIGN(sizeof(*rtm));
-  route.a[6] = rtm->rtm_protocol;
+  route2.a[2] = rtm->rtm_protocol;
 
   while(RTA_OK(rta, len)) {
     switch(rta->rta_type) {
     case RTA_DST:
-      route.a[3] |= rtm->rtm_dst_len << 16 ;
+      route2.a[3] |= rtm->rtm_dst_len << 16 ;
       route.a[vdst] = *(int*)RTA_DATA(rta);
       break;
     case RTA_SRC:
-      route.a[3] |= rtm->rtm_src_len;
+      route2.a[3] |= rtm->rtm_src_len;
       route.a[vsrc] = *(int*)RTA_DATA(rta);
       break;
     case RTA_GATEWAY:
       route.a[vvia] = *(int*)RTA_DATA(rta);
       break;
     case RTA_OIF:
-      route.a[4] = *(int*)RTA_DATA(rta);
+      route2.a[0] = *(int*)RTA_DATA(rta);
       break;
     case RTA_PRIORITY:
-      route.a[5] = *(int*)RTA_DATA(rta);
+      route2.a[1] = *(int*)RTA_DATA(rta);
       break;
     case RTA_TABLE:
-      route.a[7] = *(int*)RTA_DATA(rta);
+      route2.a[3] = *(int*)RTA_DATA(rta);
       break;
     default:
       break;
@@ -238,6 +244,7 @@ void parse_kernel_route_vta4(struct rtmsg* rtm, int len)
     rta = RTA_NEXT(rta, len);
   }
   v4_stuff = route.p;
+  v4_stuff2 = route2.p;
 }
 
 
