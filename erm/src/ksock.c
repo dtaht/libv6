@@ -191,6 +191,8 @@ v4route parse_kernel_route_rta4(struct rtmsg* rtm, int len, v4route route)
   return route;
 }
 
+#ifndef HAVE_NEON
+
 enum { vvia, vsrc, vdst, vplens };
 
 typedef union {
@@ -205,7 +207,6 @@ typedef union {
 
 register u32 v4_stuff asm("xmm9") VECTOR(16) ;
 register u32 v4_stuff2 asm("xmm10") VECTOR(16);
-
 
 void parse_kernel_route_vta4(struct rtmsg* rtm, int len)
 {
@@ -299,6 +300,86 @@ void parse_kernel_route_ivta4(struct rtmsg* rtm, int len)
   f1.sl = sl;
 }
 
+u32 onemasks[5][4] =
+  {
+  { -1, -1, -1, -1 },
+  { 0, 0, 0, -1 },
+  { 0, 0, -1, 0 },
+  { 0, -1, 0, 0 },
+  { -1, 0, 0, 0 }
+};
+
+#endif
+
+#ifdef HAVE_NEON
+/*
+
+ What I basically want is to skip enregisterization entirely. loading
+ an individual lane directly from the possibly unaligned
+ pointer. These are all 32 bit values being folded into two 128 bit
+ registers. So I load a temporary in with all other bits
+ cleared. andnot or
+
+ loadhi
+ loadlow
+
+ OR:
+
+ Hmm. I could just load up 8 128 bit registers and then or them together
+ at the end.
+
+ or, in the case of neon, 16 D registers, then to Q registers...
+
+ Nah, I can do it with load lane on neon and *perfectly* fill the pipeline
+ 
+ */
+
+register u32 v4_stuff asm("q10") VECTOR(16) ;
+register u32 v4_stuff2 asm("q11") VECTOR(16);
+
+void parse_kernel_route4_neon(struct rtmsg* rtm, int len)
+{
+  usimd addrs = {0};
+  usimd metric = {0};
+
+  len -= NLMSG_ALIGN(sizeof(*rtm));
+  struct rtattr* rta = RTM_RTA(rtm);
+
+  vld1q_lane_s32(&rtm->rtm_table, metric,1);
+  vld1q_lane_s32(&rtm->rtm_protocol, metric,2);
+
+  while(RTA_OK(rta, len)) {
+    switch(rta->rta_type) {
+    case RTA_DST:
+      vld1q_lane_s16(&rtm->rtm_dst_len,addrs,0);
+      vld1q_lane_s32(*(int*)RTA_DATA(rta),addrs,0);
+      break;
+    case RTA_SRC:
+      vld1q_lane_s16(&rtm->rtm_src_len,addrs,1);
+      vld1q_lane_s32(*(int*)RTA_DATA(rta),addrs,1);
+      break;
+    case RTA_GATEWAY:
+      vld1q_lane_s32(*(int*)RTA_DATA(rta),addrs,2);
+      break;
+    case RTA_OIF:
+      vld1q_lane_s32(*(int*)RTA_DATA(rta),addrs,3);
+      break;
+    case RTA_PRIORITY:
+      vld1q_lane_s32(*(int*)RTA_DATA(rta),metric,0);
+      break;
+    case RTA_TABLE:
+      vld1q_lane_s32(*(int*)RTA_DATA(rta),metric,1);
+      break;
+    default:
+      break;
+    }
+    rta = RTA_NEXT(rta, len);
+  }
+  v4_stuff = addrs;
+  v4_stuff2 = addrs;
+}
+
+#endif
 
 #ifdef DEBUG_MODULE
 int main() {
