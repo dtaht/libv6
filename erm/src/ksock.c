@@ -384,47 +384,48 @@ int32x4_t parse_kernel_route4_neon(struct rtmsg* rtm, int len)
 // like it should be generating loads
 // So I'm going to rip out everything complex looking
 // and see what happens. Later
+
+struct test;
+
+struct test {
+  u32 rta_type;
+  s32 data;
+  struct test *next;
+} test;
+
   
-int32x4_t simpler_kernel_route4_neon(struct rtmsg* rtm, int len)
+int32x4_t simpler_kernel_route4_neon(struct test* rtm, int len)
 {
   int32x4_t addrs = {0};
   int32x4_t metric = {0};
-
-  len -= NLMSG_ALIGN(sizeof(*rtm));
-  struct rtattr* volatile rta = RTM_RTA(rtm);
-
-  vld1q_lane_s32((int *) &rtm->rtm_protocol, metric,1);
-  vld1q_lane_s32((int *) &rtm->rtm_table, metric,3);
-
-  while(RTA_OK(rta, len)) {
+  struct test *rta = rtm;
+   do {
     switch(rta->rta_type) {
     case RTA_DST:
       //      vld1q_lane_s16((short *)&rtm->rtm_dst_len,metric,0);
-      vld1q_lane_s32(rta,addrs,0);
+      addrs = vld1q_lane_s32(&rta->data,addrs,0);
       break;
     case RTA_SRC:
       // vld1q_lane_s16((short *)&rtm->rtm_src_len,metric,1);
-      vld1q_lane_s32(RTA_DATA(rta),addrs,1);
+      addrs = vld1q_lane_s32(&rta->data,addrs,1);
       break;
     case RTA_GATEWAY:
-      vld1q_lane_s32(RTA_DATA(rta),addrs,2);
+      addrs = vld1q_lane_s32(&rta->data,addrs,2);
       break;
     case RTA_OIF:
-      vld1q_lane_s32(RTA_DATA(rta),addrs,3);
+      addrs = vld1q_lane_s32(&rta->data,addrs,3);
       break;
     case RTA_PRIORITY:
-      vld1q_lane_s32(RTA_DATA(rta),metric,2);
+      metric = vld1q_lane_s32(&rta->data,metric,2);
       break;
     case RTA_TABLE:
-      vld1q_lane_s32(RTA_DATA(rta),metric,3);
+      metric = vld1q_lane_s32(&rta->data,metric,3);
       break;
     default:
       break;
     }
-    rta = RTA_NEXT(rta, len);
-  }
-  // v4_stuff = addrs;
-  // v4_stuff2 = metric;
+   } while(rta = rta->next);
+
   return addrs;
 }
 
