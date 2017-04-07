@@ -247,6 +247,58 @@ void parse_kernel_route_vta4(struct rtmsg* rtm, int len)
   v4_stuff2 = route2.p;
 }
 
+typedef struct {
+  u64 tp;
+  u64 sd;
+  u64 sl;
+  u64 ls;
+} f;
+
+static volatile f f1;
+
+void parse_kernel_route_ivta4(struct rtmsg* rtm, int len)
+{
+  u64 tp = rtm->rtm_table;
+  u64 sd = 0;
+  u64 sl = 0;
+  u64 ls = 0;
+  struct rtattr* rta = RTM_RTA(rtm);
+  len -= NLMSG_ALIGN(sizeof(*rtm));
+  tp |= ((u64) rtm->rtm_protocol) << 32;
+
+  while(RTA_OK(rta, len)) {
+    switch(rta->rta_type) {
+    case RTA_DST:
+      sl = rtm->rtm_dst_len << 16 | (sl &  0xFFFFFFFFLL);
+      sd = *(int*)RTA_DATA(rta) | (  sd & ~0xFFFFFFFFLL);
+      break;
+    case RTA_SRC:
+      sl = rtm->rtm_src_len | (sl &                     ~0xFFFFFFFFLL);
+      sd = (((u64) *(int*)RTA_DATA(rta)) << 32) | (sd & ~0xFFFFFFFFLL);
+      break;
+    case RTA_GATEWAY:
+      ls = *(int*)RTA_DATA(rta) | (ls &                 ~0xFFFFFFFFLL);
+      break;
+    case RTA_OIF:
+      ls = (((u64) *(int*)RTA_DATA(rta)) << 32) | (ls & 0xFFFFFFFFLL);
+      break;
+    case RTA_PRIORITY:
+      tp = ((u64) *(int*)RTA_DATA(rta)) << 32 | (tp & 0xFFFFFFFFLL);
+      break;
+    case RTA_TABLE:
+      tp = *(int*)RTA_DATA(rta) | (tp & ~0xFFFFFFFFLL);
+      break;
+    default:
+      break;
+    }
+    rta = RTA_NEXT(rta, len);
+  }
+  f1.ls = ls;
+  f1.tp = tp;
+  f1.sd = sd;
+  f1.sl = sl;
+}
+
 
 #ifdef DEBUG_MODULE
 int main() {
