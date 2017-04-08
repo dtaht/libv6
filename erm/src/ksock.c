@@ -385,15 +385,20 @@ static ip6_addr *addrs6_table = 0;
 static int size_6addrs = 0;
 static int used_6addrs = 0;
 
-#define VEQ(a,b) !(is_not_zero(veorq_u32(a,b)))
-#define VNEQ(a,b) (is_not_zero(veorq_u32(a,b)))
-
-
 static inline u32 is_not_zero(uint32x4_t v)
 {
     uint32x2_t tmp = vorr_u32(vget_low_u32(v), vget_high_u32(v));
     return vget_lane_u32(vpmax_u32(tmp, tmp), 0);
 }
+
+#define VEQ(a,b) !(is_not_zero(veorq_u32(a,b)))
+#define VNEQ(a,b) (is_not_zero(veorq_u32(a,b)))
+
+// WIP - want to grossly check for inequality
+
+// #define TVNEQ(a,b,c,d) (is_not_zero(vorr_u32((vorr_u32(veorq(a,b),veorq(a,c)),veorq(a,d)))))
+
+// #define PEQ(a,b,c,d) vpmin?
 
 //static inline size_t v6_nequal (const unsigned char *p1,
 //				const unsigned char *p2) {
@@ -454,6 +459,7 @@ v6_route_index brute_insert_v6_route(ip6_route a)
 // we can make this more efficient by cutting the compares in the loop
 // as we acquire hits and also checking for joint inequality rather
 // than equality before backtracking to find equality.
+// Maybe.
 
 // switch(haves) {
 // case none:
@@ -484,7 +490,8 @@ v6_route_index brute_insert_v6_route(ip6_route a)
 
 // thhis does all the work of the parallel compares for me in
 // in the compiler, but for no good reason, stashes
-// all the vectors on the stack
+// all the vectors on the stack on the way in.
+
 v6_route_index brute2_insert_v6_route(ip6_route a)
 {
   int i = 0;
@@ -496,21 +503,29 @@ v6_route_index brute2_insert_v6_route(ip6_route a)
 //  }
 
 // we can make this more efficient by cutting the compares in the loop
-// as we acquire hits and also checking for joint inequality rather
+// with an unroll
+// as we acquire hits and also checking for the most common
+// joint inequality rather
 // than equality before backtracking to find equality.
 // However the compiler IS generating this out of order for me...
+// But we're totally not filling the pipeline
 
 // switch(haves) {
 // case none:
-int src, dst, via;
-src=dst=via=0;
-  ip6_addr temp;
+  int src, dst, via;
+  src=dst=via=0;
   for(; i < used_6addrs; i++) {
-      temp = addrs6_table[i];
-      if( VEQ(temp,a.src) ) src = i;
-      if( VEQ(temp,a.dst) ) dst = i;
-      if( VEQ(temp,a.via) ) via = i;
+      v4_stuff = addrs6_table[i]; // compiler STILL insists on hitting the stack
+      if( VEQ(a.src,v4_stuff) ) src = i;
+      if( VEQ(a.dst,v4_stuff) ) dst = i;
+      if( VEQ(a.via,v4_stuff) ) via = i;
   }
+
+//  for(; i < used_6addrs; i++) {
+//      if( VEQ(addrs6_table[i],a.src) ) src = i;
+//      if( VEQ(addrs6_table[i],a.dst) ) dst = i;
+//      if( VEQ(addrs6_table[i],a.via) ) via = i;
+//  }
 
   if(i == used_6addrs) {
     if(++used_6addrs > size_6addrs - 4) {
