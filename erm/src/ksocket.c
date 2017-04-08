@@ -7,46 +7,42 @@
 
 #include "ksocket.h"
 
-// If we aren't doing ipv4 or ipv6, don't do that
-union {
-};
-
 // The kernel keeps separate tables for everything.
 // We do the same to reduce head of line blocking
 
-typedef struct {
-  v6route, v6addr, v4route, v4addr, link
-} kernel_sockets_t;
+enum ksockets { v6rnotify, v6anotify, v4rnotify, v4anotify, linknotify, rulenotify, MAXNOTIFY };
 
-kernel_sockets_t kernel_setup_socket(int setup)
+int socks[] = { RTNLGRP_IPV6_ROUTE, RTNLGRP_IPV6_IFADDR,
+		RTNLGRP_IPV4_ROUTE, RTNLGRP_IPV4_IFADDR,
+		RTNLGRP_LINK,RTNLGRP_RULE };
+
+typedef struct {
+  int status:MAXNOTIFY;
+  int sockets[MAXNOTIFY];
+} kernel_sockets;
+
+
+kernel_sockets kernel_setup_socket(kernel_sockets k)
 {
   int rc = 0;
-  kernel_sockets_t k;
-  if(setup) {
-    rc |= netlink_socket(&k.link, RTNLGRP_LINK);
-    rc |= netlink_socket(&k.v6route, RTNLGRP_IPV6_ROUTE);
-    rc |= netlink_socket(&k.v6addr, RTNLGRP_IPV6_IFADDR);
-    rc |= netlink_socket(&k.v4route, RTNLGRP_IPV4_ROUTE);
-    rc |= netlink_socket(&k.v4addr, RTNLGRP_IPV4_IFADDR);
-
-    if(rc < 0) {
-      perror("netlink_socket(_ROUTE | _LINK | _IFADDR | _RULE)");
-      kernel_socket = -1;
-      return -1;
+  int i = 0;
+  for(; i < MAXNOTIFY; i++) {
+    if((rc = netlink_socket(&k.sockets[i],socks[i]) > 0)) {
+      k.status |= (1 << kstatus);
+    } else {
+      perror("netlink_socket failed (_ROUTE | _LINK | _IFADDR | _RULE)");
+      goto unwind;
     }
-
-    kernel_socket = nl_listen.sock;
-
-    return 1;
-
-  } else {
-
-    close(nl_listen.sock);
-    nl_listen.sock = -1;
-    kernel_socket = -1;
-
-    return 1;
   }
+  return k;
+
+ unwind:
+  for(i;i>0;i--) {
+    close(k.sockets[i-1]);
+    k.sockets[i] = 0;
+  }
+  k.status= 0;
+  return k;  
 }
 
 /* Since we have a socket for v4 and v6, we are less complicated, but we still

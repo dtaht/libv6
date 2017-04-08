@@ -446,6 +446,14 @@ typedef struct {
 } v6_route_index;
 
 // In the end this will become a merge sort of the list
+ip6_addr *realloc_v6table() COLD;
+
+ip6_addr *realloc_v6table() {
+      ip6_addr *temp = realloc((void *)addrs6_table, 2 * size_6addrs * sizeof(ip6_addr));
+      if( temp == NULL) abort() ; // out of memory
+      size_6addrs *=2;
+      return temp;
+}
 
 v6_route_index brute_insert_v6_route(ip6_route a)
 {
@@ -492,7 +500,9 @@ v6_route_index brute_insert_v6_route(ip6_route a)
 // in the compiler, but for no good reason, stashes
 // all the vectors on the stack on the way in.
 
-v6_route_index brute2_insert_v6_route(ip6_route a)
+static v6_route_index brute2_insert_v6_route(ip6_route a) HOT;
+
+static v6_route_index brute2_insert_v6_route(ip6_route a)
 {
   int i = 0;
 //  Let's live dangerously and assume this was done already
@@ -510,32 +520,29 @@ v6_route_index brute2_insert_v6_route(ip6_route a)
 // However the compiler IS generating this out of order for me...
 // But we're totally not filling the pipeline
 
+// switch(a) 
 // switch(haves) {
 // case none:
-  int src, dst, via;
-  src=dst=via=0;
-  for(; i < used_6addrs; i++) {
-      v4_stuff = addrs6_table[i]; // compiler STILL insists on hitting the stack
-      if( VEQ(a.src,v4_stuff) ) src = i;
-      if( VEQ(a.dst,v4_stuff) ) dst = i;
-      if( VEQ(a.via,v4_stuff) ) via = i;
-  }
-
+  int src = 0;
+  int dst = 0;
+  int via = 0;
 //  for(; i < used_6addrs; i++) {
-//      if( VEQ(addrs6_table[i],a.src) ) src = i;
-//      if( VEQ(addrs6_table[i],a.dst) ) dst = i;
-//      if( VEQ(addrs6_table[i],a.via) ) via = i;
+//      v4_stuff = addrs6_table[i]; // compiler STILL insists on hitting the stack
+//      if( VEQ(a.src,v4_stuff) ) src = i;
+//      if( VEQ(a.dst,v4_stuff) ) dst = i;
+//      if( VEQ(a.via,v4_stuff) ) via = i;
 //  }
 
-  if(i == used_6addrs) {
-    if(++used_6addrs > size_6addrs - 4) {
-      ip6_addr *temp2 = realloc((void *)addrs6_table, 2 * size_6addrs * sizeof(ip6_addr));
-      if( temp2 == NULL) abort() ; // out of memory
-      size_6addrs *=2;
-      addrs6_table = temp2;
-    }
-   }
-  // By definition we cannot overrun the size of the table
+  for(; i < used_6addrs; i++) {
+      if( VEQ(addrs6_table[i],a.src) ) src = i;
+      if( VEQ(addrs6_table[i],a.dst) ) dst = i;
+      if( VEQ(addrs6_table[i],a.via) ) via = i;
+  }
+
+  if(i == used_6addrs)
+    if(++used_6addrs > size_6addrs - 4) addrs6_table = realloc_v6table();
+
+// By definition we cannot overrun the size of the table
 
   if(via == 0) { addrs6_table[used_6addrs] = a.via; via = used_6addrs++; }
   if(src == 0) { addrs6_table[used_6addrs] = a.src; src = used_6addrs++; }
@@ -661,7 +668,51 @@ ip6_route parse_kernel_route6_neon(struct rtmsg* rtm, int len, ip6_route a)
     }
     rta = RTA_NEXT(rta, len);
   }
+
   return a;
+}
+
+v6_route_index parse_kernel_route6_neon_combined(struct rtmsg* rtm, int len, ip6_route a)
+{
+
+  len -= NLMSG_ALIGN(sizeof(*rtm));
+  struct rtattr* rta = RTM_RTA(rtm);
+
+  // The only thing I can't wedge in right is the protocol
+  // Perhaps that could be known apriori?
+  
+  //  a.metric = vld1q_lane_s32((int*)&rtm->rtm_protocol, a.metric, );
+
+  a.metric = vld1q_lane_s32((int*)&rtm->rtm_table, a.metric, 1);
+
+  while(RTA_OK(rta, len)) {
+    switch(rta->rta_type) {
+    case RTA_DST:
+      a.metric = vld1q_lane_s16((short*)&rtm->rtm_dst_len, a.metric, 0);
+      a.dst = vld1q_s32(RTA_DATA(rta));
+      break;
+    case RTA_SRC:
+      a.metric = vld1q_lane_s16((short*)&rtm->rtm_src_len, a.metric, 1);
+      a.src = vld1q_s32(RTA_DATA(rta));
+      break;
+    case RTA_GATEWAY:
+      a.via = vld1q_s32(RTA_DATA(rta));
+      break;
+    case RTA_OIF:
+      a.metric = vld1q_lane_s32(RTA_DATA(rta), a.metric, 3);
+      break;
+    case RTA_PRIORITY:
+      a.metric = vld1q_lane_s32(RTA_DATA(rta), a.metric, 2);
+      break;
+    case RTA_TABLE:
+      a.metric = vld1q_lane_s32(RTA_DATA(rta), a.metric, 1);
+      break;
+    default:
+      break;
+    }
+    rta = RTA_NEXT(rta, len);
+  }
+   return brute2_insert_v6_route(a);
 }
 
 int32x4_t parse_kernel_route4_neon_old(struct rtmsg* rtm, int len)

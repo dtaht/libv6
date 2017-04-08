@@ -121,6 +121,21 @@ In the case of TRAP 7, a system call is initiated. In this case,
 100 = 32bit signed integer mode
 All other modes reserved.
 
+* DMA example
+
+MOV R1, 0x8
+MOVT R1, _1D_DESCR
+; set the startup bit
+; put descriptor pointer in the upper 16 bits
+MOVTS DMA0CONFIG, R1 ; start a DMA transfer by writing to the
+; DMA config register.
+_1D_DESCR;
+.word 0x00000003; configure in master mode and enable
+.word 0x00010001; increment src/dst address by 1 byte each transaction
+.word 0x00010008; transfer has 8 transactions in a single inner loop
+.word 0x00000000; outer loop stride not used in this example
+.word 0x00002000; set source address to 0x2000, a local address
+.word 0x92000000; set destination address to an external address
 * dma messaging
 
 Attach a special message to the last data item of a DMA
