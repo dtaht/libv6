@@ -370,6 +370,78 @@ ip4_addr parse_kernel_route4_neon(struct rtmsg* rtm, int len, ip4_addr a)
   return a;
 }
 
+
+/*      All the popcount code on the web is built on benchmarking
+large streams of values. I just need 3 (via, src, dst).
+
+Pulling the core functions from the github sse-popcount repo I see
+stuff that doesn't make sense. The demo code uses up 8 regs for data,
+does them all in parallell and tosses the results out to memory, then
+uses a lookup table, so... transliterating....
+
+        uint8x16_t t0   = vcntq_u8(a.via);
+        t0 = vpaddlq_u8(t0,t0); // long pairwise add
+        t0 = vpaddlq_u16(t0,t0); // add the 16s
+//        t0 = vpaddlq_u32(t0,t0); // Add the 32s
+                                 // great, now I have two 64s
+that are essentially 2 pairs of 8 bits wide. And need to do the above
+steps yet again... twice more. Or shift them in... hmm: maybe
+
+        uint8x16_t t1   = vcntq_u8(a.src);
+        t1 = vpaddlq_u8(t1,t1); // long pairwise add
+
+        t1 = shift_u16(t1,8)
+        t1 = vpaddlq_u16(t1,t0); // add the 16s - top t1, bottom t0
+
+        uint8x16_t t2   = vcntq_u8(a.dst);
+        t2 = vpaddlq_u8(t2,t2); // long pairwise add
+        t2 = shift_u16(t2,16) // don't think I can do this
+
+        t1 = vpaddlq_u32(t2,t1) // but then we can add 32s
+
+and now I have 3 sets of 8 bit values that need to get added together
+
+        t0 = gethi(t1) ; revert to 64 bits
+        t0 = vpaddl_u8(t0,t1); 64 bit add
+
+leaving those 3 sums in the bottom half.
+
+My hope was kind of that I'd do popcnt inline rather than at the
+end of the routine. I'm under the impression I can issue, like
+16 neon instructions....
+
+... which will all basically complete by the time we get around
+to the rta routine finishing the loop. Still, basically "free".
+
+And the other thought was that I'd be flipping addresses to little
+endian to speed up comparisons later, but I'm no longer sure that
+is a win.
+
+Need to write the shortest and longest prefix match routines
+I guess.
+
+// Now what?
+
+
+...
+
+    uint32_t scalar = 0;
+    uint32_t tmp[4];
+
+    vst1q_u32(tmp, sum);
+    for (int i=0; i < 4; i++) {
+        scalar += tmp[i];
+    }
+
+    for (size_t j=0; j < k; j++) {
+        scalar += lookup8bit[ptr[j]];
+    }
+
+    return scalar;
+
+
+ */
+
 typedef struct {
   int32x4_t via;
   int32x4_t src;
