@@ -385,8 +385,28 @@ static ip6_addr *addrs6_table = 0;
 static int size_6addrs = 0;
 static int used_6addrs = 0;
 
-#define VEQ(a,b) (0) // FIXME, write the vector equality and inequality ops
-#define VNEQ(a,b) (1) // FIXME, write the vector equality and inequality ops
+#define VEQ(a,b) !(is_not_zero(veorq_u32(a,b)))
+#define VNEQ(a,b) (is_not_zero(veorq_u32(a,b)))
+
+
+static inline u32 is_not_zero(uint32x4_t v)
+{
+    uint32x2_t tmp = vorr_u32(vget_low_u32(v), vget_high_u32(v));
+    return vget_lane_u32(vpmax_u32(tmp, tmp), 0);
+}
+
+//static inline size_t v6_nequal (const unsigned char *p1,
+//				const unsigned char *p2) {
+//	uint32x4_t up1 = vld1q_u32((const unsigned int *) p1);
+//        uint32x4_t up2 = vld1q_u32((const unsigned int *) p2);
+//	return is_not_zero(veorq_u32(up1,up2));
+//}
+
+//static inline size_t v6_equal (const unsigned char *p1,
+//                                  const unsigned char *p2) {
+//	return !v6_nequal(p1,p2);
+//}
+
 
 short brute_insert_v6(ip6_addr a) {
   int i = 0;
@@ -462,26 +482,31 @@ v6_route_index brute_insert_v6_route(ip6_route a)
 }
 
 
+// thhis does all the work of the parallel compares for me in
+// in the compiler, but for no good reason, stashes
+// all the vectors on the stack
 v6_route_index brute2_insert_v6_route(ip6_route a)
 {
   int i = 0;
-  if(addrs6_table == NULL) {
-  used_6addrs = 0;
-  size_6addrs = 64;
-  addrs6_table = calloc(size_6addrs,sizeof(ip6_addr));
-  }
+//  Let's live dangerously and assume this was done already
+//  if(addrs6_table == NULL) {
+//  used_6addrs = 0;
+//  size_6addrs = 64;
+//  addrs6_table = calloc(size_6addrs,sizeof(ip6_addr));
+//  }
 
 // we can make this more efficient by cutting the compares in the loop
 // as we acquire hits and also checking for joint inequality rather
 // than equality before backtracking to find equality.
+// However the compiler IS generating this out of order for me...
 
 // switch(haves) {
 // case none:
 int src, dst, via;
 src=dst=via=0;
-
+  ip6_addr temp;
   for(; i < used_6addrs; i++) {
-      ip6_addr temp = addrs6_table[i];
+      temp = addrs6_table[i];
       if( VEQ(temp,a.src) ) src = i;
       if( VEQ(temp,a.dst) ) dst = i;
       if( VEQ(temp,a.via) ) via = i;
@@ -489,10 +514,10 @@ src=dst=via=0;
 
   if(i == used_6addrs) {
     if(++used_6addrs > size_6addrs - 4) {
-      ip6_addr *temp = realloc((void *)addrs6_table, 2 * size_6addrs * sizeof(ip6_addr));
-      if( temp == NULL) abort() ; // out of memory
+      ip6_addr *temp2 = realloc((void *)addrs6_table, 2 * size_6addrs * sizeof(ip6_addr));
+      if( temp2 == NULL) abort() ; // out of memory
       size_6addrs *=2;
-      addrs6_table = temp;
+      addrs6_table = temp2;
     }
    }
   // By definition we cannot overrun the size of the table
