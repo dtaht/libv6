@@ -29,8 +29,8 @@
 #include <net/if_arp.h>
 #include <sys/socket.h>
 
-#include "erm_types.h"
 #include "preprocessor.h"
+#include "erm_types.h"
 #include "simd.h"
 
 #include "linux_interface.h"
@@ -361,6 +361,58 @@ ip4_addr parse_kernel_route4_neon(struct rtmsg* rtm, int len, ip4_addr a)
       break;
     case RTA_TABLE:
       a.metric = vld1q_lane_s32(RTA_DATA(rta), a.metric, 3);
+      break;
+    default:
+      break;
+    }
+    rta = RTA_NEXT(rta, len);
+  }
+  return a;
+}
+
+typedef struct {
+  int32x4_t via;
+  int32x4_t src;
+  int32x4_t dst;
+  int32x4_t metric;
+} ip6_addr;
+
+ip6_addr parse_kernel_route6_neon(struct rtmsg* rtm, int len, ip6_addr a) COLD;
+
+ip6_addr parse_kernel_route6_neon(struct rtmsg* rtm, int len, ip6_addr a)
+{
+
+  len -= NLMSG_ALIGN(sizeof(*rtm));
+  struct rtattr* rta = RTM_RTA(rtm);
+
+  // The only thing I can't wedge in right is the protocol
+  // Perhaps that could be known apriori?
+  
+  //  a.metric = vld1q_lane_s32((int*)&rtm->rtm_protocol, a.metric, );
+
+  a.metric = vld1q_lane_s32((int*)&rtm->rtm_table, a.metric, 1);
+
+  while(RTA_OK(rta, len)) {
+    switch(rta->rta_type) {
+    case RTA_DST:
+      a.metric = vld1q_lane_s16((short*)&rtm->rtm_dst_len, a.metric, 0);
+      a.dst = vld1q_s32(RTA_DATA(rta));
+      break;
+    case RTA_SRC:
+      a.metric = vld1q_lane_s16((short*)&rtm->rtm_src_len, a.metric, 1);
+      a.src = vld1q_s32(RTA_DATA(rta));
+      break;
+    case RTA_GATEWAY:
+      a.via = vld1q_s32(RTA_DATA(rta));
+      break;
+    case RTA_OIF:
+      a.metric = vld1q_lane_s32(RTA_DATA(rta), a.metric, 3);
+      break;
+    case RTA_PRIORITY:
+      a.metric = vld1q_lane_s32(RTA_DATA(rta), a.metric, 2);
+      break;
+    case RTA_TABLE:
+      a.metric = vld1q_lane_s32(RTA_DATA(rta), a.metric, 1);
       break;
     default:
       break;
