@@ -462,6 +462,52 @@ v6_route_index brute_insert_v6_route(ip6_route a)
 }
 
 
+v6_route_index brute2_insert_v6_route(ip6_route a)
+{
+  int i = 0;
+  if(addrs6_table == NULL) {
+  used_6addrs = 0;
+  size_6addrs = 64;
+  addrs6_table = calloc(size_6addrs,sizeof(ip6_addr));
+  }
+
+// we can make this more efficient by cutting the compares in the loop
+// as we acquire hits and also checking for joint inequality rather
+// than equality before backtracking to find equality.
+
+// switch(haves) {
+// case none:
+int src, dst, via;
+src=dst=via=0;
+
+  for(; i < used_6addrs; i++) {
+      ip6_addr temp = addrs6_table[i];
+      if( VEQ(temp,a.src) ) src = i;
+      if( VEQ(temp,a.dst) ) dst = i;
+      if( VEQ(temp,a.via) ) via = i;
+  }
+
+  if(i == used_6addrs) {
+    if(++used_6addrs > size_6addrs - 4) {
+      ip6_addr *temp = realloc((void *)addrs6_table, 2 * size_6addrs * sizeof(ip6_addr));
+      if( temp == NULL) abort() ; // out of memory
+      size_6addrs *=2;
+      addrs6_table = temp;
+    }
+   }
+  // By definition we cannot overrun the size of the table
+
+  if(via == 0) { addrs6_table[used_6addrs] = a.via; via = used_6addrs++; }
+  if(src == 0) { addrs6_table[used_6addrs] = a.src; src = used_6addrs++; }
+  if(dst == 0) { addrs6_table[used_6addrs] = a.dst; dst = used_6addrs++; }
+
+  v6_route_index vr;
+  vr.via = via;
+  vr.src = src;
+  vr.dst = dst;
+  return vr;
+}
+
 /*      All the popcount code on the web is built on benchmarking
 large streams of values. I just need 3 (via, src, dst).
 
