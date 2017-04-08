@@ -452,6 +452,7 @@ ip6_addr *realloc_v6table() {
       ip6_addr *temp = realloc((void *)addrs6_table, 2 * size_6addrs * sizeof(ip6_addr));
       if( temp == NULL) abort() ; // out of memory
       size_6addrs *=2;
+      // FIXME: Put in the red zone
       return temp;
 }
 
