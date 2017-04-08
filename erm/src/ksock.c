@@ -370,6 +370,97 @@ ip4_addr parse_kernel_route4_neon(struct rtmsg* rtm, int len, ip4_addr a)
   return a;
 }
 
+typedef int32x4_t ip6_addr;
+
+typedef struct {
+  int32x4_t via;
+  int32x4_t src;
+  int32x4_t dst;
+  int32x4_t metric;
+} ip6_route;
+
+// must be aligned
+
+static ip6_addr *addrs6_table = 0;
+static int size_6addrs = 0;
+static int used_6addrs = 0;
+
+#define VEQ(a,b) (0) // FIXME, write the vector equality and inequality ops
+#define VNEQ(a,b) (1) // FIXME, write the vector equality and inequality ops
+
+short brute_insert_v6(ip6_addr a) {
+  int i = 0;
+  if(addrs6_table == NULL) {
+    used_6addrs = 0;
+    size_6addrs = 64;
+    addrs6_table = calloc(size_6addrs,sizeof(ip6_addr));
+  }
+
+  // if only it was this easy
+  
+  for(; i < used_6addrs && (VNEQ(addrs6_table[i],a)); i++) ;
+
+  if(i == used_6addrs) {
+    addrs6_table[i] = a;
+    if(++used_6addrs > size_6addrs - 4) {
+      ip6_addr *temp = realloc(addrs6_table, 2 * size_6addrs * sizeof(ip6_addr));
+      if(temp == NULL) abort() ; // out of memory
+      size_6addrs *=2;
+      addrs6_table = temp;
+    }
+  }
+  return i;  
+}
+
+// enum haves { none, src = 1, dst = 2 , via = 4 };
+
+typedef struct {
+  short via;
+  short src;
+  short dst;
+} v6_route_index;
+
+// In the end this will become a merge sort of the list
+
+v6_route_index brute_insert_v6_route(ip6_route a, v6_route_index vr)
+{
+  int i = 0;
+  if(addrs6_table == NULL) {
+  used_6addrs = 0;
+  size_6addrs = 64;
+  addrs6_table = calloc(size_6addrs,sizeof(ip6_addr));
+  }
+
+// we can make this more efficient by cutting the compares in the loop
+// as we acquire hits and also checking for joint inequality rather
+// than equality before backtracking to find equality.
+
+// switch(haves) {
+// case none:
+
+  for(; i < used_6addrs; i++) {
+      ip6_addr temp = addrs6_table[i];
+      if( VEQ(temp,a.src) ) vr.src = i;
+      if( VEQ(temp,a.dst) ) vr.dst = i;
+      if( VEQ(temp,a.via) ) vr.via = i;
+  }
+
+  if(i == used_6addrs) {
+    if(++used_6addrs > size_6addrs - 4) {
+      ip6_addr *temp = realloc((void *)addrs6_table, 2 * size_6addrs * sizeof(ip6_addr));
+      if( temp == NULL) abort() ; // out of memory
+      size_6addrs *=2;
+      addrs6_table = temp;
+    }
+   }
+  // By definition we cannot overrun the size of the table
+
+  if(vr.via == 0) { addrs6_table[used_6addrs] = a.via; vr.via = used_6addrs++; }
+  if(vr.src == 0) { addrs6_table[used_6addrs] = a.src; vr.src = used_6addrs++; }
+  if(vr.dst == 0) { addrs6_table[used_6addrs] = a.dst; vr.dst = used_6addrs++; }
+  return vr;
+}
+
 
 /*      All the popcount code on the web is built on benchmarking
 large streams of values. I just need 3 (via, src, dst).
@@ -442,16 +533,9 @@ I guess.
 
  */
 
-typedef struct {
-  int32x4_t via;
-  int32x4_t src;
-  int32x4_t dst;
-  int32x4_t metric;
-} ip6_addr;
+ip6_route parse_kernel_route6_neon(struct rtmsg* rtm, int len, ip6_route a) COLD;
 
-ip6_addr parse_kernel_route6_neon(struct rtmsg* rtm, int len, ip6_addr a) COLD;
-
-ip6_addr parse_kernel_route6_neon(struct rtmsg* rtm, int len, ip6_addr a)
+ip6_route parse_kernel_route6_neon(struct rtmsg* rtm, int len, ip6_route a)
 {
 
   len -= NLMSG_ALIGN(sizeof(*rtm));
