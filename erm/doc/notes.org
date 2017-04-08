@@ -2173,3 +2173,23 @@ of a call or data stack as it is - args are passed in registers, messages
 via ringbuffers, there's a lot of jumpy code (tail recursion). and so on.
 
 But I wanted to stick with C as a base.
+* Couple notes
+
+Arm thus far is yielding to the kinds of thinsg I want to be doing
+best, and bootstrapping the parallella looking hard. I'm also
+discouraged on that front by their lead engineer going to work for
+darpa which seems to mean to me that general availability of the 1000
+core version may never happen. So I think I'll focus on arm for a while.
+
+(I REALLY wanted DMA tho - 32 dma channels on the parallella - yum!)
+
+I do really need the core infrastructure to land, or to at least be
+spending time per day/week knocking out the basic boring bits, to just
+reassemble and re-evolve them later. I'm close to having a kernel
+route dumper after yesterday's hacking session... I'm getting mildly
+better at writing code the compiler can optimize, also.
+
+Instead, I keep thinking I need a new language (called "eh" in my
+mind) to express things in, which is way more bootstrapping than I
+want too! And to work on that state machine to verilog parser to
+extend it to outputting C, also.
