@@ -500,9 +500,9 @@ v6_route_index brute_insert_v6_route(ip6_route a)
 // in the compiler, but for no good reason, stashes
 // all the vectors on the stack on the way in.
 
-v6_route_index brute2_insert_v6_route(ip6_route a) HOT;
+static v6_route_index brute2_insert_v6_route(ip6_route a) HOT;
 
-v6_route_index brute2_insert_v6_route(ip6_route a)
+static v6_route_index brute2_insert_v6_route(ip6_route a)
 {
   int i = 0;
 //  Let's live dangerously and assume this was done already
@@ -523,8 +523,9 @@ v6_route_index brute2_insert_v6_route(ip6_route a)
 // switch(a) 
 // switch(haves) {
 // case none:
-  u32 srcdst = 0;
-  u32 via = 0;
+  int src = 0;
+  int dst = 0;
+  int via = 0;
 //  for(; i < used_6addrs; i++) {
 //      v4_stuff = addrs6_table[i]; // compiler STILL insists on hitting the stack
 //      if( VEQ(a.src,v4_stuff) ) src = i;
@@ -533,8 +534,8 @@ v6_route_index brute2_insert_v6_route(ip6_route a)
 //  }
 
   for(; i < used_6addrs; i++) {
-      if( VEQ(addrs6_table[i],a.src) ) srcdst |= i;
-      if( VEQ(addrs6_table[i],a.dst) ) srcdst |= i << 16;
+      if( VEQ(addrs6_table[i],a.src) ) src = i;
+      if( VEQ(addrs6_table[i],a.dst) ) dst = i;
       if( VEQ(addrs6_table[i],a.via) ) via = i;
   }
 
@@ -544,13 +545,13 @@ v6_route_index brute2_insert_v6_route(ip6_route a)
 // By definition we cannot overrun the size of the table
 
   if(via == 0) { addrs6_table[used_6addrs] = a.via; via = used_6addrs++; }
-if((srcdst & 0xFFFF) == 0) { addrs6_table[used_6addrs] = a.src; srcdst = used_6addrs++; }
-if((srcdst & ~0xFFFF) == 0) { addrs6_table[used_6addrs] = a.dst; srcdst |= used_6addrs++ << 16; }
+  if(src == 0) { addrs6_table[used_6addrs] = a.src; src = used_6addrs++; }
+  if(dst == 0) { addrs6_table[used_6addrs] = a.dst; dst = used_6addrs++; }
 
   v6_route_index vr;
   vr.via = via;
-  vr.src = srcdst & 0xFFFF;
-  vr.dst = srcdst & ~0xFFFF;
+  vr.src = src;
+  vr.dst = dst;
   return vr;
 }
 
