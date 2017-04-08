@@ -422,7 +422,7 @@ typedef struct {
 
 // In the end this will become a merge sort of the list
 
-v6_route_index brute_insert_v6_route(ip6_route a, v6_route_index vr)
+v6_route_index brute_insert_v6_route(ip6_route a)
 {
   int i = 0;
   if(addrs6_table == NULL) {
@@ -437,7 +437,7 @@ v6_route_index brute_insert_v6_route(ip6_route a, v6_route_index vr)
 
 // switch(haves) {
 // case none:
-
+  v6_route_index vr;
   for(; i < used_6addrs; i++) {
       ip6_addr temp = addrs6_table[i];
       if( VEQ(temp,a.src) ) vr.src = i;
