@@ -5,117 +5,107 @@
  * 2017-03-15
  */
 
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
 #include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <time.h>
+#include <unistd.h>
 
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <net/route.h>
+#include <netinet/in.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <net/route.h>
-#include <net/if.h>
-#include <arpa/inet.h>
 
 #include <asm/types.h>
-#include <sys/socket.h>
+#include <linux/fib_rules.h>
+#include <linux/if_bridge.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
-#include <linux/if_bridge.h>
-#include <linux/fib_rules.h>
 #include <net/if_arp.h>
+#include <sys/socket.h>
 
-#include "preprocessor.h"
 #include "erm_types.h"
+#include "preprocessor.h"
 #include "simd.h"
 
 #include "linux_interface.h"
 
-int socks[] = { RTNLGRP_IPV6_ROUTE, RTNLGRP_IPV6_IFADDR,
-		RTNLGRP_IPV4_ROUTE, RTNLGRP_IPV4_IFADDR,
-		RTNLGRP_LINK } ; // ,RTNLGRP_RULE };
+int socks[] = { RTNLGRP_IPV6_ROUTE, RTNLGRP_IPV6_IFADDR, RTNLGRP_IPV4_ROUTE,
+                RTNLGRP_IPV4_IFADDR, RTNLGRP_LINK }; // ,RTNLGRP_RULE };
 
 // The kernel keeps separate tables for everything.
 // We do the same to reduce head of line blocking
 
-static int
-netlink_socket_create(netlink_socket *nl, uint32_t groups)
+static int netlink_socket_create(netlink_socket* nl, uint32_t groups)
 {
-    int rc;
-    int rcvsize = 32 * 1024;
+  int rc;
+  int rcvsize = 32 * 1024;
 
-    nl->sock = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
-    if(nl->sock < 0)
-        return -1;
+  nl->sock = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+  if(nl->sock < 0) return -1;
 
-    memset(&nl->sockaddr, 0, sizeof(nl->sockaddr));
-    nl->sockaddr.nl_family = AF_NETLINK;
-    nl->sockaddr.nl_groups = groups;
-    nl->socklen = sizeof(nl->sockaddr);
+  memset(&nl->sockaddr, 0, sizeof(nl->sockaddr));
+  nl->sockaddr.nl_family = AF_NETLINK;
+  nl->sockaddr.nl_groups = groups;
+  nl->socklen = sizeof(nl->sockaddr);
 
-    nl->seqno = time(NULL);
+  nl->seqno = time(NULL);
 
-    rc = fcntl(nl->sock, F_GETFL, 0);
-    if(rc < 0)
-        goto fail;
+  rc = fcntl(nl->sock, F_GETFL, 0);
+  if(rc < 0) goto fail;
 
-    rc = fcntl(nl->sock, F_SETFL, (rc | O_NONBLOCK));
-    if(rc < 0)
-        goto fail;
+  rc = fcntl(nl->sock, F_SETFL, (rc | O_NONBLOCK));
+  if(rc < 0) goto fail;
 
 #ifdef SO_RCVBUFFORCE
-    rc = setsockopt(nl->sock, SOL_SOCKET, SO_RCVBUFFORCE,
-                    &rcvsize, sizeof(rcvsize));
+  rc = setsockopt(nl->sock, SOL_SOCKET, SO_RCVBUFFORCE, &rcvsize, sizeof(rcvsize));
 #else
-    rc = -1;
+  rc = -1;
 #endif
+  if(rc < 0) {
+    rc = setsockopt(nl->sock, SOL_SOCKET, SO_RCVBUF, &rcvsize, sizeof(rcvsize));
     if(rc < 0) {
-        rc = setsockopt(nl->sock, SOL_SOCKET, SO_RCVBUF,
-                        &rcvsize, sizeof(rcvsize));
-        if(rc < 0) {
-            perror("setsockopt(SO_RCVBUF)");
-        }
+      perror("setsockopt(SO_RCVBUF)");
     }
+  }
 
-    rc = bind(nl->sock, (struct sockaddr *)&nl->sockaddr, nl->socklen);
-    if(rc < 0)
-        goto fail;
+  rc = bind(nl->sock, (struct sockaddr*)&nl->sockaddr, nl->socklen);
+  if(rc < 0) goto fail;
 
-    rc = getsockname(nl->sock, (struct sockaddr *)&nl->sockaddr, &nl->socklen);
-    if(rc < 0)
-        goto fail;
+  rc = getsockname(nl->sock, (struct sockaddr*)&nl->sockaddr, &nl->socklen);
+  if(rc < 0) goto fail;
 
-    return 0;
+  return 0;
 
- fail:
-    {
-        int saved_errno = errno;
-        close(nl->sock);
-        nl->sock = -1;
-        errno = saved_errno;
-        return -1;
-    }
+fail : {
+  int saved_errno = errno;
+  close(nl->sock);
+  nl->sock = -1;
+  errno = saved_errno;
+  return -1;
+}
 }
 
 kernel_sockets kernel_socket_teardown(kernel_sockets k)
 {
-  for(int i = 6 ;i>0; i--) {
-    close(k.sockets[i-1].sock);
+  for(int i = 6; i > 0; i--) {
+    close(k.sockets[i - 1].sock);
     k.sockets[i].sock = 0;
   }
-  k.status= 0;
-  return k;  
+  k.status = 0;
+  return k;
 }
 
 kernel_sockets kernel_socket_setup(kernel_sockets k)
 {
   int rc = 0;
   for(int i = 0; i < 4; i++) {
-    if((rc = netlink_socket_create(&k.sockets[i],socks[i]) > 0)) {
+    if((rc = netlink_socket_create(&k.sockets[i], socks[i]) > 0)) {
       k.status |= (1 << i);
     } else {
       perror("netlink_socket failed (_ROUTE | _LINK | _IFADDR | _RULE)");
@@ -130,7 +120,7 @@ struct plens {
   u16 slen;
   u16 dlen;
 };
-  
+
 typedef struct {
   u8 flags;
   u8 proto;
@@ -148,10 +138,7 @@ typedef struct {
 /* { */
 /* } */
 
-void kernel_dump_v4(kernel_sockets k)
-{
-
-}
+void kernel_dump_v4(kernel_sockets k) {}
 
 v4route parse_kernel_route_rta4(struct rtmsg* rtm, int len, v4route route)
 {
@@ -205,7 +192,7 @@ typedef union {
   u32 a[4];
 } V21;
 
-register u32 v4_stuff asm("xmm9") VECTOR(16) ;
+register u32 v4_stuff asm("xmm9") VECTOR(16);
 register u32 v4_stuff2 asm("xmm10") VECTOR(16);
 
 void parse_kernel_route_vta4(struct rtmsg* rtm, int len)
@@ -220,7 +207,7 @@ void parse_kernel_route_vta4(struct rtmsg* rtm, int len)
   while(RTA_OK(rta, len)) {
     switch(rta->rta_type) {
     case RTA_DST:
-      route2.a[3] |= rtm->rtm_dst_len << 16 ;
+      route2.a[3] |= rtm->rtm_dst_len << 16;
       route.a[vdst] = *(int*)RTA_DATA(rta);
       break;
     case RTA_SRC:
@@ -265,26 +252,26 @@ void parse_kernel_route_ivta4(struct rtmsg* rtm, int len)
   u64 ls = 0;
   struct rtattr* rta = RTM_RTA(rtm);
   len -= NLMSG_ALIGN(sizeof(*rtm));
-  tp |= ((u64) rtm->rtm_protocol) << 32;
+  tp |= ((u64)rtm->rtm_protocol) << 32;
 
   while(RTA_OK(rta, len)) {
     switch(rta->rta_type) {
     case RTA_DST:
-      sl = rtm->rtm_dst_len << 16 | (sl &  0xFFFFFFFFLL);
-      sd = *(int*)RTA_DATA(rta) | (  sd & ~0xFFFFFFFFLL);
+      sl = rtm->rtm_dst_len << 16 | (sl & 0xFFFFFFFFLL);
+      sd = *(int*)RTA_DATA(rta) | (sd & ~0xFFFFFFFFLL);
       break;
     case RTA_SRC:
-      sl = rtm->rtm_src_len | (sl &                     ~0xFFFFFFFFLL);
-      sd = (((u64) *(int*)RTA_DATA(rta)) << 32) | (sd & ~0xFFFFFFFFLL);
+      sl = rtm->rtm_src_len | (sl & ~0xFFFFFFFFLL);
+      sd = (((u64) * (int*)RTA_DATA(rta)) << 32) | (sd & ~0xFFFFFFFFLL);
       break;
     case RTA_GATEWAY:
-      ls = *(int*)RTA_DATA(rta) | (ls &                 ~0xFFFFFFFFLL);
+      ls = *(int*)RTA_DATA(rta) | (ls & ~0xFFFFFFFFLL);
       break;
     case RTA_OIF:
-      ls = (((u64) *(int*)RTA_DATA(rta)) << 32) | (ls & 0xFFFFFFFFLL);
+      ls = (((u64) * (int*)RTA_DATA(rta)) << 32) | (ls & 0xFFFFFFFFLL);
       break;
     case RTA_PRIORITY:
-      tp = ((u64) *(int*)RTA_DATA(rta)) << 32 | (tp & 0xFFFFFFFFLL);
+      tp = ((u64) * (int*)RTA_DATA(rta)) << 32 | (tp & 0xFFFFFFFFLL);
       break;
     case RTA_TABLE:
       tp = *(int*)RTA_DATA(rta) | (tp & ~0xFFFFFFFFLL);
@@ -300,14 +287,11 @@ void parse_kernel_route_ivta4(struct rtmsg* rtm, int len)
   f1.sl = sl;
 }
 
-u32 onemasks[5][4] =
-  {
-  { -1, -1, -1, -1 },
-  { 0, 0, 0, -1 },
-  { 0, 0, -1, 0 },
-  { 0, -1, 0, 0 },
-  { -1, 0, 0, 0 }
-};
+u32 onemasks[5][4] = { { -1, -1, -1, -1 },
+                       { 0, 0, 0, -1 },
+                       { 0, 0, -1, 0 },
+                       { 0, -1, 0, 0 },
+                       { -1, 0, 0, 0 } };
 
 #endif
 
@@ -331,49 +315,93 @@ u32 onemasks[5][4] =
  or, in the case of neon, 16 D registers, then to Q registers...
 
  Nah, I can do it with load lane on neon and *perfectly* fill the pipeline
- 
+
  */
 
-register volatile u32 v4_stuff asm("q10") VECTOR(16) ;
+register volatile u32 v4_stuff asm("q10") VECTOR(16);
 register volatile u32 v4_stuff2 asm("q11") VECTOR(16);
 
-//register volatile int32x4_t v4_stuff asm("q10") VECTOR(16) ;
-//register volatile int32x4_t v4_stuff2 asm("q11") VECTOR(16);
+// register volatile int32x4_t v4_stuff asm("q10") VECTOR(16) ;
+// register volatile int32x4_t v4_stuff2 asm("q11") VECTOR(16);
 
-int32x4_t parse_kernel_route4_neon(struct rtmsg* rtm, int len) COLD;
+typedef struct {
+  int32x4_t addrs;
+  int32x4_t metric;
+} ip4_addr;
 
-int32x4_t parse_kernel_route4_neon(struct rtmsg* rtm, int len) 
+ip4_addr parse_kernel_route4_neon(struct rtmsg* rtm, int len, ip4_addr a) COLD;
+
+ip4_addr parse_kernel_route4_neon(struct rtmsg* rtm, int len, ip4_addr a)
 {
-  int32x4_t addrs = {0};
-  int32x4_t metric = {0};
 
   len -= NLMSG_ALIGN(sizeof(*rtm));
   struct rtattr* rta = RTM_RTA(rtm);
 
-  metric = vld1q_lane_s32((int *) &rtm->rtm_protocol, metric,1);
-  metric = vld1q_lane_s32((int *) &rtm->rtm_table, metric,3);
+  a.metric = vld1q_lane_s32((int*)&rtm->rtm_protocol, a.metric, 1);
+  a.metric = vld1q_lane_s32((int*)&rtm->rtm_table, a.metric, 3);
 
   while(RTA_OK(rta, len)) {
     switch(rta->rta_type) {
     case RTA_DST:
-      metric = vld1q_lane_s16((short *)&rtm->rtm_dst_len,metric,0);
-      addrs = vld1q_lane_s32(RTA_DATA(rta),addrs,0);
+      a.metric = vld1q_lane_s16((short*)&rtm->rtm_dst_len, a.metric, 0);
+      a.addrs = vld1q_lane_s32(RTA_DATA(rta), a.addrs, 0);
       break;
     case RTA_SRC:
-      metric = vld1q_lane_s16((short *)&rtm->rtm_src_len,metric,1);
-      addrs = vld1q_lane_s32(RTA_DATA(rta),addrs,1);
+      a.metric = vld1q_lane_s16((short*)&rtm->rtm_src_len, a.metric, 1);
+      a.addrs = vld1q_lane_s32(RTA_DATA(rta), a.addrs, 1);
       break;
     case RTA_GATEWAY:
-      addrs = vld1q_lane_s32(RTA_DATA(rta),addrs,2);
+      a.addrs = vld1q_lane_s32(RTA_DATA(rta), a.addrs, 2);
       break;
     case RTA_OIF:
-      addrs = vld1q_lane_s32(RTA_DATA(rta),addrs,3);
+      a.addrs = vld1q_lane_s32(RTA_DATA(rta), a.addrs, 3);
       break;
     case RTA_PRIORITY:
-      metric = vld1q_lane_s32(RTA_DATA(rta),metric,2);
+      a.metric = vld1q_lane_s32(RTA_DATA(rta), a.metric, 2);
       break;
     case RTA_TABLE:
-      metric = vld1q_lane_s32(RTA_DATA(rta),metric,3);
+      a.metric = vld1q_lane_s32(RTA_DATA(rta), a.metric, 3);
+      break;
+    default:
+      break;
+    }
+    rta = RTA_NEXT(rta, len);
+  }
+  return a;
+}
+
+int32x4_t parse_kernel_route4_neon_old(struct rtmsg* rtm, int len)
+{
+  int32x4_t addrs = { 0 };
+  int32x4_t metric = { 0 };
+
+  len -= NLMSG_ALIGN(sizeof(*rtm));
+  struct rtattr* rta = RTM_RTA(rtm);
+
+  metric = vld1q_lane_s32((int*)&rtm->rtm_protocol, metric, 1);
+  metric = vld1q_lane_s32((int*)&rtm->rtm_table, metric, 3);
+
+  while(RTA_OK(rta, len)) {
+    switch(rta->rta_type) {
+    case RTA_DST:
+      metric = vld1q_lane_s16((short*)&rtm->rtm_dst_len, metric, 0);
+      addrs = vld1q_lane_s32(RTA_DATA(rta), addrs, 0);
+      break;
+    case RTA_SRC:
+      metric = vld1q_lane_s16((short*)&rtm->rtm_src_len, metric, 1);
+      addrs = vld1q_lane_s32(RTA_DATA(rta), addrs, 1);
+      break;
+    case RTA_GATEWAY:
+      addrs = vld1q_lane_s32(RTA_DATA(rta), addrs, 2);
+      break;
+    case RTA_OIF:
+      addrs = vld1q_lane_s32(RTA_DATA(rta), addrs, 3);
+      break;
+    case RTA_PRIORITY:
+      metric = vld1q_lane_s32(RTA_DATA(rta), metric, 2);
+      break;
+    case RTA_TABLE:
+      metric = vld1q_lane_s32(RTA_DATA(rta), metric, 3);
       break;
     default:
       break;
@@ -390,41 +418,41 @@ struct test;
 struct test {
   u32 rta_type;
   s32 data;
-  struct test *next;
+  struct test* next;
 } test;
 
-  
+
 int32x4_t simpler_kernel_route4_neon(struct test* rtm, int len)
 {
-  int32x4_t addrs = {0};
-  int32x4_t metric = {0};
-  struct test *rta = rtm;
-   do {
+  int32x4_t addrs = { 0 };
+  int32x4_t metric = { 0 };
+  struct test* rta = rtm;
+  do {
     switch(rta->rta_type) {
     case RTA_DST:
       //      vld1q_lane_s16((short *)&rtm->rtm_dst_len,metric,0);
-      addrs = vld1q_lane_s32(&rta->data,addrs,0);
+      addrs = vld1q_lane_s32(&rta->data, addrs, 0);
       break;
     case RTA_SRC:
       // vld1q_lane_s16((short *)&rtm->rtm_src_len,metric,1);
-      addrs = vld1q_lane_s32(&rta->data,addrs,1);
+      addrs = vld1q_lane_s32(&rta->data, addrs, 1);
       break;
     case RTA_GATEWAY:
-      addrs = vld1q_lane_s32(&rta->data,addrs,2);
+      addrs = vld1q_lane_s32(&rta->data, addrs, 2);
       break;
     case RTA_OIF:
-      addrs = vld1q_lane_s32(&rta->data,addrs,3);
+      addrs = vld1q_lane_s32(&rta->data, addrs, 3);
       break;
     case RTA_PRIORITY:
-      metric = vld1q_lane_s32(&rta->data,metric,2);
+      metric = vld1q_lane_s32(&rta->data, metric, 2);
       break;
     case RTA_TABLE:
-      metric = vld1q_lane_s32(&rta->data,metric,3);
+      metric = vld1q_lane_s32(&rta->data, metric, 3);
       break;
     default:
       break;
     }
-   } while(rta = rta->next);
+  } while(rta = rta->next);
 
   return addrs;
 }
@@ -432,8 +460,9 @@ int32x4_t simpler_kernel_route4_neon(struct test* rtm, int len)
 #endif
 
 #ifdef DEBUG_MODULE
-int main() {
-  kernel_sockets k = {0};
+int main()
+{
+  kernel_sockets k = { 0 };
   k = kernel_socket_setup(k);
   if(k.status > 0) {
     printf("Getting dumps\n");
