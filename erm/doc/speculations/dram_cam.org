@@ -33,8 +33,9 @@ You can store data in the delay, just as we do today with protocols like TCP.
 
 ** The generational state machine
 
-Everything has essentially a 4 state state machine in it and circulates through
-those states on a collaborative basis. I begrudge C for not having a 2 bit type.
+Everything has essentially a minimum of a 4 state state machine in it
+and circulates through those states on a collaborative basis. I
+begrudge C for not having a 2 bit type.
 
 One way to think of it are the following four states:
 
@@ -85,14 +86,16 @@ and cooler, and letting some other part of the chip "win" that result.
 
 Circuits look weird in erm - some look like loops, others, like spirals, others,
 like fractal patterns. (in todays finfet world, they might be spirals, loops,
-fractals in three dimensions!) The data passing on the first part of the loop
-(or spiral) supplies power (or additional power) to the later parts.
+and fractals in three dimensions!) The data passing on the first part of the loop
+(or spiral) supplies power (or additional power) to the later parts. Delay
+lines, sometimes measured in picoseconds - are needed....
 
-There are still potentially *enormous* metastability problems, but as each bit
-of logic connecting a loop together can be tested individually, and tweaked, and
-loops built up from smaller operations, it seemed feasible to fix each of them,
-either by hand, or with better design tools. Or fall back on conventional
-clocked logic if that becomes too hard for a given subsystem.
+There are *enormous* metastability problems, but as each bit of logic
+connecting a loop together can be tested individually, and tweaked,
+and loops built up from smaller operations, it seemed feasible to fix
+each of them, either by hand, or with better design tools. Or fall
+back on conventional clocked logic if that becomes too hard for a
+given subsystem.
 
 Perhaps some decent async design tools now exist, but thus far, I've come up
 empty aside from [[https://github.com/dudecc/chpsim][CHP]]. I came up empty in 92, too!
@@ -112,6 +115,12 @@ later line with 1024 different other potential queues.
 
 (aside: You can't even get at the cycle timer on an arm box by default without specially
 programming a special unit. This is nuts.)
+
+And: All that said - the code and ideas in erm are the way they are
+because of the speculation: IF you could build a dataflow engine with
+async logic, and no central clock - what might it look like? So no
+actual ability to actually construct a machine needs to exist, just
+the concepts in code.
 
 * Another CAM
 

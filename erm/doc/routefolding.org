@@ -39,7 +39,7 @@ suffice.
 
 * A folded route is NOT a "covering" route
 
-An example of a non-foldable route set would be:
+An example of a non-automatically-foldable route set would be:
 
 |fd00::/64|
 |fd00::1/128|
@@ -150,7 +150,7 @@ I don't think these are doable without much research.
 ** Speculative route folding
 
 Two routes that are adjacent that have evolved to the same metric might be
-considered to be the same route.
+considered to be a foldable route.
 
 ** Analytical tools
 
