@@ -18,6 +18,30 @@
 
    I forget what else.
 
+Anyway, the simplest possible implementation uses 32k (15 bit) indexes
+offset by 7.1 bits of popcount, of the size of the ipv6 address.
+
+A popcount of 0 or 128 are special cases.
+
+Assuming you had a perfect distribution, (we don't), this leaves room
+for for a lot of addresses/prefixes. Still assuming that distribution,
+given projected rates of growth for the BGP route table, that should
+take us into 2050 or so. I think.
+
+Each 4k block for addresses can hold up to 256 addresses, but we
+define the end 4 addresses as a red zone before we expand.
+
+Ipv4 uses 6 bits of popcount, of the size of the ipv4 address
+
+This leaves lookup tables that look like this:
+
+
+   mmap 8 * 32k * 16
+
+   pop | 
+
+   addrindex & ((1 << 23) - 1)
+
 */
 
 // reallocation is always a copy and may resort to dma
