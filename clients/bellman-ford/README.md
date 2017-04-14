@@ -34,8 +34,7 @@ wrong. We see all sorts of optimizations nowadays solving for the 1% of
 routes that matter, tossing that into hardware, and then offloading the rest
 into software.
 
-We don't need to solve for all paths, just 3 good paths. Or just the paths
-you are going to hit hit a lot, and then punt to userspace.
+We don't need to solve for all paths, just 3 "good" paths (simultaneously) that meet certain goals - this is a good path for voice, this for bulk, this one is in case the network interface goes down. Or solve just the paths you are going to hit hit a lot, and then punt to userspace.
 
 My own inspiration from graph theory are a set of solutions for
 "good paths" that fall out of the [snark concept](https://en.wikipedia.org/wiki/Blanu%C5%A1a_snarks). I felt so strongly about that that I made a snark the
