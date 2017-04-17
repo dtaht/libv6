@@ -34,7 +34,7 @@ GENVERSION = $(TOOLS)/generate-version.sh
 OMIT_REGS += -ffixed-q11
 OMIT_REGS += -ffixed-q10
 
-CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES) -ftree-vectorize -DHAVE_NATIVE_C11_THREADS $(OMIT_REGS) $(NNATIVE)
+CFLAGS  = -std=gnu11 -O3 -Wall -L../../lib $(INCLUDES)
 LDFLAGS = -lrt
 
 OBJDIR_DEBUG = $(CC)
@@ -76,6 +76,12 @@ ARCH = $(shell uname -m)
 # http://infocenter.arm.com/help/topic/com.arm.doc.ecm0359818/ECM0359818_armv8m_security_extensions_reqs_on_dev_tools_1_0.pdf
 
 # https://software.intel.com/sites/default/files/m/4/8/8/2/a/31848-CompilerAutovectorizationGuide.pdf
+
+ifeq ($(ARCH),aarch64)
+CFLAGS += $(OMIT_REGS)
+endif
+
+# -ftree-vectorize -DHAVE_NATIVE_C11_THREADS $(OMIT_REGS) $(NNATIVE)
 
 NNATIVE = -mfpu=neon -DHAVE_NEON -flax-vector-conversions
 

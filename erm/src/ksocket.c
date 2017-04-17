@@ -42,7 +42,7 @@ kernel_sockets kernel_setup_socket(kernel_sockets k)
     k.sockets[i] = 0;
   }
   k.status= 0;
-  return k;  
+  return k;
 }
 
 /* Since we have a socket for v4 and v6, we are less complicated, but we still

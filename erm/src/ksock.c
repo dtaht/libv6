@@ -105,15 +105,69 @@ kernel_sockets kernel_socket_setup(kernel_sockets k)
 {
   int rc = 0;
   for(int i = 0; i < 4; i++) {
-    if((rc = netlink_socket_create(&k.sockets[i], socks[i]) > 0)) {
-      k.status |= (1 << i);
-    } else {
+    if((rc = netlink_socket_create(&k.sockets[i], socks[i]) < 0)) {
       perror("netlink_socket failed (_ROUTE | _LINK | _IFADDR | _RULE)");
       k = kernel_socket_teardown(k);
       break;
+    } else {
+      k.status |= (1 << i);
     }
   }
   return k;
+}
+
+
+struct mmsghdr msgs[VLEN] SECTION("shared_dram");
+struct iovec iovecs[VLEN] ;
+char bufs[VLEN][BUFSIZE + 1] SECTION("shared_dram");
+
+// Since we are single threaded for this
+
+typedef struct nlmsgerr * nlmsgerr_p;
+
+static int
+netlink_get(struct netlink *nl, struct netlink *nl_ignore, int answer,
+             struct kernel_filter *filter)
+{
+  bool done = false;
+  memset(msgs, 0, sizeof(msgs));
+  for(int i = 0; i < VLEN; i++) {
+    iovecs[i].iov_base = bufs[i];
+    iovecs[i].iov_len = BUFSIZE;
+    msgs[i].msg_hdr.msg_iov = &iovecs[i];
+    msgs[i].msg_hdr.msg_iovlen = 1;
+  }
+
+  timeout.tv_sec = TIMEOUT;
+  timeout.tv_nsec = 0;
+
+  do {
+	  retval = recvmmsg(sockfd, msgs, VLEN, MSG_WAITFORONE, &timeout);
+  } while (retval < 0 && errno == EINTR);
+
+  do {
+  if(retval < 0) {
+      perror("netlink_read: recvmmsg()");
+      return -1;
+  }
+
+  for(nh = (nlmsghdr_p buf; NLMSG_OK(nh, len); nh = NLMSG_NEXT(nh, len)) {
+	  switch(nh->nlmsg_type) {
+	  case NLMSG_DONE: done = true; break;
+          case NLMSG_ERROR:
+                nlmsgerr_p err = (nlmsgerr_p) NLMSG_DATA(nh);
+                if(err->error == 0) continue;
+                errno = -err->error;
+                perror("netlink_read: \n");
+                return -1;
+                break;
+	  }
+
+	  if(msg.msg_flags & MSG_TRUNC)
+            fprintf(stderr, "netlink_read: message truncated\n");
+	  }
+   while(!done);
+
 }
 
 struct plens {
@@ -422,7 +476,7 @@ short brute_insert_v6(ip6_addr a) {
   }
 
   // if only it was this easy
-  
+
   for(; i < used_6addrs && (VNEQ(addrs6_table[i],a)); i++) ;
 
   if(i == used_6addrs) {
@@ -434,7 +488,7 @@ short brute_insert_v6(ip6_addr a) {
       addrs6_table = temp;
     }
   }
-  return i;  
+  return i;
 }
 
 // enum haves { none, src = 1, dst = 2 , via = 4 };
@@ -637,7 +691,7 @@ ip6_route parse_kernel_route6_neon(struct rtmsg* rtm, int len, ip6_route a)
 
   // The only thing I can't wedge in right is the protocol
   // Perhaps that could be known apriori?
-  
+
   //  a.metric = vld1q_lane_s32((int*)&rtm->rtm_protocol, a.metric, );
 
   a.metric = vld1q_lane_s32((int*)&rtm->rtm_table, a.metric, 1);
@@ -681,7 +735,7 @@ v6_route_index parse_kernel_route6_neon_combined(struct rtmsg* rtm, int len, ip6
 
   // The only thing I can't wedge in right is the protocol
   // Perhaps that could be known apriori?
-  
+
   //  a.metric = vld1q_lane_s32((int*)&rtm->rtm_protocol, a.metric, );
 
   a.metric = vld1q_lane_s32((int*)&rtm->rtm_table, a.metric, 1);

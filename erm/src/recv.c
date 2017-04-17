@@ -68,7 +68,10 @@ int main(void)
   timeout.tv_sec = TIMEOUT;
   timeout.tv_nsec = 0;
 
-  retval = recvmmsg(sockfd, msgs, VLEN, 0, &timeout);
+  do {
+  retval = recvmmsg(sockfd, msgs, VLEN, MSG_WAITFORONE, &timeout);
+  } while(retval < 0 && errno == EINTR);
+
   if(retval == -1) {
     perror("recvmmsg()");
     exit(EXIT_FAILURE);
