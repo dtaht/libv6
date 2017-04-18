@@ -2193,3 +2193,14 @@ Instead, I keep thinking I need a new language (called "eh" in my
 mind) to express things in, which is way more bootstrapping than I
 want too! And to work on that state machine to verilog parser to
 extend it to outputting C, also.
+* TODO Tramp mode
+  :LOGBOOK:
+  CLOCK: [2017-04-14 Fri 07:20]--[2017-04-14 Fri 07:20] =>  0:00
+  :END:
+[2017-04-14 Fri 07:20]
+* TODO INFIX notation is a plague upon the planet
+and for that matter C++'s lack of being able to create new operators, also.
+
+Since we are essentially creating new operators, and we have to lisp-like
+notation throughout, life starts to get easier.
+
